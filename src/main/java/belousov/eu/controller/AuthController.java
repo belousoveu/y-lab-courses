@@ -6,16 +6,14 @@ import belousov.eu.service.AuthService;
 import belousov.eu.utils.InputPattern;
 import belousov.eu.utils.MessageColor;
 import belousov.eu.view.ConsoleView;
+import lombok.AllArgsConstructor;
 
+@AllArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
     private final ConsoleView consoleView;
 
-    public AuthController(AuthService authService, ConsoleView consoleView) {
-        this.authService = authService;
-        this.consoleView = consoleView;
-    }
 
     public void register() {
         String name = consoleView.readString("Введите имя: ", InputPattern.NAME);

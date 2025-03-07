@@ -1,5 +1,6 @@
 package belousov.eu.view;
 
+import belousov.eu.model.User;
 import belousov.eu.utils.InputPattern;
 import belousov.eu.utils.MessageColor;
 
@@ -37,5 +38,12 @@ public class ConsoleView {
 
     public void println(String message, MessageColor color) {
         System.out.println(color.colored(message));
+    }
+
+    public void printUser(User currentUser) {
+        println("Профиль пользователя:");
+        println("=====================");
+        println("Имя: " + MessageColor.YELLOW.colored(currentUser.getName()));
+        println("Email: " + MessageColor.YELLOW.colored(currentUser.getEmail()));
     }
 }
