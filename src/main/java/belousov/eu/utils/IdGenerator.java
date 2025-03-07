@@ -24,11 +24,11 @@ public class IdGenerator<T> {
 
     public static <T> IdGenerator<T> create(Class<T> clazz) {
         if (clazz.equals(Long.class)) {
-            AtomicLong nextId = new AtomicLong(1L);
+            AtomicLong nextId = new AtomicLong(0L);
             return (IdGenerator<T>) new IdGenerator<>(nextId::incrementAndGet);
 
         } else if (clazz.equals(Integer.class)) {
-            AtomicInteger nextId = new AtomicInteger(1);
+            AtomicInteger nextId = new AtomicInteger(0);
             return (IdGenerator<T>) new IdGenerator<>(nextId::incrementAndGet);
 
         } else if (clazz.equals(UUID.class)) {

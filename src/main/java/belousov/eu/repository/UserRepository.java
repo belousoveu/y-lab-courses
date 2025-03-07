@@ -3,6 +3,7 @@ package belousov.eu.repository;
 import belousov.eu.model.Role;
 import belousov.eu.model.User;
 import belousov.eu.utils.IdGenerator;
+import belousov.eu.utils.Password;
 
 import java.util.*;
 
@@ -18,21 +19,24 @@ public class UserRepository {
     }
 
     private void init() {
-        User user = new User(idCounter.nextId(), "admin", "admin@admin.com", "admin", Role.ADMIN);
-        users.put(user.getId(), user);
-        admins.add(user.getId());
-        emails.add(user.getEmail());
+        String encodedPassword = Password.encode("Admin123");
+        save(new User(idCounter.nextId(), "admin", "admin@admin.com", encodedPassword, Role.ADMIN));
     }
 
-    public void save(User user) {
+    public User save(User user) {
         if (user.getId() == 0 && emails.contains(user.getEmail())) {
             throw new RuntimeException("Email is already taken"); //TODO Custom Exception
         }
         if (user.getId() == 0) {
             user.setId(idCounter.nextId());
         }
+
         users.put(user.getId(), user);
+        if (user.getRole() == Role.ADMIN) {
+            admins.add(user.getId());
+        }
         emails.add(user.getEmail());
+        return user;
     }
 
     public void delete(User user) {
