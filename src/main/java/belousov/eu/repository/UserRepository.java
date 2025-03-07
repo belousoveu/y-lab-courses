@@ -1,5 +1,7 @@
 package belousov.eu.repository;
 
+import belousov.eu.exception.EmailAlreadyExistsException;
+import belousov.eu.exception.LastAdminDeleteException;
 import belousov.eu.model.Role;
 import belousov.eu.model.User;
 import belousov.eu.utils.IdGenerator;
@@ -20,12 +22,12 @@ public class UserRepository {
 
     private void init() {
         String encodedPassword = Password.encode("Admin123");
-        save(new User(idCounter.nextId(), "admin", "admin@admin.com", encodedPassword, Role.ADMIN));
+        save(new User(idCounter.nextId(), "admin", "admin@admin.com", encodedPassword, Role.ADMIN, true));
     }
 
     public User save(User user) {
         if (user.getId() == 0 && emails.contains(user.getEmail())) {
-            throw new RuntimeException("Email is already taken"); //TODO Custom Exception
+            throw new EmailAlreadyExistsException(user.getEmail());
         }
         if (user.getId() == 0) {
             user.setId(idCounter.nextId());
@@ -41,7 +43,7 @@ public class UserRepository {
 
     public void delete(User user) {
         if (admins.contains(user.getId()) && admins.size() == 1) {
-            throw new RuntimeException("Can't delete last admin"); //TODO Custom Exception
+            throw new LastAdminDeleteException();
         }
         users.remove(user.getId());
         admins.remove(user.getId());

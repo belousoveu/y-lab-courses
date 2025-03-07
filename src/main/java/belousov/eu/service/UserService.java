@@ -1,6 +1,9 @@
 package belousov.eu.service;
 
 import belousov.eu.PersonalMoneyTracker;
+import belousov.eu.exception.InvalidPasswordException;
+import belousov.eu.exception.UserNotFoundException;
+import belousov.eu.exception.UserWasBlockedException;
 import belousov.eu.model.User;
 import belousov.eu.repository.UserRepository;
 import belousov.eu.utils.Password;
@@ -19,9 +22,12 @@ public class UserService implements AuthService{
     }
 
     public void login(String email, String password) {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Wrong email or password"));//TODO Custom Exception
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(email));
+        if (!user.isActive()) {
+            throw new UserWasBlockedException(user.getName());
+        }
         if (!Password.verify(password, user.getPassword())) {
-            throw new RuntimeException("Wrong password"); //TODO Custom Exception
+            throw new InvalidPasswordException();
         }
         PersonalMoneyTracker.setCurrentUser(user);
     }
@@ -47,7 +53,7 @@ public class UserService implements AuthService{
     }
 
     public User findById(long id) {
-        return userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found")); //TODO Custom Exception
+        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
     }
 
 
