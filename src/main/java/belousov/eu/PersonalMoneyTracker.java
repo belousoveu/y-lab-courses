@@ -67,10 +67,10 @@ public class PersonalMoneyTracker {
         budgetMenu.add(0, "Вернуться в главное меню", mainMenu::display);
 
         Menu goalsMenu = new Menu("Управление целями", Role.USER);
-        goalsMenu.add(1, "Добавить цель", () -> System.out.println("Добавить цель"));
-        goalsMenu.add(2, "Изменить цель", () -> System.out.println("Изменить цель"));
-        goalsMenu.add(3, "Удалить цель", () -> System.out.println("Удалить цель"));
-        goalsMenu.add(4, "Посмотреть список целей", () -> System.out.println("Посмотреть список целей"));
+        goalsMenu.add(1, "Добавить цель", new AddGoalCommand(container));
+        goalsMenu.add(2, "Изменить цель", new EditGoalCommand(container));
+        goalsMenu.add(3, "Удалить цель", new DeleteGoalCommand(container));
+        goalsMenu.add(4, "Посмотреть список целей", new ViewGoalCommand(container));
         goalsMenu.add(0, "Вернуться в главное меню", mainMenu::display);
 
         Menu reportMenu = new Menu("Статистика и аналитика", Role.USER);

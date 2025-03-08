@@ -68,6 +68,19 @@ public class ConsoleView {
     }
 
 
+    public Double readDouble(String prompt, InputPattern inputPattern) {
+        String input = readString(prompt).trim().replaceAll("[_ ]", "");
+
+        if (!inputPattern.matches(input)) {
+            throw new IllegalArgumentException("Неверный формат"); //TODO custom exception
+        }
+        return Double.parseDouble(input);
+    }
+
+    public Double readDouble(String prompt) {
+        return readDouble(prompt, InputPattern.DECIMAL);
+    }
+
     public <E> E readFromList(String prompt, List<E> values) {
         String input = readString(prompt + valuesToString(values)).trim();
         for (E value : values) {
@@ -83,5 +96,4 @@ public class ConsoleView {
         values.forEach(v -> joiner.add(v.toString()));
         return joiner.toString();
     }
-
 }

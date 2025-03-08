@@ -1,15 +1,18 @@
 package belousov.eu.model;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 
 @AllArgsConstructor
 @Getter
 @Setter
 @EqualsAndHashCode(of = {"id"})
-@ToString
+
 public class User {
 
-    private long id;
+    private int id;
     private String name;
     private String email;
     private String password;
@@ -25,6 +28,11 @@ public class User {
 
     public boolean isAdmin() {
         return role.equals(Role.ADMIN);
+    }
+
+    @Override
+    public String toString() {
+        return "id=%d, name='%s', email='%s', role=%s, active=%b".formatted(id, name, email, role, active);
     }
 
 }

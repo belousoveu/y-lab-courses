@@ -10,10 +10,10 @@ import java.util.*;
 
 public class UserRepository {
 
-    private final Map<Long, User> users = new HashMap<>();
-    private final Set<Long> admins = new HashSet<>();
+    private final Map<Integer, User> users = new HashMap<>();
+    private final Set<Integer> admins = new HashSet<>();
     private final Set<String> emails = new HashSet<>();
-    private final IdGenerator<Long> idCounter = IdGenerator.create(Long.class);
+    private final IdGenerator<Integer> idCounter = IdGenerator.create(Integer.class);
 
     public UserRepository() {
         init();
@@ -47,12 +47,8 @@ public class UserRepository {
         emails.remove(user.getEmail());
     }
 
-    public Optional<User> findById(long id) {
-        if (users.containsKey(id)) {
-            return Optional.of(users.get(id));
-        } else {
-            return Optional.empty();
-        }
+    public Optional<User> findById(int id) {
+        return Optional.ofNullable(users.get(id));
     }
 
     public Optional<User> findByEmail(String email) {
@@ -67,7 +63,7 @@ public class UserRepository {
         return new ArrayList<>(users.values());
     }
 
-    public List<Long> getAllAdminIds() {
+    public List<Integer> getAllAdminIds() {
         return new ArrayList<>(admins);
     }
 

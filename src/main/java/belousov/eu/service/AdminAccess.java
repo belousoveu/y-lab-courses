@@ -8,11 +8,11 @@ import java.util.List;
 public interface AdminAccess {
     List<User> getAllUsers();
 
-    void blockUser(long userId);
+    void blockUser(int userId);
 
-    void unblockUser(long userId);
+    void unblockUser(int userId);
 
-    void deleteUserById(long userId);
+    void deleteUserById(int userId);
 
-    void setRole(long userId, Role role);
+    void setRole(int userId, Role role);
 }

@@ -2,7 +2,9 @@ package belousov.eu.config;
 
 import belousov.eu.controller.AdminController;
 import belousov.eu.controller.AuthController;
+import belousov.eu.controller.GoalController;
 import belousov.eu.controller.ProfileController;
+import belousov.eu.repository.GoalRepository;
 import belousov.eu.repository.UserRepository;
 import belousov.eu.service.*;
 import belousov.eu.view.ConsoleView;
@@ -15,20 +17,23 @@ public class DependencyContainer {
     private final Map<Class<?>, Object> dependencies = new HashMap<>();
 
     public DependencyContainer() {
-        UserRepository userRepository = new UserRepository();
-        ConsoleView consoleView = new ConsoleView();
-        UserService userService = new UserService(userRepository);
 
         register(UserRepository.class, new UserRepository());
-        register(UserService.class, new UserService(this.get(UserRepository.class)));
+        register(GoalRepository.class, new GoalRepository());
+
         register(ConsoleView.class, new ConsoleView());
+        register(GoalService.class, new GoalServiceImp(this.get(GoalRepository.class)));
+        register(UserService.class, new UserService(this.get(UserRepository.class)));
+        register(AdminService.class, new AdminServiceImp(this.get(AdminAccess.class)));
+
         register(AuthService.class, this.get(UserService.class));
         register(ProfileService.class, this.get(UserService.class));
         register(AdminAccess.class, this.get(UserService.class));
-        register(AdminService.class, new AdminServiceImp(this.get(AdminAccess.class)));
+
         register(AuthController.class, new AuthController(this.get(AuthService.class), this.get(ConsoleView.class)));
         register(ProfileController.class, new ProfileController(this.get(ProfileService.class), this.get(ConsoleView.class)));
         register(AdminController.class, new AdminController(this.get(AdminService.class), this.get(ConsoleView.class)));
+        register(GoalController.class, new GoalController(this.get(GoalService.class), this.get(ConsoleView.class)));
 
     }
 

@@ -9,7 +9,8 @@ public enum InputPattern {
     INTEGER(Pattern.compile("^\\d+$")),
     POSITIVE_INTEGER(Pattern.compile("^[1-9]\\d*$")),
     DECIMAL(Pattern.compile("^\\d+(\\.\\d+)?$")),
-    POSITIVE_DECIMAL(Pattern.compile("^[1-9]\\d*(\\.\\d+)?$"));
+    POSITIVE_DECIMAL(Pattern.compile("^[1-9]\\d*(\\.\\d+)?$")),
+    SUM(Pattern.compile("^[1-9]\\d*(\\.\\d{1,2})?$"));
 
 
 

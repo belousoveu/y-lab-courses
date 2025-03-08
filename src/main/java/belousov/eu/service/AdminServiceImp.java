@@ -19,7 +19,7 @@ public class AdminServiceImp implements AdminService {
     }
 
     @Override
-    public void blockUser(long userId) {
+    public void blockUser(int userId) {
         checkAccess();
         adminAccess.blockUser(userId);
         if (PersonalMoneyTracker.getCurrentUser().getId() == userId) {
@@ -28,13 +28,13 @@ public class AdminServiceImp implements AdminService {
     }
 
     @Override
-    public void unblockUser(long userId) {
+    public void unblockUser(int userId) {
         checkAccess();
         adminAccess.unblockUser(userId);
     }
 
     @Override
-    public void deleteUserById(long userId) {
+    public void deleteUserById(int userId) {
         checkAccess();
         adminAccess.deleteUserById(userId);
         if (PersonalMoneyTracker.getCurrentUser().getId() == userId) {
@@ -43,7 +43,7 @@ public class AdminServiceImp implements AdminService {
     }
 
     @Override
-    public void setRole(long userId, Role role) {
+    public void setRole(int userId, Role role) {
         checkAccess();
         adminAccess.setRole(userId, role);
     }

@@ -65,19 +65,19 @@ public class UserService implements AuthService, ProfileService, AdminAccess {
         }
     }
 
-    public void deleteUserById(long id) {
+    public void deleteUserById(int id) {
         User user = findById(id);
         deleteUser(user, "");
     }
 
-    public void blockUser(long id) {
+    public void blockUser(int id) {
         User user = findById(id);
         checkIfLastAdmin(user);
         user.setActive(false);
         userRepository.save(user);
     }
 
-    public void unblockUser(long id) {
+    public void unblockUser(int id) {
         User user = findById(id);
         user.setActive(true);
         userRepository.save(user);
@@ -87,7 +87,7 @@ public class UserService implements AuthService, ProfileService, AdminAccess {
         return userRepository.findAll();
     }
 
-    public void setRole(long userId, Role role) {
+    public void setRole(int userId, Role role) {
         User user = findById(userId);
         if (role == Role.ADMIN) {
             user.setRole(Role.ADMIN);
@@ -102,7 +102,7 @@ public class UserService implements AuthService, ProfileService, AdminAccess {
         }
     }
 
-    private User findById(long id) {
+    private User findById(int id) {
         return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
     }
 
@@ -113,7 +113,7 @@ public class UserService implements AuthService, ProfileService, AdminAccess {
     }
 
     private void checkIfLastAdmin(User user) {
-        List<Long> adminIds = userRepository.getAllAdminIds();
+        List<Integer> adminIds = userRepository.getAllAdminIds();
         if (adminIds.contains(user.getId()) && adminIds.size() == 1) {
             throw new LastAdminDeleteException();
         }
