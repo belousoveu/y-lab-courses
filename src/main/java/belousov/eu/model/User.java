@@ -1,12 +1,12 @@
 package belousov.eu.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @AllArgsConstructor
 @Getter
 @Setter
+@EqualsAndHashCode(of = {"id"})
+@ToString
 public class User {
 
     private long id;
@@ -21,6 +21,10 @@ public class User {
         this.password = password;
         this.role = Role.USER;
         this.name = name;
+    }
+
+    public boolean isAdmin() {
+        return role.equals(Role.ADMIN);
     }
 
 }

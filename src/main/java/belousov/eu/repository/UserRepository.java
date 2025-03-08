@@ -1,7 +1,6 @@
 package belousov.eu.repository;
 
 import belousov.eu.exception.EmailAlreadyExistsException;
-import belousov.eu.exception.LastAdminDeleteException;
 import belousov.eu.model.Role;
 import belousov.eu.model.User;
 import belousov.eu.utils.IdGenerator;
@@ -34,6 +33,7 @@ public class UserRepository {
         }
 
         users.put(user.getId(), user);
+
         if (user.getRole() == Role.ADMIN) {
             admins.add(user.getId());
         }
@@ -42,9 +42,6 @@ public class UserRepository {
     }
 
     public void delete(User user) {
-        if (admins.contains(user.getId()) && admins.size() == 1) {
-            throw new LastAdminDeleteException();
-        }
         users.remove(user.getId());
         admins.remove(user.getId());
         emails.remove(user.getEmail());
@@ -65,4 +62,13 @@ public class UserRepository {
     public void removeOldEmail(String email) {
         emails.remove(email);
     }
+
+    public List<User> findAll() {
+        return new ArrayList<>(users.values());
+    }
+
+    public List<Long> getAllAdminIds() {
+        return new ArrayList<>(admins);
+    }
+
 }

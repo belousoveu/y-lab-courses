@@ -1,34 +1,33 @@
 package belousov.eu.service;
 
 import belousov.eu.PersonalMoneyTracker;
-import belousov.eu.exception.ForbiddenException;
-import belousov.eu.exception.InvalidPasswordException;
-import belousov.eu.exception.UserNotFoundException;
-import belousov.eu.exception.UserWasBlockedException;
+import belousov.eu.exception.*;
+import belousov.eu.model.Role;
 import belousov.eu.model.User;
 import belousov.eu.repository.UserRepository;
 import belousov.eu.utils.Password;
 import lombok.AllArgsConstructor;
 
+import java.util.List;
+
 @AllArgsConstructor
-public class UserService implements AuthService, ProfileService{
+public class UserService implements AuthService, ProfileService, AdminAccess {
     private final UserRepository userRepository;
 
     @Override
     public void register(String name, String email, String password) {
-        User user = userRepository.save(new User(name, email, Password.encode(password)));
+        User user = userRepository.save(new User(name, email.toLowerCase(), Password.encode(password)));
         PersonalMoneyTracker.setCurrentUser(user);
     }
 
     @Override
     public void login(String email, String password) {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException(email));
+        User user = userRepository.findByEmail(email.toLowerCase())
+                .orElseThrow(() -> new UserNotFoundException(email.toLowerCase()));
         if (!user.isActive()) {
             throw new UserWasBlockedException(user.getName());
         }
-        if (!Password.verify(password, user.getPassword())) {
-            throw new InvalidPasswordException();
-        }
+        checkPassword(user, password);
         PersonalMoneyTracker.setCurrentUser(user);
     }
 
@@ -39,9 +38,7 @@ public class UserService implements AuthService, ProfileService{
     }
 
     public void changePassword(User user, String oldPassword, String newPassword) {
-        if (!Password.verify(oldPassword, user.getPassword())) {
-            throw new InvalidPasswordException();
-        }
+        checkPassword(user, oldPassword);
         user.setPassword(Password.encode(newPassword));
         userRepository.save(user);
     }
@@ -49,30 +46,76 @@ public class UserService implements AuthService, ProfileService{
     @Override
     public void changeEmail(User user, String email) {
         userRepository.removeOldEmail(user.getEmail());
-        user.setEmail(email);
+        user.setEmail(email.toLowerCase());
         userRepository.save(user);
     }
 
     @Override
     public void deleteUser(User user, String password) {
         User currentUser = PersonalMoneyTracker.getCurrentUser();
-        if (!currentUser.equals(user)) {
-            if (!Password.verify(password, user.getPassword())) {
-                throw new InvalidPasswordException();
-            }
+        if (currentUser.isAdmin()) {
+            checkIfLastAdmin(user);
+            userRepository.delete(user); //TODO Cascade delete all transactions
+        } else if (currentUser.equals(user)) {
+            checkPassword(currentUser, password);
             userRepository.delete(user); //TODO Cascade delete all transactions
             PersonalMoneyTracker.setCurrentUser(null);
-        } else if (currentUser.isAdmin()) {
-                userRepository.delete(user);
-
         } else {
             throw new ForbiddenException();
         }
     }
 
-    public User findById(long id) {
+    public void deleteUserById(long id) {
+        User user = findById(id);
+        deleteUser(user, "");
+    }
+
+    public void blockUser(long id) {
+        User user = findById(id);
+        checkIfLastAdmin(user);
+        user.setActive(false);
+        userRepository.save(user);
+    }
+
+    public void unblockUser(long id) {
+        User user = findById(id);
+        user.setActive(true);
+        userRepository.save(user);
+    }
+
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+    public void setRole(long userId, Role role) {
+        User user = findById(userId);
+        if (role == Role.ADMIN) {
+            user.setRole(Role.ADMIN);
+            userRepository.save(user);
+        } else {
+            checkIfLastAdmin(user);
+            user.setRole(Role.USER);
+            userRepository.save(user);
+        }
+        if (PersonalMoneyTracker.getCurrentUser().getId() == userId) {
+            PersonalMoneyTracker.setCurrentUser(user);
+        }
+    }
+
+    private User findById(long id) {
         return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
     }
 
+    private void checkPassword(User user, String password) {
+        if (!Password.verify(password, user.getPassword())) {
+            throw new InvalidPasswordException();
+        }
+    }
 
+    private void checkIfLastAdmin(User user) {
+        List<Long> adminIds = userRepository.getAllAdminIds();
+        if (adminIds.contains(user.getId()) && adminIds.size() == 1) {
+            throw new LastAdminDeleteException();
+        }
+    }
 }

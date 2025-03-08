@@ -81,11 +81,13 @@ public class PersonalMoneyTracker {
         reportMenu.add(0, "Вернуться в главное меню", mainMenu::display);
 
         Menu adminMenu = new Menu("Администрирование", Role.ADMIN);
-        adminMenu.add(1, "Список пользователей", () -> System.out.println("Список пользователей"), Role.ADMIN);
+        adminMenu.add(1, "Список пользователей", new ListUsersCommand(container), Role.ADMIN);
         adminMenu.add(2, "Список операций", () -> System.out.println("Список операций"), Role.ADMIN);
-        adminMenu.add(3, "Установить пользователю права администратора", () -> System.out.println("Установить пользователю права администратора"), Role.ADMIN);
-        adminMenu.add(4, "Заблокировать пользователя", () -> System.out.println("Заблокировать пользователя"), Role.ADMIN);
-        adminMenu.add(5, "Удалить пользователя", () -> System.out.println("Удалить пользователя"), Role.ADMIN);
+        adminMenu.add(3, "Изменить роль пользователя", new ChangeRoleCommand(container), Role.ADMIN);
+        adminMenu.add(4, "Заблокировать пользователя", new BlockUserCommand(container), Role.ADMIN);
+        adminMenu.add(5, "Разблокировать пользователя", new UnblockUserCommand(container), Role.ADMIN);
+        adminMenu.add(6, "Удалить пользователя", new DeleteUserCommand(container), Role.ADMIN);
+        adminMenu.add(0, "Вернуться в главное меню", mainMenu::display);
 
 
         mainMenu.add(1, "Личный кабинет", profileMenu::display);

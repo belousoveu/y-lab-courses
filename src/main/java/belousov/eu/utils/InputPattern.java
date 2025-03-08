@@ -7,7 +7,9 @@ public enum InputPattern {
     NAME(Pattern.compile("[a-zA-Zа-яА-ЯёЁ]{2,}")),
     PASSWORD(Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$")),
     INTEGER(Pattern.compile("^\\d+$")),
-    DECIMAL(Pattern.compile("^\\d+(\\.\\d+)?$"));
+    POSITIVE_INTEGER(Pattern.compile("^[1-9]\\d*$")),
+    DECIMAL(Pattern.compile("^\\d+(\\.\\d+)?$")),
+    POSITIVE_DECIMAL(Pattern.compile("^[1-9]\\d*(\\.\\d+)?$"));
 
 
 

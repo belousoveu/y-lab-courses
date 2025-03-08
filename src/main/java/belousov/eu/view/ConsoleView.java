@@ -4,7 +4,9 @@ import belousov.eu.model.User;
 import belousov.eu.utils.InputPattern;
 import belousov.eu.utils.MessageColor;
 
+import java.util.List;
 import java.util.Scanner;
+import java.util.StringJoiner;
 
 public class ConsoleView {
 
@@ -17,7 +19,7 @@ public class ConsoleView {
 
     public String readString(String prompt, InputPattern pattern) {
         System.out.println(prompt);
-       return readString(pattern);
+        return readString(pattern);
     }
 
     public String readString(InputPattern pattern) {
@@ -40,10 +42,46 @@ public class ConsoleView {
         System.out.println(color.colored(message));
     }
 
+    public <T> void println(String title, List<T> items, MessageColor colorTitle, MessageColor colorItem) {
+        println(title, colorTitle);
+        println("=".repeat(title.length()), colorTitle);
+        items.forEach(item -> println(item.toString(), colorItem));
+    }
+
     public void printUser(User currentUser) {
         println("Профиль пользователя:");
         println("=====================");
         println("Имя: " + MessageColor.YELLOW.colored(currentUser.getName()));
         println("Email: " + MessageColor.YELLOW.colored(currentUser.getEmail()));
     }
+
+    public int readInt(String prompt, InputPattern inputPattern) {
+        String input = readString(prompt);
+        if (!inputPattern.matches(input)) {
+            throw new IllegalArgumentException("Неверный формат"); //TODO custom exception
+        }
+        return Integer.parseInt(input);
+    }
+
+    public int readInt(String prompt) {
+        return readInt(prompt, InputPattern.INTEGER);
+    }
+
+
+    public <E> E readFromList(String prompt, List<E> values) {
+        String input = readString(prompt + valuesToString(values)).trim();
+        for (E value : values) {
+            if (value.toString().equalsIgnoreCase(input)) {
+                return value;
+            }
+        }
+        throw new IllegalArgumentException("Неверный формат"); //TODO custom exception
+    }
+
+    private String valuesToString(List<?> values) {
+        StringJoiner joiner = new StringJoiner(", ", " (", "): ");
+        values.forEach(v -> joiner.add(v.toString()));
+        return joiner.toString();
+    }
+
 }
