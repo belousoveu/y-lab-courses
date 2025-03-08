@@ -4,7 +4,7 @@ import java.util.regex.Pattern;
 
 public enum InputPattern {
     EMAIL(Pattern.compile("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")),
-    NAME(Pattern.compile("[a-zA-Zа-яА-ЯёЁ]{2,}")),
+    NAME(Pattern.compile("[a-zA-Zа-яА-ЯёЁ -]{2,}")),
     PASSWORD(Pattern.compile("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{8,}$")),
     INTEGER(Pattern.compile("^\\d+$")),
     POSITIVE_INTEGER(Pattern.compile("^[1-9]\\d*$")),

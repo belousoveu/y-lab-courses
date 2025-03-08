@@ -38,10 +38,10 @@ public class PersonalMoneyTracker {
         profileMenu.add(0, "Вернуться в главное меню", mainMenu::display);
 
         Menu categoryMenu = new Menu("Управление категориями", Role.USER);
-        categoryMenu.add(1, "Добавить категорию", () -> System.out.println("Добавить категорию"));
-        categoryMenu.add(2, "Изменить категорию", () -> System.out.println("Изменить категорию"));
-        categoryMenu.add(3, "Удалить категорию", () -> System.out.println("Удалить категорию"));
-        categoryMenu.add(4,"Посмотреть список категорий", () -> System.out.println("Посмотреть список категорий"));
+        categoryMenu.add(1, "Добавить категорию", new AddCategoryCommand(container));
+        categoryMenu.add(2, "Изменить категорию", new ChangeCategoryCommand(container));
+        categoryMenu.add(3, "Удалить категорию", new DeleteCategoryCommand(container));
+        categoryMenu.add(4, "Посмотреть список категорий", new ListCategoriesCommand(container));
         categoryMenu.add(0, "Вернуться в главное меню", () -> categoryMenu.getParent().display());
 
         Menu financeMenagementMenu = new Menu("Управление личными финансами", Role.USER);
@@ -49,21 +49,20 @@ public class PersonalMoneyTracker {
         financeMenagementMenu.add(2, "Изменить операцию", () -> System.out.println("Изменить трансакцию"));
         financeMenagementMenu.add(3, "Удалить операцию", () -> System.out.println("Удалить трансакцию"));
         financeMenagementMenu.add(4, "Посмотреть историю операций", () -> System.out.println("Посмотреть историю операций"));
-        financeMenagementMenu.add(5, "Управление категориями",
-                () -> {
+        financeMenagementMenu.add(5, "Управление категориями", () -> {
             categoryMenu.setParent(financeMenagementMenu);
-            categoryMenu.display();}
-        );
+            categoryMenu.display();
+        });
         financeMenagementMenu.add(0, "Вернуться в главное меню", mainMenu::display);
 
         Menu budgetMenu = new Menu("Бюджет", Role.USER);
         budgetMenu.add(1, "Установить общий бюджет", () -> System.out.println("Установить бюджет"));
         budgetMenu.add(2, "Установить бюджет для каждой категории", () -> System.out.println("Установить бюджет для каждой категории"));
         budgetMenu.add(3,"Отчет по бюджету", () -> System.out.println("Просмотреть бюджет"));
-        budgetMenu.add(4,"Управление категориями", () -> {
+        budgetMenu.add(4, "Управление категориями", () -> {
             categoryMenu.setParent(budgetMenu);
-            categoryMenu.display();}
-        );
+            categoryMenu.display();
+        });
         budgetMenu.add(0, "Вернуться в главное меню", mainMenu::display);
 
         Menu goalsMenu = new Menu("Управление целями", Role.USER);
