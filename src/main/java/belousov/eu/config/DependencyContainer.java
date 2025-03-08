@@ -1,6 +1,7 @@
 package belousov.eu.config;
 
 import belousov.eu.controller.*;
+import belousov.eu.repository.BudgetRepository;
 import belousov.eu.repository.CategoryRepository;
 import belousov.eu.repository.GoalRepository;
 import belousov.eu.repository.UserRepository;
@@ -19,8 +20,10 @@ public class DependencyContainer {
         register(UserRepository.class, new UserRepository());
         register(GoalRepository.class, new GoalRepository());
         register(CategoryRepository.class, new CategoryRepository());
+        register(BudgetRepository.class, new BudgetRepository());
 
         register(ConsoleView.class, new ConsoleView());
+        register(BudgetService.class, new BudgetServiceImp(this.get(BudgetRepository.class)));
         register(CategoryService.class, new CategoryServiceImp(this.get(CategoryRepository.class)));
         register(GoalService.class, new GoalServiceImp(this.get(GoalRepository.class)));
         register(UserService.class, new UserService(this.get(UserRepository.class)));
@@ -30,6 +33,8 @@ public class DependencyContainer {
         register(ProfileService.class, this.get(UserService.class));
         register(AdminAccess.class, this.get(UserService.class));
 
+        register(BudgetController.class,
+                new BudgetController(this.get(BudgetService.class), this.get(CategoryService.class), this.get(ConsoleView.class)));
         register(CategoryController.class, new CategoryController(this.get(CategoryService.class), this.get(ConsoleView.class)));
         register(AuthController.class, new AuthController(this.get(AuthService.class), this.get(ConsoleView.class)));
         register(ProfileController.class, new ProfileController(this.get(ProfileService.class), this.get(ConsoleView.class)));

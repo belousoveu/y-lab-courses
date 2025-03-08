@@ -10,7 +10,8 @@ public enum InputPattern {
     POSITIVE_INTEGER(Pattern.compile("^[1-9]\\d*$")),
     DECIMAL(Pattern.compile("^\\d+(\\.\\d+)?$")),
     POSITIVE_DECIMAL(Pattern.compile("^[1-9]\\d*(\\.\\d+)?$")),
-    SUM(Pattern.compile("^[1-9]\\d*(\\.\\d{1,2})?$"));
+    SUM(Pattern.compile("^[1-9]\\d*(\\.\\d{1,2})?$")),
+    YEAR_MONTH(Pattern.compile("^(20\\d\\d)-(0[1-9]|1[0-2])$"));
 
 
 

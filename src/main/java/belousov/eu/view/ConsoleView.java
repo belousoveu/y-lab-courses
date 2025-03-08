@@ -4,9 +4,11 @@ import belousov.eu.model.User;
 import belousov.eu.utils.InputPattern;
 import belousov.eu.utils.MessageColor;
 
+import java.time.temporal.Temporal;
 import java.util.List;
 import java.util.Scanner;
 import java.util.StringJoiner;
+import java.util.function.Function;
 
 public class ConsoleView {
 
@@ -80,6 +82,15 @@ public class ConsoleView {
     public Double readDouble(String prompt) {
         return readDouble(prompt, InputPattern.DECIMAL);
     }
+
+    public <T extends Temporal> T readPeriod(String prompt, InputPattern inputPattern, Function<String, T> parser) {
+        String input = readString(prompt);
+        if (!inputPattern.matches(input)) {
+            throw new IllegalArgumentException("Неверный формат"); //TODO custom exception
+        }
+        return parser.apply(input);
+    }
+
 
     public <E> E readFromList(String prompt, List<E> values) {
         String input = readString(prompt + valuesToString(values)).trim();

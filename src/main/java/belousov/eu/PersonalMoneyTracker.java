@@ -42,7 +42,7 @@ public class PersonalMoneyTracker {
         categoryMenu.add(2, "Изменить категорию", new ChangeCategoryCommand(container));
         categoryMenu.add(3, "Удалить категорию", new DeleteCategoryCommand(container));
         categoryMenu.add(4, "Посмотреть список категорий", new ListCategoriesCommand(container));
-        categoryMenu.add(0, "Вернуться в главное меню", () -> categoryMenu.getParent().display());
+        categoryMenu.add(0, "Вернуться в предыдущее меню", () -> categoryMenu.getParent().display());
 
         Menu financeMenagementMenu = new Menu("Управление личными финансами", Role.USER);
         financeMenagementMenu.add(1, "Добавить операцию", () -> System.out.println("Добавить операцию"));
@@ -56,10 +56,9 @@ public class PersonalMoneyTracker {
         financeMenagementMenu.add(0, "Вернуться в главное меню", mainMenu::display);
 
         Menu budgetMenu = new Menu("Бюджет", Role.USER);
-        budgetMenu.add(1, "Установить общий бюджет", () -> System.out.println("Установить бюджет"));
-        budgetMenu.add(2, "Установить бюджет для каждой категории", () -> System.out.println("Установить бюджет для каждой категории"));
-        budgetMenu.add(3,"Отчет по бюджету", () -> System.out.println("Просмотреть бюджет"));
-        budgetMenu.add(4, "Управление категориями", () -> {
+        budgetMenu.add(1, "Установить бюджет месяц", new SetBudgetCommand(container));
+        budgetMenu.add(2, "Отчет по бюджету", new ViewBudgetCommand(container));
+        budgetMenu.add(3, "Управление категориями", () -> {
             categoryMenu.setParent(budgetMenu);
             categoryMenu.display();
         });
