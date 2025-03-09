@@ -80,7 +80,7 @@ public class PersonalMoneyTracker {
 
         Menu adminMenu = new Menu("Администрирование", Role.ADMIN);
         adminMenu.add(1, "Список пользователей", new ListUsersCommand(container), Role.ADMIN);
-        adminMenu.add(2, "Список операций", () -> System.out.println("Список операций"), Role.ADMIN);
+        adminMenu.add(2, "Список операций", new ListOperationsCommand(container), Role.ADMIN);
         adminMenu.add(3, "Изменить роль пользователя", new ChangeRoleCommand(container), Role.ADMIN);
         adminMenu.add(4, "Заблокировать пользователя", new BlockUserCommand(container), Role.ADMIN);
         adminMenu.add(5, "Разблокировать пользователя", new UnblockUserCommand(container), Role.ADMIN);

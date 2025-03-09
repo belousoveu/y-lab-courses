@@ -13,7 +13,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @AllArgsConstructor
-public class TransactionServiceImp implements TransactionService {
+public class TransactionServiceImp implements TransactionService, AdminAccessTransactionService {
 
     private final TransactionRepository transactionRepository;
 
@@ -50,6 +50,11 @@ public class TransactionServiceImp implements TransactionService {
                 .filter(t -> filter.getCategory() == null || filter.getCategory().equals(t.getCategory()))
                 .filter(t -> filter.getType() == null || filter.getType().equals(t.getOperationType()))
                 .toList();
+    }
+
+    @Override
+    public List<String> getAllTransactions() {
+        return transactionRepository.findAll().stream().map(Transaction::toStringWithUser).toList();
     }
 
     private void checkTransactionBelongsToCurrentUser(Transaction transaction) {

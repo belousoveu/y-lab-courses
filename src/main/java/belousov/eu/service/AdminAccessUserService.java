@@ -5,7 +5,7 @@ import belousov.eu.model.User;
 
 import java.util.List;
 
-public interface AdminAccess {
+public interface AdminAccessUserService {
     List<User> getAllUsers();
 
     void blockUser(int userId);

@@ -15,4 +15,6 @@ public interface AdminService {
     void setRole(int userId, Role role);
 
     void unblockUser(int userId);
+
+    List<String> getAllTransactions();
 }

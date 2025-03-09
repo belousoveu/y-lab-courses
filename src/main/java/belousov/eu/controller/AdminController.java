@@ -44,4 +44,9 @@ public class AdminController {
         consoleView.println(String.format("Пользователю с ID %d назначена роль %s", userId, role), MessageColor.CYAN);
     }
 
+    public void getTransactions() {
+        consoleView.println("Список всех транзакций:", adminService.getAllTransactions(), MessageColor.WHITE, MessageColor.YELLOW);
+
+    }
+
 }

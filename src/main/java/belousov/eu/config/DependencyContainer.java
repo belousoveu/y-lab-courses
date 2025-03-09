@@ -21,16 +21,23 @@ public class DependencyContainer {
         register(TransactionRepository.class, new TransactionRepository());
 
         register(ConsoleView.class, new ConsoleView());
-        register(TransactionService.class, new TransactionServiceImp(this.get(TransactionRepository.class)));
+
+        register(UserService.class, new UserService(this.get(UserRepository.class)));
+        register(TransactionServiceImp.class, new TransactionServiceImp(this.get(TransactionRepository.class)));
+
         register(BudgetService.class, new BudgetServiceImp(this.get(BudgetRepository.class)));
         register(CategoryService.class, new CategoryServiceImp(this.get(CategoryRepository.class)));
         register(GoalService.class, new GoalServiceImp(this.get(GoalRepository.class)));
-        register(UserService.class, new UserService(this.get(UserRepository.class)));
-        register(AdminService.class, new AdminServiceImp(this.get(AdminAccess.class)));
+
+        register(TransactionService.class, this.get(TransactionServiceImp.class));
+        register(AdminAccessTransactionService.class, get(TransactionServiceImp.class));
 
         register(AuthService.class, this.get(UserService.class));
         register(ProfileService.class, this.get(UserService.class));
-        register(AdminAccess.class, this.get(UserService.class));
+        register(AdminAccessUserService.class, this.get(UserService.class));
+
+        register(AdminService.class,
+                new AdminServiceImp(this.get(AdminAccessUserService.class), this.get(AdminAccessTransactionService.class)));
 
         register(TransactionController.class,
                 new TransactionController(this.get(TransactionService.class), this.get(CategoryService.class), this.get(ConsoleView.class)));

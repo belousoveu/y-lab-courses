@@ -11,7 +11,7 @@ import lombok.AllArgsConstructor;
 import java.util.List;
 
 @AllArgsConstructor
-public class UserService implements AuthService, ProfileService, AdminAccess {
+public class UserService implements AuthService, ProfileService, AdminAccessUserService {
     private final UserRepository userRepository;
 
     @Override

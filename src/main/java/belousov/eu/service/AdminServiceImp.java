@@ -10,18 +10,19 @@ import java.util.List;
 
 @AllArgsConstructor
 public class AdminServiceImp implements AdminService {
-    private final AdminAccess adminAccess;
+    private final AdminAccessUserService adminAccessUserService;
+    private final AdminAccessTransactionService adminAccessTransactionService;
 
     @Override
     public List<User> getAllUsers() {
         checkAccess();
-        return adminAccess.getAllUsers();
+        return adminAccessUserService.getAllUsers();
     }
 
     @Override
     public void blockUser(int userId) {
         checkAccess();
-        adminAccess.blockUser(userId);
+        adminAccessUserService.blockUser(userId);
         if (PersonalMoneyTracker.getCurrentUser().getId() == userId) {
             PersonalMoneyTracker.setCurrentUser(null);
         }
@@ -30,13 +31,19 @@ public class AdminServiceImp implements AdminService {
     @Override
     public void unblockUser(int userId) {
         checkAccess();
-        adminAccess.unblockUser(userId);
+        adminAccessUserService.unblockUser(userId);
+    }
+
+    @Override
+    public List<String> getAllTransactions() {
+        checkAccess();
+        return adminAccessTransactionService.getAllTransactions();
     }
 
     @Override
     public void deleteUserById(int userId) {
         checkAccess();
-        adminAccess.deleteUserById(userId);
+        adminAccessUserService.deleteUserById(userId);
         if (PersonalMoneyTracker.getCurrentUser().getId() == userId) {
             PersonalMoneyTracker.setCurrentUser(null);
         }
@@ -45,7 +52,7 @@ public class AdminServiceImp implements AdminService {
     @Override
     public void setRole(int userId, Role role) {
         checkAccess();
-        adminAccess.setRole(userId, role);
+        adminAccessUserService.setRole(userId, role);
     }
 
     private void checkAccess() {
