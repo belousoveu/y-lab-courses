@@ -2,7 +2,7 @@ package belousov.eu.service;
 
 import belousov.eu.model.Category;
 import belousov.eu.model.Transaction;
-import belousov.eu.model.reportDto.BudgetReport;
+import belousov.eu.model.report_dto.BudgetReport;
 
 import java.time.YearMonth;
 import java.util.Map;

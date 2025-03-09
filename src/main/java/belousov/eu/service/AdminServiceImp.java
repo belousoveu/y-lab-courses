@@ -8,17 +8,39 @@ import lombok.AllArgsConstructor;
 
 import java.util.List;
 
+/**
+ * Реализация сервиса для административных действий.
+ * Обеспечивает управление пользователями и транзакциями с проверкой прав доступа.
+ */
 @AllArgsConstructor
 public class AdminServiceImp implements AdminService {
+    /**
+     * Сервис для управления пользователями.
+     */
     private final AdminAccessUserService adminAccessUserService;
+    /**
+     * Сервис для управления транзакциями.
+     */
     private final AdminAccessTransactionService adminAccessTransactionService;
 
+    /**
+     * Возвращает список всех пользователей.
+     *
+     * @return список всех пользователей
+     * @throws ForbiddenException если текущий пользователь не является администратором
+     */
     @Override
     public List<User> getAllUsers() {
         checkAccess();
         return adminAccessUserService.getAllUsers();
     }
 
+    /**
+     * Блокирует пользователя по ID.
+     *
+     * @param userId ID пользователя
+     * @throws ForbiddenException если текущий пользователь не является администратором
+     */
     @Override
     public void blockUser(int userId) {
         checkAccess();
@@ -28,18 +50,36 @@ public class AdminServiceImp implements AdminService {
         }
     }
 
+    /**
+     * Разблокирует пользователя по ID.
+     *
+     * @param userId ID пользователя
+     * @throws ForbiddenException если текущий пользователь не является администратором
+     */
     @Override
     public void unblockUser(int userId) {
         checkAccess();
         adminAccessUserService.unblockUser(userId);
     }
 
+    /**
+     * Возвращает список всех транзакций.
+     *
+     * @return список всех транзакций
+     * @throws ForbiddenException если текущий пользователь не является администратором
+     */
     @Override
     public List<String> getAllTransactions() {
         checkAccess();
         return adminAccessTransactionService.getAllTransactions();
     }
 
+    /**
+     * Удаляет пользователя по ID.
+     *
+     * @param userId ID пользователя
+     * @throws ForbiddenException если текущий пользователь не является администратором
+     */
     @Override
     public void deleteUserById(int userId) {
         checkAccess();
@@ -49,12 +89,24 @@ public class AdminServiceImp implements AdminService {
         }
     }
 
+    /**
+     * Устанавливает роль пользователю по ID.
+     *
+     * @param userId ID пользователя
+     * @param role   новая роль
+     * @throws ForbiddenException если текущий пользователь не является администратором
+     */
     @Override
     public void setRole(int userId, Role role) {
         checkAccess();
         adminAccessUserService.setRole(userId, role);
     }
 
+    /**
+     * Проверяет, имеет ли текущий пользователь права администратора.
+     *
+     * @throws ForbiddenException если текущий пользователь не является администратором
+     */
     private void checkAccess() {
         User currentUser = PersonalMoneyTracker.getCurrentUser();
         if (!currentUser.isAdmin()) {

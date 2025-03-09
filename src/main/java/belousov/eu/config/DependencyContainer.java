@@ -23,7 +23,7 @@ public class DependencyContainer {
         register(BalanceChangeSubject.class, new BalanceChangeSubject());
         register(ConsoleView.class, new ConsoleView());
 
-        register(EmailService.class, new EmailServiceImp());
+        register(EmailService.class, new MockEmailServiceImp());
         register(UserService.class, new UserService(this.get(UserRepository.class)));
         register(TransactionServiceImp.class, new TransactionServiceImp(this.get(TransactionRepository.class), this.get(BalanceChangeSubject.class)));
         register(ReportService.class, this.get(TransactionServiceImp.class));

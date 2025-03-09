@@ -3,7 +3,7 @@ package belousov.eu.controller;
 import belousov.eu.exception.BudgetNotFoundException;
 import belousov.eu.model.Category;
 import belousov.eu.model.Transaction;
-import belousov.eu.model.reportDto.BudgetReport;
+import belousov.eu.model.report_dto.BudgetReport;
 import belousov.eu.observer.BalanceChangeObserver;
 import belousov.eu.service.BudgetService;
 import belousov.eu.service.CategoryService;

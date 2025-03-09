@@ -3,7 +3,7 @@ package belousov.eu.service;
 import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.exception.TransactionNotFoundException;
 import belousov.eu.model.*;
-import belousov.eu.model.reportDto.IncomeStatement;
+import belousov.eu.model.report_dto.IncomeStatement;
 import belousov.eu.observer.BalanceChangeSubject;
 import belousov.eu.repository.TransactionRepository;
 import lombok.AllArgsConstructor;
@@ -14,12 +14,31 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Реализация сервиса для управления транзакциями.
+ * Обеспечивает добавление, обновление, удаление и поиск транзакций, а также формирование отчётов.
+ */
 @AllArgsConstructor
 public class TransactionServiceImp implements TransactionService, AdminAccessTransactionService, ReportService {
-
+    /**
+     * Репозиторий для хранения транзакций.
+     */
     private final TransactionRepository transactionRepository;
+    /**
+     * Наблюдатель за изменением баланса
+     */
     private final BalanceChangeSubject balanceChangeSubject;
 
+    /**
+     * Добавляет новую транзакцию.
+     *
+     * @param date        дата транзакции
+     * @param type        тип операции (доход или расход)
+     * @param category    категория транзакции
+     * @param amount      сумма транзакции
+     * @param description описание транзакции
+     * @return добавленная транзакция
+     */
     @Override
     public Transaction addTransaction(LocalDate date, OperationType type, Category category, double amount, String description) {
         Transaction transaction = transactionRepository
@@ -28,6 +47,16 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
         return transaction;
     }
 
+    /**
+     * Обновляет существующую транзакцию.
+     *
+     * @param id          ID транзакции
+     * @param category    новая категория
+     * @param amount      новая сумма
+     * @param description новое описание
+     * @return обновлённая транзакция
+     * @throws TransactionNotFoundException если транзакция не найдена или не принадлежит текущему пользователю
+     */
     @Override
     public Transaction updateTransaction(int id, Category category, double amount, String description) {
         Transaction transaction = transactionRepository.findById(id).orElseThrow(() -> new TransactionNotFoundException(id));
@@ -40,6 +69,12 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
         return updatedTransaction;
     }
 
+    /**
+     * Удаляет транзакцию по ID.
+     *
+     * @param id ID транзакции
+     * @throws TransactionNotFoundException если транзакция не найдена или не принадлежит текущему пользователю
+     */
     @Override
     public void deleteTransaction(int id) {
         Transaction transaction = transactionRepository.findById(id).orElseThrow(() -> new TransactionNotFoundException(id));
@@ -48,29 +83,51 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
         balanceChangeSubject.notifyObservers(transaction);
     }
 
+    /**
+     * Возвращает список транзакций, соответствующих фильтру.
+     *
+     * @param filter фильтр для поиска транзакций
+     * @return список транзакций
+     */
     @Override
     public List<Transaction> getTransactions(TransactionFilter filter) {
         return transactionRepository.findAll().stream()
                 .filter(t -> t.getUser().equals(filter.getUser()))
-                .filter(t -> filter.getFrom() == null || filter.getFrom().isBefore(t.getDate()))
-                .filter(t -> filter.getTo() == null || filter.getTo().isAfter(t.getDate()))
+                .filter(t -> filter.getFrom() == null || !filter.getFrom().isAfter(t.getDate()))
+                .filter(t -> filter.getTo() == null || !filter.getTo().isBefore(t.getDate()))
                 .filter(t -> filter.getCategory() == null || filter.getCategory().equals(t.getCategory()))
                 .filter(t -> filter.getType() == null || filter.getType().equals(t.getOperationType()))
                 .toList();
     }
 
+    /**
+     * Возвращает список всех транзакций текущего пользователя.
+     *
+     * @return список всех транзакций текущего пользователя
+     */
     @Override
     public List<String> getAllTransactions() {
         return transactionRepository.findAll().stream().map(Transaction::toStringWithUser).toList();
     }
 
-
+    /**
+     * Возвращает текущий баланс пользователя.
+     *
+     * @return текущий баланс
+     */
     @Override
     public double getCurrentBalance() {
         User currentUser = PersonalMoneyTracker.getCurrentUser();
         return transactionRepository.getCurrentBalance(currentUser);
     }
 
+    /**
+     * Возвращает отчёт о доходах и расходах за указанный период.
+     *
+     * @param from начальная дата периода
+     * @param to   конечная дата периода
+     * @return строковое представление отчёта
+     */
     @Override
     public String getIncomeStatement(LocalDate from, LocalDate to) {
         User currentUser = PersonalMoneyTracker.getCurrentUser();
@@ -85,6 +142,13 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
                 .toString();
     }
 
+    /**
+     * Возвращает список расходов по категориям за указанный период.
+     *
+     * @param from начальная дата периода
+     * @param to   конечная дата периода
+     * @return список строк с информацией о расходах по категориям
+     */
     @Override
     public List<String> getCostsByCategory(LocalDate from, LocalDate to) {
         User currentUser = PersonalMoneyTracker.getCurrentUser();
@@ -106,6 +170,12 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
                 .toList();
     }
 
+    /**
+     * Проверяет, принадлежит ли транзакция текущему пользователю.
+     *
+     * @param transaction транзакция для проверки
+     * @throws TransactionNotFoundException если транзакция не принадлежит текущему пользователю
+     */
     private void checkTransactionBelongsToCurrentUser(Transaction transaction) {
         if (!transaction.getUser().equals(PersonalMoneyTracker.getCurrentUser())) {
             throw new TransactionNotFoundException(transaction.getId());
