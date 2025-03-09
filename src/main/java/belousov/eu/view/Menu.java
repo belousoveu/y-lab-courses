@@ -42,16 +42,15 @@ public class Menu {
     }
 
     public void display() {
-        while ((this.role == null && !authorized()
+        while (((this.role == null && !authorized()
                 || this.role == Role.USER && authorized())
-                || this.role == Role.ADMIN && isAdmin()) {
+                || this.role == Role.ADMIN && isAdmin())
+                && PersonalMoneyTracker.isRunning()) {
             try {
                 System.out.println();
                 System.out.println(title);
-                items.entrySet().stream()
-                        .filter(e -> e.getValue().getRole() == Role.USER
-                                || e.getValue().getRole() == Role.ADMIN && isAdmin())
-                        .forEach(e -> System.out.printf("%d. %s%n", e.getKey(), e.getValue().getTitle()));
+
+                printItems();
 
                 System.out.print("Выберите пункт меню: ");
 
@@ -62,16 +61,23 @@ public class Menu {
                         System.out.println();
                         item.execute();
                     } else {
-                        throw new IllegalArgumentException("Неверный пункт меню"); //TODO custom exception
+                        throw new IllegalArgumentException("Неверный пункт меню");
                     }
                 } else {
                     scanner.nextLine();
-                    throw new IllegalArgumentException("Неверный пункт меню 2"); //TODO custom exception
+                    throw new IllegalArgumentException("Неверный пункт меню 2");
                 }
             } catch (RuntimeException e) {
                 System.out.println(MessageColor.RED.colored(e.getMessage()));
             }
         }
+    }
+
+    private void printItems() {
+        items.entrySet().stream()
+                .filter(e -> e.getValue().getRole() == Role.USER
+                        || e.getValue().getRole() == Role.ADMIN && isAdmin())
+                .forEach(e -> System.out.printf("%d. %s%n", e.getKey(), e.getValue().getTitle()));
     }
 
     private boolean authorized() {
