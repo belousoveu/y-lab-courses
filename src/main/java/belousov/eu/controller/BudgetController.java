@@ -37,6 +37,8 @@ public class BudgetController {
     public void viewBudgetDetails() {
         YearMonth period = consoleView.readPeriod("Введите период (yyyy-MM): ", InputPattern.YEAR_MONTH, YearMonth::parse);
         BudgetReport report = budgetService.getBudgetReport(period).orElseThrow(() -> new BudgetNotFoundException(period));
-
+        consoleView.println("Пользователь: %s".formatted(report.getUser()), MessageColor.CYAN);
+        consoleView.println("Исполнение бюджета на период %s:".formatted(period), report.getReportRows(), MessageColor.YELLOW, MessageColor.WHITE);
+        consoleView.println(report.getTotalRow(), MessageColor.CYAN);
     }
 }

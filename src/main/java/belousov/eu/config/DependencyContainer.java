@@ -24,12 +24,12 @@ public class DependencyContainer {
 
         register(UserService.class, new UserService(this.get(UserRepository.class)));
         register(TransactionServiceImp.class, new TransactionServiceImp(this.get(TransactionRepository.class)));
+        register(TransactionService.class, this.get(TransactionServiceImp.class));
 
-        register(BudgetService.class, new BudgetServiceImp(this.get(BudgetRepository.class)));
+        register(BudgetService.class, new BudgetServiceImp(this.get(BudgetRepository.class), this.get(TransactionService.class)));
         register(CategoryService.class, new CategoryServiceImp(this.get(CategoryRepository.class)));
         register(GoalService.class, new GoalServiceImp(this.get(GoalRepository.class)));
 
-        register(TransactionService.class, this.get(TransactionServiceImp.class));
         register(AdminAccessTransactionService.class, get(TransactionServiceImp.class));
 
         register(AuthService.class, this.get(UserService.class));

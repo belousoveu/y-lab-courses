@@ -25,11 +25,11 @@ public class Transaction {
     @Override
     public String toString() {
         return "id=%d, date=%s, operationType=%s, category=%s, amount=%,.2f, description=%s "
-                .formatted(id, date, operationType, category.getName(), amount, description);
+                .formatted(id, date, operationType, category == null ? "" : category.getName(), amount, description);
     }
 
     public String toStringWithUser() {
         return "id=%d, date=%s, operationType=%s, category=%s, amount=%,.2f, description=%s, user=%s"
-                .formatted(id, date, operationType, category.getName(), amount, description, user.getName());
+                .formatted(id, date, operationType, category == null ? "" : category.getName(), amount, description, user.getName());
     }
 }

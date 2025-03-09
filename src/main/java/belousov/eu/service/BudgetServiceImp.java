@@ -1,10 +1,7 @@
 package belousov.eu.service;
 
 import belousov.eu.PersonalMoneyTracker;
-import belousov.eu.model.Budget;
-import belousov.eu.model.BudgetReport;
-import belousov.eu.model.Category;
-import belousov.eu.model.User;
+import belousov.eu.model.*;
 import belousov.eu.repository.BudgetRepository;
 import lombok.AllArgsConstructor;
 
@@ -17,6 +14,7 @@ import java.util.Optional;
 public class BudgetServiceImp implements BudgetService {
 
     private final BudgetRepository budgetRepository;
+    private final TransactionService transactionService;
 
     @Override
     public void addBudget(YearMonth period, Map<Category, Double> budgetMap) {
@@ -32,6 +30,24 @@ public class BudgetServiceImp implements BudgetService {
         if (budgets.isEmpty()) {
             return Optional.empty();
         }
-        return Optional.empty(); //TODO Собрать отчет по расходам за период
+
+        TransactionFilter filter = TransactionFilter.builder()
+                .user(PersonalMoneyTracker.getCurrentUser())
+                .from(period.atDay(1))
+                .to(period.atEndOfMonth())
+                .build();
+
+        List<Transaction> transactions = transactionService.getTransactions(filter);
+
+        BudgetReport budgetReport = new BudgetReport();
+        budgetReport.setPeriod(period);
+        budgetReport.setUser(PersonalMoneyTracker.getCurrentUser());
+        for (Budget budget : budgets) {
+            double spent = transactions.stream()
+                    .filter(t -> t.getCategory() != null)
+                    .filter(t -> t.getCategory().equals(budget.getCategory())).mapToDouble(Transaction::getAmount).sum();
+            budgetReport.addReportRow(budget.getCategory(), budget.getAmount(), spent);
+        }
+        return Optional.of(budgetReport);
     }
 }

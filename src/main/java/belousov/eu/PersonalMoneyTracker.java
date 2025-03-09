@@ -1,5 +1,6 @@
 package belousov.eu;
 
+import belousov.eu.config.DemoDataInitializer;
 import belousov.eu.config.DependencyContainer;
 import belousov.eu.controller.command.*;
 import belousov.eu.model.Role;
@@ -19,7 +20,13 @@ public class PersonalMoneyTracker {
 
     public static void main(String[] args) {
 
+        boolean idDemoMode = args.length > 0 && args[0].equals("-demo");
+
         container = new DependencyContainer();
+
+        if (idDemoMode) {
+            DemoDataInitializer.initialize(container).createDemoData();
+        }
 
 
         Menu registrationMenu = new Menu("Войдите в программу или зарегистрируйтесь");

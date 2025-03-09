@@ -15,5 +15,5 @@ public class Budget {
     private YearMonth period;
     private Category category;
     private User user;
-    private int amount;
+    private double amount;
 }

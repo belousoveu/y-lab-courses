@@ -23,7 +23,7 @@ public class TransactionController {
         List<Category> categories = categoryService.getAllCategories();
         LocalDate date = consoleView.readPeriod("Введите дату (yyyy-MM-dd):", InputPattern.DATE, LocalDate::parse);
         OperationType type = consoleView.readFromList("Введите тип операции", List.of(OperationType.values()));
-        Category category = consoleView.readFromList("Введите категорию", categories);
+        Category category = consoleView.readOptionalFromList("Введите категорию", categories).orElse(null);
         double amount = consoleView.readDouble("Введите сумму:", InputPattern.SUM);
         String description = consoleView.readString("Введите описание: ");
         Transaction transaction = transactionService.addTransaction(date, type, category, amount, description);
@@ -34,7 +34,7 @@ public class TransactionController {
     public void updateTransaction() {
         List<Category> categories = categoryService.getAllCategories();
         int id = consoleView.readInt("Введите ID транзакции", InputPattern.POSITIVE_INTEGER);
-        Category category = consoleView.readFromList("Введите категорию", categories);
+        Category category = consoleView.readOptionalFromList("Введите категорию", categories).orElse(null);
         double amount = consoleView.readDouble("Введите сумму:", InputPattern.SUM);
         String description = consoleView.readString("Введите описание: ");
         Transaction transaction = transactionService.updateTransaction(id, category, amount, description);
