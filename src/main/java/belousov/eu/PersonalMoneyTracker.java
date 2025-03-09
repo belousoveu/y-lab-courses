@@ -45,10 +45,10 @@ public class PersonalMoneyTracker {
         categoryMenu.add(0, "Вернуться в предыдущее меню", () -> categoryMenu.getParent().display());
 
         Menu financeMenagementMenu = new Menu("Управление личными финансами", Role.USER);
-        financeMenagementMenu.add(1, "Добавить операцию", () -> System.out.println("Добавить операцию"));
-        financeMenagementMenu.add(2, "Изменить операцию", () -> System.out.println("Изменить трансакцию"));
-        financeMenagementMenu.add(3, "Удалить операцию", () -> System.out.println("Удалить трансакцию"));
-        financeMenagementMenu.add(4, "Посмотреть историю операций", () -> System.out.println("Посмотреть историю операций"));
+        financeMenagementMenu.add(1, "Добавить операцию", new AddTransactionCommand(container));
+        financeMenagementMenu.add(2, "Изменить операцию", new UpdateTransactionCommand(container));
+        financeMenagementMenu.add(3, "Удалить операцию", new DeleteTransactionComand(container));
+        financeMenagementMenu.add(4, "Посмотреть историю операций", new ViewTransactionCommand(container));
         financeMenagementMenu.add(5, "Управление категориями", () -> {
             categoryMenu.setParent(financeMenagementMenu);
             categoryMenu.display();

@@ -1,11 +1,13 @@
 package belousov.eu.view;
 
+import belousov.eu.exception.InputFormatException;
 import belousov.eu.model.User;
 import belousov.eu.utils.InputPattern;
 import belousov.eu.utils.MessageColor;
 
 import java.time.temporal.Temporal;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 import java.util.StringJoiner;
 import java.util.function.Function;
@@ -27,7 +29,7 @@ public class ConsoleView {
     public String readString(InputPattern pattern) {
         String input = readString();
         if (!pattern.matches(input)) {
-            throw new IllegalArgumentException("Неверный формат"); //TODO custom exception
+            throw new InputFormatException(pattern);
         }
         return input;
     }
@@ -60,7 +62,7 @@ public class ConsoleView {
     public int readInt(String prompt, InputPattern inputPattern) {
         String input = readString(prompt);
         if (!inputPattern.matches(input)) {
-            throw new IllegalArgumentException("Неверный формат"); //TODO custom exception
+            throw new InputFormatException(inputPattern);
         }
         return Integer.parseInt(input);
     }
@@ -74,7 +76,7 @@ public class ConsoleView {
         String input = readString(prompt).trim().replaceAll("[_ ]", "");
 
         if (!inputPattern.matches(input)) {
-            throw new IllegalArgumentException("Неверный формат"); //TODO custom exception
+            throw new InputFormatException(inputPattern);
         }
         return Double.parseDouble(input);
     }
@@ -85,12 +87,25 @@ public class ConsoleView {
 
     public <T extends Temporal> T readPeriod(String prompt, InputPattern inputPattern, Function<String, T> parser) {
         String input = readString(prompt);
+
         if (!inputPattern.matches(input)) {
-            throw new IllegalArgumentException("Неверный формат"); //TODO custom exception
+            throw new InputFormatException(inputPattern);
         }
         return parser.apply(input);
     }
 
+    public <T extends Temporal> Optional<T> readOptionalPeriod(String prompt, InputPattern inputPattern, Function<String, T> parser) {
+        String input = readString(prompt);
+
+        if (input.isEmpty()) {
+            return Optional.empty();
+        }
+
+        if (!inputPattern.matches(input)) {
+            throw new InputFormatException(inputPattern);
+        }
+        return Optional.of(parser.apply(input));
+    }
 
     public <E> E readFromList(String prompt, List<E> values) {
         String input = readString(prompt + valuesToString(values)).trim();
@@ -99,12 +114,23 @@ public class ConsoleView {
                 return value;
             }
         }
-        throw new IllegalArgumentException("Неверный формат"); //TODO custom exception
+        throw new InputFormatException(valuesToString(values));
     }
 
-    private String valuesToString(List<?> values) {
+    public <E> Optional<E> readOptionalFromList(String prompt, List<E> values) {
+        String input = readString(prompt + valuesToString(values)).trim();
+        for (E value : values) {
+            if (value.toString().equalsIgnoreCase(input)) {
+                return Optional.of(value);
+            }
+        }
+        return Optional.empty();
+    }
+
+    public static String valuesToString(List<?> values) {
         StringJoiner joiner = new StringJoiner(", ", " (", "): ");
         values.forEach(v -> joiner.add(v.toString()));
         return joiner.toString();
     }
+
 }
