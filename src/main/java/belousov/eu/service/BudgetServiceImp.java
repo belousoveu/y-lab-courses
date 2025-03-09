@@ -2,6 +2,7 @@ package belousov.eu.service;
 
 import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.model.*;
+import belousov.eu.model.reportDto.BudgetReport;
 import belousov.eu.repository.BudgetRepository;
 import lombok.AllArgsConstructor;
 

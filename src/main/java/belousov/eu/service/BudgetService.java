@@ -1,7 +1,7 @@
 package belousov.eu.service;
 
-import belousov.eu.model.BudgetReport;
 import belousov.eu.model.Category;
+import belousov.eu.model.reportDto.BudgetReport;
 
 import java.time.YearMonth;
 import java.util.Map;

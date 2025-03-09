@@ -2,18 +2,19 @@ package belousov.eu.service;
 
 import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.exception.TransactionNotFoundException;
-import belousov.eu.model.Category;
-import belousov.eu.model.OperationType;
-import belousov.eu.model.Transaction;
-import belousov.eu.model.TransactionFilter;
+import belousov.eu.model.*;
+import belousov.eu.model.reportDto.IncomeStatement;
 import belousov.eu.repository.TransactionRepository;
 import lombok.AllArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
-public class TransactionServiceImp implements TransactionService, AdminAccessTransactionService {
+public class TransactionServiceImp implements TransactionService, AdminAccessTransactionService, ReportService {
 
     private final TransactionRepository transactionRepository;
 
@@ -57,9 +58,52 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
         return transactionRepository.findAll().stream().map(Transaction::toStringWithUser).toList();
     }
 
+
     private void checkTransactionBelongsToCurrentUser(Transaction transaction) {
         if (!transaction.getUser().equals(PersonalMoneyTracker.getCurrentUser())) {
             throw new TransactionNotFoundException(transaction.getId());
         }
+    }
+
+
+    @Override
+    public double getCurrentBalance() {
+        User currentUser = PersonalMoneyTracker.getCurrentUser();
+        return transactionRepository.getCurrentBalance(currentUser);
+    }
+
+    @Override
+    public String getIncomeStatement(LocalDate from, LocalDate to) {
+        User currentUser = PersonalMoneyTracker.getCurrentUser();
+        List<Transaction> transactions = getTransactions(TransactionFilter.builder().user(currentUser).from(from).to(to).build());
+        return IncomeStatement.builder()
+                .user(currentUser)
+                .from(from)
+                .to(to)
+                .income(transactions.stream().filter(t -> t.getOperationType().equals(OperationType.DEPOSIT)).mapToDouble(Transaction::getAmount).sum())
+                .outcome(transactions.stream().filter(t -> t.getOperationType().equals(OperationType.WITHDRAW)).mapToDouble(Transaction::getAmount).sum())
+                .build()
+                .toString();
+    }
+
+    @Override
+    public List<String> getCostsByCategory(LocalDate from, LocalDate to) {
+        User currentUser = PersonalMoneyTracker.getCurrentUser();
+        List<Transaction> transactions = getTransactions(
+                TransactionFilter.builder().user(currentUser).from(from).to(to).type(OperationType.WITHDRAW).build()
+        );
+
+        Map<String, Double> costByCategory = transactions.stream().collect(Collectors.groupingBy(
+                t -> Optional.ofNullable(t.getCategory())
+                        .map(Category::getName)
+                        .orElse("Без категории"),
+                Collectors.summingDouble(Transaction::getAmount)));
+        double totalCost = transactions.stream().mapToDouble(Transaction::getAmount).sum();
+        costByCategory.put("Итого по всем категориям:", totalCost);
+
+        return costByCategory
+                .entrySet().stream()
+                .map(e -> e.getKey() + " : " + e.getValue())
+                .toList();
     }
 }

@@ -79,10 +79,10 @@ public class PersonalMoneyTracker {
         goalsMenu.add(0, "Вернуться в главное меню", mainMenu::display);
 
         Menu reportMenu = new Menu("Статистика и аналитика", Role.USER);
-        reportMenu.add(1, "Текущий баланс", () -> System.out.println("Текущий баланс"));
-        reportMenu.add(2, "Отчет о доходах и расходах за период", () -> System.out.println("Отчет о доходах и расходах за период"));
-        reportMenu.add(3, "Отчет о расходах по категориям", () -> System.out.println("Отчет о доходах и расходах по категориям"));
-        reportMenu.add(4, "Отчет о финансовом состоянии", () -> System.out.println("Отчет о финансовом состоянии"));
+        reportMenu.add(1, "Текущий баланс", new ViewBalancCommand(container));
+        reportMenu.add(2, "Отчет о доходах и расходах за период", new ViewIncomeStatementCommand(container));
+        reportMenu.add(3, "Отчет о расходах по категориям", new ViewCategoryReportCommand(container));
+        reportMenu.add(4, "Отчет о финансовом состоянии", new ViewFinancialReportCommand(container));
         reportMenu.add(0, "Вернуться в главное меню", mainMenu::display);
 
         Menu adminMenu = new Menu("Администрирование", Role.ADMIN);

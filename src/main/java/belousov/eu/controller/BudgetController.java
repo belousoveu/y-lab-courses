@@ -1,8 +1,8 @@
 package belousov.eu.controller;
 
 import belousov.eu.exception.BudgetNotFoundException;
-import belousov.eu.model.BudgetReport;
 import belousov.eu.model.Category;
+import belousov.eu.model.reportDto.BudgetReport;
 import belousov.eu.service.BudgetService;
 import belousov.eu.service.CategoryService;
 import belousov.eu.utils.InputPattern;

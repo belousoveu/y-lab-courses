@@ -24,6 +24,7 @@ public class DependencyContainer {
 
         register(UserService.class, new UserService(this.get(UserRepository.class)));
         register(TransactionServiceImp.class, new TransactionServiceImp(this.get(TransactionRepository.class)));
+        register(ReportService.class, this.get(TransactionServiceImp.class));
         register(TransactionService.class, this.get(TransactionServiceImp.class));
 
         register(BudgetService.class, new BudgetServiceImp(this.get(BudgetRepository.class), this.get(TransactionService.class)));
@@ -48,6 +49,7 @@ public class DependencyContainer {
         register(ProfileController.class, new ProfileController(this.get(ProfileService.class), this.get(ConsoleView.class)));
         register(AdminController.class, new AdminController(this.get(AdminService.class), this.get(ConsoleView.class)));
         register(GoalController.class, new GoalController(this.get(GoalService.class), this.get(ConsoleView.class)));
+        register(ReportController.class, new ReportController(this.get(ReportService.class), this.get(ConsoleView.class)));
 
     }
 

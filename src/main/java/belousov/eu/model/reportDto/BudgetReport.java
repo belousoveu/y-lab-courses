@@ -1,5 +1,7 @@
-package belousov.eu.model;
+package belousov.eu.model.reportDto;
 
+import belousov.eu.model.Category;
+import belousov.eu.model.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
