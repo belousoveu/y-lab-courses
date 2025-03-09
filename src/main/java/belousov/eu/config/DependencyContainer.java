@@ -1,6 +1,7 @@
 package belousov.eu.config;
 
 import belousov.eu.controller.*;
+import belousov.eu.observer.BalanceChangeSubject;
 import belousov.eu.repository.*;
 import belousov.eu.service.*;
 import belousov.eu.view.ConsoleView;
@@ -19,18 +20,20 @@ public class DependencyContainer {
         register(CategoryRepository.class, new CategoryRepository());
         register(BudgetRepository.class, new BudgetRepository());
         register(TransactionRepository.class, new TransactionRepository());
-
+        register(BalanceChangeSubject.class, new BalanceChangeSubject());
         register(ConsoleView.class, new ConsoleView());
 
+        register(EmailService.class, new EmailServiceImp());
         register(UserService.class, new UserService(this.get(UserRepository.class)));
-        register(TransactionServiceImp.class, new TransactionServiceImp(this.get(TransactionRepository.class)));
+        register(TransactionServiceImp.class, new TransactionServiceImp(this.get(TransactionRepository.class), this.get(BalanceChangeSubject.class)));
         register(ReportService.class, this.get(TransactionServiceImp.class));
         register(TransactionService.class, this.get(TransactionServiceImp.class));
 
-        register(BudgetService.class, new BudgetServiceImp(this.get(BudgetRepository.class), this.get(TransactionService.class)));
+        register(BudgetService.class,
+                new BudgetServiceImp(this.get(TransactionService.class), this.get(EmailService.class), this.get(BudgetRepository.class)));
         register(CategoryService.class, new CategoryServiceImp(this.get(CategoryRepository.class)));
-        register(GoalService.class, new GoalServiceImp(this.get(GoalRepository.class)));
-
+        register(GoalService.class,
+                new GoalServiceImp(this.get(ReportService.class), this.get(EmailService.class), this.get(GoalRepository.class)));
         register(AdminAccessTransactionService.class, get(TransactionServiceImp.class));
 
         register(AuthService.class, this.get(UserService.class));
@@ -50,6 +53,10 @@ public class DependencyContainer {
         register(AdminController.class, new AdminController(this.get(AdminService.class), this.get(ConsoleView.class)));
         register(GoalController.class, new GoalController(this.get(GoalService.class), this.get(ConsoleView.class)));
         register(ReportController.class, new ReportController(this.get(ReportService.class), this.get(ConsoleView.class)));
+
+        BalanceChangeSubject subject = this.get(BalanceChangeSubject.class);
+        subject.addObserver(this.get(BudgetController.class));
+        subject.addObserver(this.get(GoalController.class));
 
     }
 

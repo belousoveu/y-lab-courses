@@ -4,6 +4,7 @@ import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.exception.TransactionNotFoundException;
 import belousov.eu.model.*;
 import belousov.eu.model.reportDto.IncomeStatement;
+import belousov.eu.observer.BalanceChangeSubject;
 import belousov.eu.repository.TransactionRepository;
 import lombok.AllArgsConstructor;
 
@@ -17,11 +18,14 @@ import java.util.stream.Collectors;
 public class TransactionServiceImp implements TransactionService, AdminAccessTransactionService, ReportService {
 
     private final TransactionRepository transactionRepository;
+    private final BalanceChangeSubject balanceChangeSubject;
 
     @Override
     public Transaction addTransaction(LocalDate date, OperationType type, Category category, double amount, String description) {
-        return transactionRepository
+        Transaction transaction = transactionRepository
                 .save(new Transaction(0, date, type, category, amount, description, PersonalMoneyTracker.getCurrentUser()));
+        balanceChangeSubject.notifyObservers(transaction);
+        return transaction;
     }
 
     @Override
@@ -31,7 +35,9 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
         transaction.setCategory(category);
         transaction.setAmount(amount);
         transaction.setDescription(description);
-        return transactionRepository.save(transaction);
+        Transaction updatedTransaction = transactionRepository.save(transaction);
+        balanceChangeSubject.notifyObservers(updatedTransaction);
+        return updatedTransaction;
     }
 
     @Override
@@ -39,7 +45,7 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
         Transaction transaction = transactionRepository.findById(id).orElseThrow(() -> new TransactionNotFoundException(id));
         checkTransactionBelongsToCurrentUser(transaction);
         transactionRepository.delete(transaction);
-
+        balanceChangeSubject.notifyObservers(transaction);
     }
 
     @Override
@@ -56,13 +62,6 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
     @Override
     public List<String> getAllTransactions() {
         return transactionRepository.findAll().stream().map(Transaction::toStringWithUser).toList();
-    }
-
-
-    private void checkTransactionBelongsToCurrentUser(Transaction transaction) {
-        if (!transaction.getUser().equals(PersonalMoneyTracker.getCurrentUser())) {
-            throw new TransactionNotFoundException(transaction.getId());
-        }
     }
 
 
@@ -105,5 +104,11 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
                 .entrySet().stream()
                 .map(e -> e.getKey() + " : " + e.getValue())
                 .toList();
+    }
+
+    private void checkTransactionBelongsToCurrentUser(Transaction transaction) {
+        if (!transaction.getUser().equals(PersonalMoneyTracker.getCurrentUser())) {
+            throw new TransactionNotFoundException(transaction.getId());
+        }
     }
 }

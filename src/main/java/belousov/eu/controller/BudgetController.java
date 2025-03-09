@@ -2,7 +2,9 @@ package belousov.eu.controller;
 
 import belousov.eu.exception.BudgetNotFoundException;
 import belousov.eu.model.Category;
+import belousov.eu.model.Transaction;
 import belousov.eu.model.reportDto.BudgetReport;
+import belousov.eu.observer.BalanceChangeObserver;
 import belousov.eu.service.BudgetService;
 import belousov.eu.service.CategoryService;
 import belousov.eu.utils.InputPattern;
@@ -16,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 @AllArgsConstructor
-public class BudgetController {
+public class BudgetController implements BalanceChangeObserver {
 
     private final BudgetService budgetService;
     private final CategoryService categoryService;
@@ -40,5 +42,13 @@ public class BudgetController {
         consoleView.println("Пользователь: %s".formatted(report.getUser()), MessageColor.CYAN);
         consoleView.println("Исполнение бюджета на период %s:".formatted(period), report.getReportRows(), MessageColor.YELLOW, MessageColor.WHITE);
         consoleView.println(report.getTotalRow(), MessageColor.CYAN);
+    }
+
+    @Override
+    public void balanceChanged(Transaction lastTransaction) {
+        String resultMessage = budgetService.checkBudget(lastTransaction);
+        if (!resultMessage.isEmpty()) {
+            consoleView.println(resultMessage, MessageColor.PURPLE);
+        }
     }
 }

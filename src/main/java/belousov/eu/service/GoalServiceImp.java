@@ -3,14 +3,18 @@ package belousov.eu.service;
 import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.exception.GoalNotFoundException;
 import belousov.eu.model.Goal;
+import belousov.eu.model.Transaction;
 import belousov.eu.repository.GoalRepository;
 import lombok.AllArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
 public class GoalServiceImp implements GoalService {
 
+    private final ReportService reportService;
+    private final EmailService emailService;
     private final GoalRepository goalRepository;
 
     @Override
@@ -43,9 +47,30 @@ public class GoalServiceImp implements GoalService {
         return goalRepository.findAllByUser(PersonalMoneyTracker.getCurrentUser());
     }
 
+    @Override
+    public List<String> checkGoal(Transaction lastTransaction) {
+        double balance = reportService.getCurrentBalance();
+        List<Goal> goals = getAll();
+        List<String> result = new ArrayList<>();
+        for (Goal goal : goals) {
+            if (goal.getPoint() <= balance) {
+                result.add("Цель: %s - %,.2f".formatted(goal.getName(), goal.getPoint()));
+            }
+        }
+        if (!result.isEmpty()) {
+            emailService.sendEmail(lastTransaction.getUser().getEmail(),
+                    "У Вас достигнута цель",
+                    String.join("\n", result));
+        }
+        return result;
+
+
+    }
+
     private void checkIfGoalBelongsToUser(Goal goal) {
         if (!goal.getUser().equals(PersonalMoneyTracker.getCurrentUser())) {
             throw new GoalNotFoundException(goal.getId());
         }
     }
+
 }

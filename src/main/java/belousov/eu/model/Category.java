@@ -15,6 +15,6 @@ public class Category {
 
     @Override
     public String toString() {
-        return "id=%d, name=%s".formatted(id, name);
+        return name;
     }
 }

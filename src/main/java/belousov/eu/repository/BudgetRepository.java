@@ -10,6 +10,7 @@ import java.time.YearMonth;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @AllArgsConstructor
 public class BudgetRepository {
@@ -24,19 +25,16 @@ public class BudgetRepository {
         budgetMap.put(budget.getId(), budget);
     }
 
-    public List<Budget> findAllByUser(User currentUser) {
-        return budgetMap.values().stream().filter(budget -> budget.getUser().equals(currentUser)).toList();
-    }
-
-    public List<Budget> findAllByCategory(User currentUser, Category category) {
-        return budgetMap.values().stream()
-                .filter(budget -> budget.getUser().equals(currentUser) && budget.getCategory().equals(category))
-                .toList();
-    }
-
     public List<Budget> findAllByPeriod(User currentUser, YearMonth period) {
         return budgetMap.values().stream()
                 .filter(budget -> budget.getUser().equals(currentUser) && budget.getPeriod().equals(period))
                 .toList();
     }
+
+    public Optional<Budget> findByCategoryAndPeriod(Category category, User user, YearMonth period) {
+        return budgetMap.values().stream()
+                .filter(budget -> budget.getCategory().equals(category) && budget.getUser().equals(user) && budget.getPeriod().equals(period))
+                .findFirst();
+    }
+
 }
