@@ -5,7 +5,7 @@ import belousov.eu.controller.TransactionController;
 
 public class DeleteTransactionComand implements CommandMenu {
 
-    TransactionController controller;
+    private final TransactionController controller;
 
     public DeleteTransactionComand(DependencyContainer container) {
 

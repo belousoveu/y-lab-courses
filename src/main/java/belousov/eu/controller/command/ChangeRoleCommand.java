@@ -5,7 +5,7 @@ import belousov.eu.controller.AdminController;
 
 public class ChangeRoleCommand implements CommandMenu {
 
-    AdminController controller;
+    private final AdminController controller;
 
     public ChangeRoleCommand(DependencyContainer container) {
         controller = container.get(AdminController.class);

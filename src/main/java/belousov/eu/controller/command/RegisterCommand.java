@@ -4,7 +4,7 @@ import belousov.eu.config.DependencyContainer;
 import belousov.eu.controller.AuthController;
 
 public class RegisterCommand implements CommandMenu {
-    AuthController controller;
+    private final AuthController controller;
 
     public RegisterCommand(DependencyContainer container) {
         controller = container.get(AuthController.class);

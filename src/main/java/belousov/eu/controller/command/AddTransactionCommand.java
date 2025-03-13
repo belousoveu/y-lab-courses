@@ -5,7 +5,7 @@ import belousov.eu.controller.TransactionController;
 
 public class AddTransactionCommand implements CommandMenu {
 
-    TransactionController controller;
+    private final TransactionController controller;
 
     public AddTransactionCommand(DependencyContainer container) {
         controller = container.get(TransactionController.class);
