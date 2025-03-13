@@ -1,0 +1,9 @@
+db:
+  url: jdbc:postgresql://localhost:5432/pmt_db
+  user: ${DB_USER}
+  password: ${DB_PASSWORD}
+
+liquibase:
+  changeLog: db/changelog/db.changelog-master.xml
+  schemaName: service
+
