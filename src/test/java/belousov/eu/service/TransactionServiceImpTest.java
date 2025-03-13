@@ -1,0 +1,179 @@
+package belousov.eu.service;
+
+import belousov.eu.PersonalMoneyTracker;
+import belousov.eu.exception.TransactionNotFoundException;
+import belousov.eu.model.*;
+import belousov.eu.observer.BalanceChangeSubject;
+import belousov.eu.repository.TransactionRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.*;
+
+/**
+ * Тестовый класс для {@link TransactionServiceImp}.
+ */
+class TransactionServiceImpTest {
+
+    @Mock
+    private TransactionRepository transactionRepository;
+
+    @Mock
+    private BalanceChangeSubject balanceChangeSubject;
+
+    @InjectMocks
+    private TransactionServiceImp transactionServiceImp;
+
+    private User user;
+    private Category category;
+    private Transaction transaction;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        user = new User(1, "John Doe", "john@example.com", "password123", Role.USER, true);
+        category = new Category(1, "Продукты", user);
+        transaction = new Transaction(1, LocalDate.of(2023, 10, 1), OperationType.WITHDRAW, category, 1000.0, "Покупка продуктов", user);
+        PersonalMoneyTracker.setCurrentUser(user); // Устанавливаем текущего пользователя
+    }
+
+    @Test
+    void test_addTransaction_shouldSaveTransactionAndNotifyObservers() {
+        when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
+
+        Transaction result = transactionServiceImp.addTransaction(LocalDate.of(2023, 10, 1), OperationType.WITHDRAW, category, 1000.0, "Покупка продуктов");
+
+        assertThat(result).isEqualTo(transaction);
+        verify(transactionRepository, times(1)).save(any(Transaction.class));
+        verify(balanceChangeSubject, times(1)).notifyObservers(transaction);
+    }
+
+    @Test
+    void test_updateTransaction_whenTransactionExistsAndBelongsToUser_shouldUpdateTransactionAndNotifyObservers() {
+        when(transactionRepository.findById(1)).thenReturn(Optional.of(transaction));
+        when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
+
+        Transaction updatedTransaction = transactionServiceImp.updateTransaction(1, category, 1500.0, "Покупка продуктов и напитков");
+
+        assertThat(updatedTransaction.getAmount()).isEqualTo(1500.0);
+        assertThat(updatedTransaction.getDescription()).isEqualTo("Покупка продуктов и напитков");
+        verify(transactionRepository, times(1)).save(transaction);
+        verify(balanceChangeSubject, times(1)).notifyObservers(transaction);
+    }
+
+    @Test
+    void test_updateTransaction_whenTransactionDoesNotExist_shouldThrowException() {
+        when(transactionRepository.findById(1)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> transactionServiceImp.updateTransaction(1, category, 1500.0, "Покупка продуктов и напитков"))
+                .isInstanceOf(TransactionNotFoundException.class)
+                .hasMessage("Не найдена транзакция с идентификатором 1");
+    }
+
+    @Test
+    void test_updateTransaction_whenTransactionDoesNotBelongToUser_shouldThrowException() {
+        User otherUser = new User(2, "Jane Doe", "jane@example.com", "password456", Role.USER, true);
+        Transaction otherTransaction = new Transaction(1, LocalDate.of(2023, 10, 1), OperationType.WITHDRAW, category, 1000.0, "Покупка продуктов", otherUser);
+        when(transactionRepository.findById(1)).thenReturn(Optional.of(otherTransaction));
+
+        assertThatThrownBy(() -> transactionServiceImp.updateTransaction(1, category, 1500.0, "Покупка продуктов и напитков"))
+                .isInstanceOf(TransactionNotFoundException.class)
+                .hasMessage("Не найдена транзакция с идентификатором 1");
+    }
+
+    @Test
+    void test_deleteTransaction_whenTransactionExistsAndBelongsToUser_shouldDeleteTransactionAndNotifyObservers() {
+        when(transactionRepository.findById(1)).thenReturn(Optional.of(transaction));
+
+        transactionServiceImp.deleteTransaction(1);
+
+        verify(transactionRepository, times(1)).delete(transaction);
+        verify(balanceChangeSubject, times(1)).notifyObservers(transaction);
+    }
+
+    @Test
+    void test_deleteTransaction_whenTransactionDoesNotExist_shouldThrowException() {
+        when(transactionRepository.findById(1)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> transactionServiceImp.deleteTransaction(1))
+                .isInstanceOf(TransactionNotFoundException.class)
+                .hasMessage("Не найдена транзакция с идентификатором 1");
+    }
+
+    @Test
+    void test_deleteTransaction_whenTransactionDoesNotBelongToUser_shouldThrowException() {
+        User otherUser = new User(2, "Jane Doe", "jane@example.com", "password456", Role.USER, true);
+        Transaction otherTransaction = new Transaction(1, LocalDate.of(2023, 10, 1), OperationType.WITHDRAW, category, 1000.0, "Покупка продуктов", otherUser);
+        when(transactionRepository.findById(1)).thenReturn(Optional.of(otherTransaction));
+
+        assertThatThrownBy(() -> transactionServiceImp.deleteTransaction(1))
+                .isInstanceOf(TransactionNotFoundException.class)
+                .hasMessage("Не найдена транзакция с идентификатором 1");
+    }
+
+    @Test
+    void test_getTransactions_shouldReturnFilteredTransactions() {
+        TransactionFilter filter = TransactionFilter.builder()
+                .user(user)
+                .from(LocalDate.of(2023, 10, 1))
+                .to(LocalDate.of(2023, 10, 31))
+                .category(category)
+                .type(OperationType.WITHDRAW)
+                .build();
+
+        when(transactionRepository.findAll()).thenReturn(List.of(transaction));
+
+        List<Transaction> transactions = transactionServiceImp.getTransactions(filter);
+        assertThat(transactions).containsExactly(transaction);
+    }
+
+    @Test
+    void test_getAllTransactions_shouldReturnAllTransactions() {
+        when(transactionRepository.findAll()).thenReturn(List.of(transaction));
+
+        List<String> result = transactionServiceImp.getAllTransactions();
+        assertThat(result).containsExactly(transaction.toStringWithUser());
+    }
+
+    @Test
+    void test_getCurrentBalance_shouldReturnCurrentBalance() {
+        when(transactionRepository.getCurrentBalance(user)).thenReturn(5000.0);
+
+        double balance = transactionServiceImp.getCurrentBalance();
+        assertThat(balance).isEqualTo(5000.0);
+    }
+
+    @Test
+    void test_getIncomeStatement_shouldReturnIncomeStatement() {
+        Transaction deposit = new Transaction(1, LocalDate.of(2023, 10, 1), OperationType.DEPOSIT, null, 10000.0, "Зарплата", user);
+        Transaction withdraw = new Transaction(2, LocalDate.of(2023, 10, 2), OperationType.WITHDRAW, category, 5000.0, "Покупка продуктов", user);
+
+        when(transactionRepository.findAll()).thenReturn(List.of(deposit, withdraw));
+
+        String result = transactionServiceImp.getIncomeStatement(LocalDate.of(2023, 10, 1), LocalDate.of(2023, 10, 31));
+        assertThat(result).contains("Доход: 10 000,00");
+        assertThat(result).contains("Расход: 5 000,00");
+    }
+
+    @Test
+    void test_getCostsByCategory_shouldReturnCostsByCategory() {
+        Transaction transaction1 = new Transaction(1, LocalDate.of(2023, 10, 1), OperationType.WITHDRAW, category, 3000.0, "Покупка продуктов", user);
+        Transaction transaction2 = new Transaction(2, LocalDate.of(2023, 10, 2), OperationType.WITHDRAW, null, 2000.0, "Транспорт", user);
+
+        when(transactionRepository.findAll()).thenReturn(List.of(transaction1, transaction2));
+
+        List<String> result = transactionServiceImp.getCostsByCategory(LocalDate.of(2023, 10, 1), LocalDate.of(2023, 10, 31));
+        assertThat(result).contains("Продукты : 3000.0");
+        assertThat(result).contains("Без категории : 2000.0");
+        assertThat(result).contains("Итого по всем категориям: : 5000.0");
+    }
+}
