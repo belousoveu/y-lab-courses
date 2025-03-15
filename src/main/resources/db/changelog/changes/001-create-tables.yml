@@ -128,7 +128,7 @@ databaseChangeLog:
                   type: varchar(100)
                   constraints:
                     nullable: false
-                    unique: true
+                    unique: false
               - column:
                   name: user_id
                   type: int
@@ -167,7 +167,7 @@ databaseChangeLog:
                   type: varchar(100)
                   constraints:
                     nullable: false
-                    unique: true
+                    unique: false
               - column:
                   name: description
                   type: varchar(255)

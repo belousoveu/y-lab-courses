@@ -1,6 +1,8 @@
 package belousov.eu.config;
 
 import belousov.eu.exception.HibernateConfigException;
+import belousov.eu.model.Category;
+import belousov.eu.model.Goal;
 import belousov.eu.model.User;
 import lombok.Getter;
 import org.hibernate.SessionFactory;
@@ -20,7 +22,9 @@ public class HibernateConfig {
 
         try (StandardServiceRegistry registry = new StandardServiceRegistryBuilder().applySettings(properties).build()) {
             Configuration configuration = new Configuration()
-                    .addAnnotatedClass(User.class);
+                    .addAnnotatedClass(User.class)
+                    .addAnnotatedClass(Category.class)
+                    .addAnnotatedClass(Goal.class);
 
             this.sessionFactory = configuration.buildSessionFactory(registry);
         } catch (Exception e) {

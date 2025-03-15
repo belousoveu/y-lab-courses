@@ -19,7 +19,7 @@ public class DependencyContainer {
         register(SessionFactory.class, hibernateConfig.getSessionFactory());
 
         register(UserRepository.class, new UserRepository(this.get(SessionFactory.class)));
-        register(GoalRepository.class, new GoalRepository());
+        register(GoalRepository.class, new GoalRepository(this.get(SessionFactory.class)));
         register(CategoryRepository.class, new CategoryRepository(this.get(SessionFactory.class)));
         register(BudgetRepository.class, new BudgetRepository());
         register(TransactionRepository.class, new TransactionRepository());

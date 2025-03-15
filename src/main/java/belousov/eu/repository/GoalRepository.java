@@ -2,23 +2,22 @@ package belousov.eu.repository;
 
 import belousov.eu.model.Goal;
 import belousov.eu.model.User;
-import belousov.eu.utils.IdGenerator;
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
  * Репозиторий для управления финансовыми целями пользователей.
  * Обеспечивает хранение, добавление, удаление и поиск целей.
  */
-@NoArgsConstructor
+@RequiredArgsConstructor
 public class GoalRepository {
 
-    private final Map<Integer, Goal> goals = new HashMap<>();
-    private final IdGenerator<Integer> idCounter = IdGenerator.create(Integer.class);
+    private final SessionFactory sessionFactory;
+
 
     /**
      * Находит цель по ID.
@@ -27,7 +26,9 @@ public class GoalRepository {
      * @return Optional с целью, если найдена, иначе пустой Optional
      */
     public Optional<Goal> findById(int id) {
-        return Optional.ofNullable(goals.get(id));
+        try (Session session = sessionFactory.openSession()) {
+            return Optional.ofNullable(session.find(Goal.class, id));
+        }
     }
 
     /**
@@ -37,7 +38,11 @@ public class GoalRepository {
      * @return список всех целей пользователя
      */
     public List<Goal> findAllByUser(User currentUser) {
-        return goals.values().stream().filter(goal -> goal.getUser().equals(currentUser)).toList();
+        try (Session session = sessionFactory.openSession()) {
+            return session.createQuery("FROM Goal WHERE user = :currentUser", Goal.class)
+                    .setParameter("currentUser", currentUser)
+                    .getResultList();
+        }
     }
 
     /**
@@ -46,7 +51,7 @@ public class GoalRepository {
      * @param goal цель для удаления
      */
     public void delete(Goal goal) {
-        goals.remove(goal.getId());
+        sessionFactory.inTransaction(session -> session.remove(goal));
     }
 
     /**
@@ -55,9 +60,6 @@ public class GoalRepository {
      * @param goal цель для сохранения
      */
     public void save(Goal goal) {
-        if (goal.getId() == 0) {
-            goal.setId(idCounter.nextId());
-        }
-        goals.put(goal.getId(), goal);
+        sessionFactory.inTransaction(session -> session.merge(goal));
     }
 }

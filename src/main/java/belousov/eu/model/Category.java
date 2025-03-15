@@ -22,7 +22,7 @@ public class Category {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "category_id_seq_generator")
-    @SequenceGenerator(name = "category_id_seq_generator", schema = "app", sequenceName = "categories_id_seq", allocationSize = 1)
+    @SequenceGenerator(name = "category_id_seq_generator", schema = "app", sequenceName = "category_id_seq", allocationSize = 1)
     private int id;
     /**
      * Название категории.
@@ -31,8 +31,8 @@ public class Category {
     /**
      * Пользователь, которому принадлежит категория.
      */
-    @ManyToOne
-    @JoinColumn(name = "user_id")
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     /**
