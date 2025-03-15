@@ -1,28 +1,11 @@
 databaseChangeLog:
+
+
   - changeSet:
       id: 1
       author: belousov
-                - createSchema:
-                schemaName: service
-
-
-  - changeSet:
-      id: 2
-      author: belousov
-                - crateSchema:
-                schemaName: app
-
-
-  - changeSet:
-      id: 3
-      author: belousov
       changes:
-        - createSequence:
-            schemaName: app
-            sequenceName: user_id_seq
-            startValue: 1
-            incrementBy: 1
-            cacheSize: 10
+
         - createSequence:
             schemaName: app
             sequenceName: budget_id_seq
@@ -48,14 +31,19 @@ databaseChangeLog:
             incrementBy: 1
             cacheSize: 10
 
-
   - changeSet:
-      id: 3
+      id: 2
       author: belousov
       changes:
+        - createSequence:
+            schemaName: app
+            sequenceName: user_id_seq
+            startValue: 1
+            incrementBy: 1
+            cacheSize: 10
         - createTable:
             schemaName: app
-            tableName: user
+            tableName: users
             columns:
               - column:
                   name: id
@@ -90,25 +78,22 @@ databaseChangeLog:
                   defaultValue: "USER"
                   constraints:
                     nullable: false
-        - addCheckConstraint:
-            tableName: app.user
-            constraintName: check_role
-            constraintBody: "role IN ('ADMIN', 'USER')"
+        - sql:
+            sql: ALTER TABLE app.users ADD CONSTRAINT check_role CHECK (role IN ('ADMIN', 'USER'))
         - createIndex:
-            tableName: app.user
+            tableName: users
             indexName: idx_user_email
             columns:
               - column:
                   name: email
 
-
   - changeSet:
-      id: 4
+      id: 3
       author: belousov
       changes:
         - createTable:
             schemaName: app
-            tableName: budget
+            tableName: budgets
             columns:
               - column:
                   name: id
@@ -140,12 +125,12 @@ databaseChangeLog:
                     checkConstraint: "amount >= 0"
 
   - changeSet:
-      id: 5
+      id: 4
       author: belousov
       changes:
         - createTable:
             schemaName: app
-            tableName: category
+            tableName: categories
             columns:
               - column:
                   name: id
@@ -167,12 +152,12 @@ databaseChangeLog:
                     nullable: false
 
   - changeSet:
-      id: 6
+      id: 5
       author: belousov
       changes:
         - createTable:
             schemaName: app
-            tableName: goal
+            tableName: goals
             columns:
               - column:
                   name: id
@@ -205,12 +190,12 @@ databaseChangeLog:
                     checkConstraint: "point >= 0"
 
   - changeSet:
-      id: 7
+      id: 6
       author: belousov
       changes:
         - createTable:
             schemaName: app
-            tableName: transaction
+            tableName: transactions
             columns:
               - column:
                   name: id
@@ -251,70 +236,68 @@ databaseChangeLog:
                   constraints:
                     nullable: true
         - createIndex:
-            tableName: app.transaction
+            tableName: transactions
             indexName: idx_transaction_user
             columns:
               - column:
                   name: user_id
         - createIndex:
-            tableName: app.transaction
+            tableName: transactions
             indexName: idx_transaction_date
             columns:
               - column:
                   name: date
-        - addCheckConstraint:
-            tableName: app.transaction
-            constraintName: check_operation_type
-            constraintBody: "operation_type IN ('DEPOSIT', 'WITHDRAW')"
+        - sql:
+            sql: ALTER TABLE app.transactions ADD CONSTRAINT check_operation_type CHECK (operation_type IN ('DEPOSIT', 'WITHDRAW'))
 
   - changeSet:
-      id: 8
+      id: 7
       author: belousov
       changes:
         - addForeignKeyConstraint:
-            baseTableName: app.category
+            baseTableName: categories
             baseColumnNames: user_id
-            referencedTableName: app.user
+            referencedTableName: users
             referencedColumnNames: id
             onDelete: CASCADE
             onUpdate: CASCADE
             constraintName: fk_category_user
         - addForeignKeyConstraint:
-            baseTableName: app.goal
+            baseTableName: goals
             baseColumnNames: user_id
-            referencedTableName: app.user
+            referencedTableName: users
             referencedColumnNames: id
             onDelete: CASCADE
             onUpdate: CASCADE
             constraintName: fk_goal_user
         - addForeignKeyConstraint:
-            baseTableName: app.budget
+            baseTableName: budgets
             baseColumnNames: category_id
-            referencedTableName: app.category
+            referencedTableName: categories
             referencedColumnNames: id
             onDelete: CASCADE
             onUpdate: CASCADE
             constraintName: fk_budget_category
         - addForeignKeyConstraint:
-            baseTableName: app.budget
+            baseTableName: budgets
             baseColumnNames: user_id
-            referencedTableName: app.user
+            referencedTableName: users
             referencedColumnNames: id
             onDelete: CASCADE
             onUpdate: CASCADE
             constraintName: fk_budget_user
         - addForeignKeyConstraint:
-            baseTableName: app.transaction
+            baseTableName: transactions
             baseColumnNames: user_id
-            referencedTableName: app.user
+            referencedTableName: users
             referencedColumnNames: id
             onDelete: CASCADE
             onUpdate: CASCADE
             constraintName: fk_transaction_user
         - addForeignKeyConstraint:
-            baseTableName: app.transaction
+            baseTableName: transactions
             baseColumnNames: category_id
-            referencedTableName: app.category
+            referencedTableName: categories
             referencedColumnNames: id
             onDelete: CASCADE
             onUpdate: CASCADE
