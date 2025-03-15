@@ -1,9 +1,15 @@
-db:
-  url: jdbc:postgresql://localhost:5432/pmt_db
-  user: ${DB_USER}
-  password: ${DB_PASSWORD}
+hibernate:
+  connection:
+    driver_class: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/pmt_db
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  hbm2ddl.auto: none
+  show_sql: true
+  format_sql: true
 
 liquibase:
-  changeLog: db/changelog/db.changelog-master.xml
+  changeLogName: db/changelog/changelog.yml
   schemaName: service
+  defaultSchemaName: app
 
