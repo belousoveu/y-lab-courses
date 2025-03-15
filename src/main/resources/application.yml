@@ -2,8 +2,8 @@ hibernate:
   connection:
     driver_class: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/pmt_db
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
+    username: ${PMT_DB_USER}
+    password: ${PMT_DB_PASSWORD}
   hbm2ddl.auto: none
   show_sql: true
   format_sql: true
@@ -12,4 +12,11 @@ liquibase:
   changeLogName: db/changelog/changelog.yml
   schemaName: service
   defaultSchemaName: app
+  logging:
+    level: INFO
+    file: /var/log/liquibase.log
 
+logging:
+  level:
+    liquibase: OFF
+    org.hibernate: OFF

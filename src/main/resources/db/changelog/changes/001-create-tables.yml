@@ -1,43 +1,13 @@
 databaseChangeLog:
 
-
   - changeSet:
       id: 1
-      author: belousov
-      changes:
-
-        - createSequence:
-            schemaName: app
-            sequenceName: budget_id_seq
-            startValue: 1
-            incrementBy: 1
-            cacheSize: 10
-        - createSequence:
-            schemaName: app
-            sequenceName: category_id_seq
-            startValue: 1
-            incrementBy: 1
-            cacheSize: 10
-        - createSequence:
-            schemaName: app
-            sequenceName: transaction_id_seq
-            startValue: 1
-            incrementBy: 1
-            cacheSize: 10
-        - createSequence:
-            schemaName: app
-            sequenceName: goal_id_seq
-            startValue: 1
-            incrementBy: 1
-            cacheSize: 10
-
-  - changeSet:
-      id: 2
       author: belousov
       changes:
         - createSequence:
             schemaName: app
             sequenceName: user_id_seq
+            dataType: int
             startValue: 1
             incrementBy: 1
             cacheSize: 10
@@ -88,9 +58,16 @@ databaseChangeLog:
                   name: email
 
   - changeSet:
-      id: 3
+      id: 2
       author: belousov
       changes:
+        - createSequence:
+            schemaName: app
+            sequenceName: budget_id_seq
+            dataType: int
+            startValue: 1
+            incrementBy: 1
+            cacheSize: 10
         - createTable:
             schemaName: app
             tableName: budgets
@@ -125,9 +102,16 @@ databaseChangeLog:
                     checkConstraint: "amount >= 0"
 
   - changeSet:
-      id: 4
+      id: 3
       author: belousov
       changes:
+        - createSequence:
+            schemaName: app
+            sequenceName: category_id_seq
+            dataType: int
+            startValue: 1
+            incrementBy: 1
+            cacheSize: 10
         - createTable:
             schemaName: app
             tableName: categories
@@ -152,9 +136,16 @@ databaseChangeLog:
                     nullable: false
 
   - changeSet:
-      id: 5
+      id: 4
       author: belousov
       changes:
+        - createSequence:
+            schemaName: app
+            sequenceName: goal_id_seq
+            dataType: int
+            startValue: 1
+            incrementBy: 1
+            cacheSize: 10
         - createTable:
             schemaName: app
             tableName: goals
@@ -190,9 +181,16 @@ databaseChangeLog:
                     checkConstraint: "point >= 0"
 
   - changeSet:
-      id: 6
+      id: 5
       author: belousov
       changes:
+        - createSequence:
+            schemaName: app
+            sequenceName: transaction_id_seq
+            dataType: int
+            startValue: 1
+            incrementBy: 1
+            cacheSize: 10
         - createTable:
             schemaName: app
             tableName: transactions
@@ -251,7 +249,7 @@ databaseChangeLog:
             sql: ALTER TABLE app.transactions ADD CONSTRAINT check_operation_type CHECK (operation_type IN ('DEPOSIT', 'WITHDRAW'))
 
   - changeSet:
-      id: 7
+      id: 6
       author: belousov
       changes:
         - addForeignKeyConstraint:
