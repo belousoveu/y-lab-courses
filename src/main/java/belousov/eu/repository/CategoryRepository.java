@@ -2,21 +2,22 @@ package belousov.eu.repository;
 
 import belousov.eu.model.Category;
 import belousov.eu.model.User;
-import belousov.eu.utils.IdGenerator;
+import lombok.RequiredArgsConstructor;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
  * Репозиторий для управления категориями транзакций.
  * Обеспечивает хранение, добавление, удаление и поиск категорий.
  */
+@RequiredArgsConstructor
 public class CategoryRepository {
 
-    private final Map<Integer, Category> categories = new HashMap<>();
-    private final IdGenerator<Integer> idCounter = IdGenerator.create(Integer.class);
+    private final SessionFactory sessionFactory;
+
 
     /**
      * Находит категорию по ID.
@@ -25,7 +26,11 @@ public class CategoryRepository {
      * @return Optional с категорией, если найдена, иначе пустой Optional
      */
     public Optional<Category> findById(int id) {
-        return Optional.ofNullable(categories.get(id));
+        try (Session session = sessionFactory.openSession()) {
+            Category category = session.get(Category.class, id);
+            return Optional.ofNullable(category);
+        }
+
     }
 
     /**
@@ -34,11 +39,13 @@ public class CategoryRepository {
      * @param category категория для сохранения
      */
     public void save(Category category) {
-        if (category.getId() == 0) {
-            category.setId(idCounter.nextId());
+        try (Session session = sessionFactory.openSession()) {
+            session.beginTransaction();
+            session.merge(category);
+            session.getTransaction().commit();
         }
-        categories.put(category.getId(), category);
     }
+
 
     /**
      * Удаляет категорию из репозитория.
@@ -46,7 +53,11 @@ public class CategoryRepository {
      * @param category категория для удаления
      */
     public void delete(Category category) {
-        categories.remove(category.getId());
+        try (Session session = sessionFactory.openSession()) {
+            session.beginTransaction();
+            session.remove(category);
+            session.getTransaction().commit();
+        }
     }
 
     /**
@@ -56,6 +67,10 @@ public class CategoryRepository {
      * @return список категорий пользователя
      */
     public List<Category> findAllByUser(User currentUser) {
-        return categories.values().stream().filter(category -> category.getUser().equals(currentUser)).toList();
+        try (Session session = sessionFactory.openSession()) {
+            return session.createQuery("FROM Category WHERE user = :currentUser", Category.class)
+                    .setParameter("currentUser", currentUser)
+                    .getResultList();
+        }
     }
 }
