@@ -1,11 +1,12 @@
 package belousov.eu.config;
 
+import belousov.eu.exception.DatabaseConnectionException;
+import belousov.eu.exception.LiquibaseMigrationException;
 import liquibase.Contexts;
 import liquibase.Liquibase;
 import liquibase.database.Database;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
-import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
 import liquibase.resource.ClassLoaderResourceAccessor;
 
@@ -23,7 +24,7 @@ public class LiquibaseConfig {
     private final String schemaName;
     private final String defaultSchemaName;
 
-    public LiquibaseConfig(Map<String, Object> properties) {
+    private LiquibaseConfig(Map<String, Object> properties) {
         this.jdbcUrl = properties.get("hibernate.connection.url").toString();
         this.jdbcUser = properties.get("hibernate.connection.username").toString();
         this.jdbcPassword = properties.get("hibernate.connection.password").toString();
@@ -33,11 +34,13 @@ public class LiquibaseConfig {
         this.defaultSchemaName = properties.get("liquibase.defaultSchemaName").toString();
     }
 
-    public void runMigration() {
-        Connection connection = null;
+    public static void initialize(Map<String, Object> properties) {
+        new LiquibaseConfig(properties).runMigration();
+    }
 
-        try {
-            connection = DriverManager.getConnection(jdbcUrl, jdbcUser, jdbcPassword);
+    private void runMigration() {
+
+        try (Connection connection = DriverManager.getConnection(jdbcUrl, jdbcUser, jdbcPassword)) {
             Database db = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(new JdbcConnection(connection));
 
             db.setDefaultSchemaName(defaultSchemaName);
@@ -46,19 +49,9 @@ public class LiquibaseConfig {
             Liquibase liquibase = new Liquibase(changeLogFile, new ClassLoaderResourceAccessor(), db);
             liquibase.update(new Contexts());
         } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } catch (DatabaseException e) {
-            throw new RuntimeException(e);
+            throw new DatabaseConnectionException(jdbcUrl, jdbcUser, jdbcPassword, e);
         } catch (LiquibaseException e) {
-            throw new RuntimeException(e);
-        } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
-            }
+            throw new LiquibaseMigrationException(e);
         }
     }
 }

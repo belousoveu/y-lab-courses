@@ -1,5 +1,6 @@
 package belousov.eu.config;
 
+import belousov.eu.exception.HibernateConfigException;
 import belousov.eu.model.User;
 import lombok.Getter;
 import org.hibernate.SessionFactory;
@@ -17,15 +18,13 @@ public class HibernateConfig {
 
     public HibernateConfig(Map<String, Object> properties) {
 
-
         try (StandardServiceRegistry registry = new StandardServiceRegistryBuilder().applySettings(properties).build()) {
-            Configuration configuration = new Configuration().
-                    addAnnotatedClass(User.class);
+            Configuration configuration = new Configuration()
+                    .addAnnotatedClass(User.class);
 
             this.sessionFactory = configuration.buildSessionFactory(registry);
         } catch (Exception e) {
-            System.err.println("StandardServiceRegistryBuilder error");
-            throw new RuntimeException(e);
+            throw new HibernateConfigException(e);
         }
 
     }
