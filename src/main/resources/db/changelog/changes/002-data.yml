@@ -1,0 +1,136 @@
+databaseChangeLog:
+  - changeSet:
+      id: data-1
+      author: belousov
+      changes:
+        - insert:
+            schemaName: app
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  value: '2'
+              - column:
+                  name: name
+                  value: 'Ivan'
+              - column:
+                  name: email
+                  value: 'ivan@gmail.com'
+              - column:
+                  name: password
+                  value: '$2a$12$K9HjQ5JqP4mT68EpsYJFBuXWxGlICS4zhiubvlnODzRHbHqIG5ia.'
+              - column:
+                  name: role
+                  value: 'USER'
+              - column:
+                  name: is_active
+                  value: 'true'
+        - insert:
+            schemaName: app
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  value: '3'
+              - column:
+                  name: name
+                  value: 'Petr'
+              - column:
+                  name: email
+                  value: 'petr@gmail.com'
+              - column:
+                  name: password
+                  value: '$2a$12$gdj.rLxvKiPq39hZwZ2tXO3YYa4rjgzGY2YvkJ..7v6/LSL9pm5RG'
+              - column:
+                  name: role
+                  value: 'USER'
+              - column:
+                  name: is_active
+                  value: 'true'
+  - changeSet:
+      id: data-2
+      author: belousov
+      changes:
+        - sql:
+            sql: SELECT setval('app.user_id_seq', (SELECT MAX(id) FROM app.users));
+
+
+  - changeSet:
+      id: data-3
+      author: belousov
+      changes:
+        - insert:
+            schemaName: app
+            tableName: categories
+            columns:
+              - column:
+                  name: id
+                  value: '1'
+              - column:
+                  name: name
+                  value: 'Продукты'
+              - column:
+                  name: user_id
+                  value: '1'
+        - insert:
+            schemaName: app
+            tableName: categories
+            columns:
+              - column:
+                  name: id
+                  value: '2'
+              - column:
+                  name: name
+                  value: 'Книги'
+              - column:
+                  name: user_id
+                  value: '1'
+        - insert:
+            schemaName: app
+            tableName: categories
+            columns:
+              - column:
+                  name: id
+                  value: '3'
+              - column:
+                  name: name
+                  value: 'Продукты'
+              - column:
+                  name: user_id
+                  value: '2'
+        - insert:
+            schemaName: app
+            tableName: categories
+            columns:
+              - column:
+                  name: id
+                  value: '4'
+              - column:
+                  name: name
+                  value: 'Кредиты'
+              - column:
+                  name: user_id
+                  value: '2'
+        - insert:
+            schemaName: app
+            tableName: categories
+            columns:
+              - column:
+                  name: id
+                  value: '5'
+              - column:
+                  name: name
+                  value: 'Подарки'
+              - column:
+                  name: user_id
+                  value: '2'
+
+  - changeSet:
+      id: data-4
+      author: belousov
+      changes:
+        - sql:
+            sql: SELECT setval('app.category_id_seq', (SELECT MAX(id) FROM app.categories));
+
+
+

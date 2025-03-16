@@ -1,5 +1,7 @@
 package belousov.eu.config;
 
+import belousov.eu.PersonalMoneyTracker;
+import belousov.eu.view.Menu;
 import lombok.Getter;
 
 @Getter
@@ -25,6 +27,17 @@ public class ApplicationInitializer {
         }
         return instance;
 
+    }
+
+    public void start() {
+        Menu registrationMenu = MenuInitializer.initializeLoginMenu(container);
+        Menu mainMenu = MenuInitializer.initializeMainMenu(container);
+
+
+        while (PersonalMoneyTracker.isRunning()) {
+            registrationMenu.display();
+            mainMenu.display();
+        }
     }
 
 }
