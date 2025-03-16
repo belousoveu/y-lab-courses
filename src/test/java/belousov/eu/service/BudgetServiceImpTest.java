@@ -21,6 +21,7 @@ import static org.mockito.Mockito.*;
 /**
  * Тестовый класс для {@link BudgetServiceImp}.
  */
+
 class BudgetServiceImpTest {
 
     @Mock
@@ -64,8 +65,8 @@ class BudgetServiceImpTest {
 
     @Test
     void test_getBudgetReport_whenBudgetsExist_shouldReturnReport() {
-        Budget budget1 = new Budget(1, period, category1, user, 10000.0);
-        Budget budget2 = new Budget(2, period, category2, user, 5000.0);
+        Budget budget1 = new Budget(1, period.atDay(1), category1, user, 10000.0);
+        Budget budget2 = new Budget(2, period.atDay(1), category2, user, 5000.0);
         when(budgetRepository.findAllByPeriod(user, period)).thenReturn(List.of(budget1, budget2));
 
         Transaction transaction1 = new Transaction(1, period.atDay(1), OperationType.WITHDRAW, category1, 3000.0, "Покупка продуктов", user);
@@ -92,7 +93,7 @@ class BudgetServiceImpTest {
     @Test
     void test_checkBudget_whenBudgetExceeded_shouldSendEmailAndReturnMessage() {
         Transaction transaction = new Transaction(1, period.atDay(1), OperationType.WITHDRAW, category1, 11000.0, "Покупка продуктов", user);
-        Budget budget = new Budget(1, period, category1, user, 10000.0);
+        Budget budget = new Budget(1, period.atDay(1), category1, user, 10000.0);
         when(budgetRepository.findByCategoryAndPeriod(category1, user, period)).thenReturn(Optional.of(budget));
 
         List<Transaction> transactions = List.of(transaction);
@@ -107,7 +108,7 @@ class BudgetServiceImpTest {
     @Test
     void test_checkBudget_whenBudgetNotExceeded_shouldReturnEmptyMessage() {
         Transaction transaction = new Transaction(1, period.atDay(1), OperationType.WITHDRAW, category1, 9000.0, "Покупка продуктов", user);
-        Budget budget = new Budget(1, period, category1, user, 10000.0);
+        Budget budget = new Budget(1, period.atDay(1), category1, user, 10000.0);
         when(budgetRepository.findByCategoryAndPeriod(category1, user, period)).thenReturn(Optional.of(budget));
 
         List<Transaction> transactions = List.of(transaction);

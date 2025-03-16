@@ -1,0 +1,23 @@
+database:
+  url: jdbc:tc:postgres:16-alpine:///pmt_test
+  username: testuser
+  password: testpassword
+  driver: org.testcontainers.jdbc.ContainerDatabaseDriver
+
+hibernate:
+  connection:
+    driver_class: org.testcontainers.jdbc.ContainerDatabaseDriver
+    url: jdbc:tc:postgres:16-alpine:///pmt_test
+    username: testuser
+    password: testpassword
+  hbm2ddl.auto: create-drop
+  show_sql: true
+  format_sql: true
+
+liquibase:
+  enable: false
+
+logging:
+  level:
+    liquibase: OFF
+    org.hibernate: OFF

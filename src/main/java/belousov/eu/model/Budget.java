@@ -2,10 +2,7 @@ package belousov.eu.model;
 
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -16,6 +13,7 @@ import java.time.YearMonth;
  */
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(of = {"id"})
 @Entity
 @Table(name = "budgets", schema = "app")
 public class Budget {

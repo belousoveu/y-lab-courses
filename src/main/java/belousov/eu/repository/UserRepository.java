@@ -30,7 +30,7 @@ public class UserRepository {
      */
     private void init() {
         if (getAllAdminIds().isEmpty()) {
-            String encodedPassword = Password.encode("Admin123"); //TODO: Данные администратора по умолчанию взять из конфигурации
+            String encodedPassword = Password.encode("Admin123");
             save(new User(0, "admin", "admin@admin.com", encodedPassword, Role.ADMIN, true));
         }
     }

@@ -25,6 +25,7 @@ public class LiquibaseConfig {
     private final String defaultSchemaName;
 
     private LiquibaseConfig(Map<String, Object> properties) {
+
         this.jdbcUrl = properties.get("hibernate.connection.url").toString();
         this.jdbcUser = properties.get("hibernate.connection.username").toString();
         this.jdbcPassword = properties.get("hibernate.connection.password").toString();
@@ -35,6 +36,9 @@ public class LiquibaseConfig {
     }
 
     public static void initialize(Map<String, Object> properties) {
+        if (properties == null || properties.isEmpty() || Boolean.FALSE.equals(properties.get("liquibase.enable"))) {
+            return;
+        }
         new LiquibaseConfig(properties).runMigration();
     }
 

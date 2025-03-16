@@ -1,10 +1,7 @@
 package belousov.eu.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 /**
  * Класс, представляющий категорию транзакций.
@@ -14,6 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
+@EqualsAndHashCode(of = {"id"})
 @Entity
 @Table(name = "categories", schema = "app")
 public class Category {

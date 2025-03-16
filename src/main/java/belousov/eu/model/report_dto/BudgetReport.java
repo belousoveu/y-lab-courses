@@ -37,9 +37,9 @@ public class BudgetReport {
     /**
      * Добавляет строку отчёта с указанными категорией, суммой и фактическим расходом.
      *
-     * @param category
-     * @param amount
-     * @param spent
+     * @param category категория
+     * @param amount плановая сумма
+     * @param spent фактический расход
      */
     public void addReportRow(Category category, double amount, double spent) {
         reportRows.add(new ReportRow(category, amount, spent));

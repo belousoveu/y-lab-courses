@@ -5,11 +5,11 @@ import lombok.Getter;
 @Getter
 public class ApplicationInitializer {
     private final DependencyContainer container;
-    private final ApplicationConfig config;
+    private final ConfigLoader config;
     private static ApplicationInitializer instance;
 
 
-    private ApplicationInitializer(DependencyContainer container, ApplicationConfig config) {
+    private ApplicationInitializer(DependencyContainer container, ConfigLoader config) {
         this.container = container;
         this.config = config;
     }
@@ -17,7 +17,7 @@ public class ApplicationInitializer {
 
     public static ApplicationInitializer initialize() {
         if (instance == null) {
-            ApplicationConfig config = new ApplicationConfig();
+            ConfigLoader config = new ConfigLoader();
             LiquibaseConfig.initialize(config.getConfig());
             HibernateConfig hibernateConfig = new HibernateConfig(config.getConfig());
             DependencyContainer container = new DependencyContainer(hibernateConfig);

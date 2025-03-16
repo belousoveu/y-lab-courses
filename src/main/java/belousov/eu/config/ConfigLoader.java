@@ -12,20 +12,30 @@ import java.util.Map;
 import java.util.Objects;
 
 @Getter
-public class ApplicationConfig {
+public class ConfigLoader {
 
     private static final String DEFAULT_FILENAME = "src/main/resources/application.yml";
     private static final String DEMO_FILENAME = "src/main/resources/application-demo.yml";
+    private static final String TEST_FILENAME = "src/main/resources/application-test.yml";
     private final Map<String, Object> config;
     private final boolean demoMode;
 
 
-    public ApplicationConfig() {
+    public ConfigLoader() {
+        this("production");
+    }
+
+    public ConfigLoader(String profile) {
         Dotenv dotenv = Dotenv.load();
         String mode = dotenv.get("PMT_DEMO_MODE");
         demoMode = mode != null && mode.equalsIgnoreCase("on");
 
-        String filePath = demoMode ? DEMO_FILENAME : DEFAULT_FILENAME;
+        String filePath = DEFAULT_FILENAME;
+        if (profile.equals("test")) {
+            filePath = TEST_FILENAME;
+        } else if (demoMode && profile.equals("production")) {
+            filePath = DEMO_FILENAME;
+        }
 
         Yaml yaml = new Yaml();
 
@@ -34,6 +44,7 @@ public class ApplicationConfig {
             Map<String, Object> objectMap = yaml.load(fis);
             config = flatten("", objectMap);
             replacePlaceholders(config, dotenv);
+            config.put("profile", profile);
         } catch (IOException e) {
             throw new ConfigFileReadingException(filePath, e);
         }

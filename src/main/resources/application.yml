@@ -9,6 +9,7 @@ hibernate:
   format_sql: true
 
 liquibase:
+  enabled: true
   changeLogName: db/changelog/changelog.yml
   schemaName: service
   defaultSchemaName: app
