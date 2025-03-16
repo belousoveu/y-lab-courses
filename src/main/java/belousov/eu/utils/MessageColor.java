@@ -1,7 +1,7 @@
 package belousov.eu.utils;
 
 public enum MessageColor {
-    RED ("\u001B[31m"),
+    RED("\u001B[31m"),
     BLUE("\u001B[34m"),
     GREEN("\u001B[32m"),
     YELLOW("\u001B[33m"),

@@ -38,8 +38,8 @@ public class BudgetReport {
      * Добавляет строку отчёта с указанными категорией, суммой и фактическим расходом.
      *
      * @param category категория
-     * @param amount плановая сумма
-     * @param spent фактический расход
+     * @param amount   плановая сумма
+     * @param spent    фактический расход
      */
     public void addReportRow(Category category, double amount, double spent) {
         reportRows.add(new ReportRow(category, amount, spent));
@@ -49,6 +49,7 @@ public class BudgetReport {
 
     /**
      * Возвращает строку итоговой строки отчёта.
+     *
      * @return строка итоговой строки отчёта
      */
     public String getTotalRow() {
@@ -78,6 +79,7 @@ public class BudgetReport {
 
         /**
          * Возвращает строку с информацией о строке отчёта.
+         *
          * @return строка с информацией о строке отчёта
          */
         @Override
@@ -105,6 +107,7 @@ public class BudgetReport {
 
         /**
          * Возвращает строку с информацией об итоговой строке отчёта.
+         *
          * @return строка с информацией об итоговой строке отчёта
          */
         @Override

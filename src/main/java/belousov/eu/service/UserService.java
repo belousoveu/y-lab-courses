@@ -112,10 +112,10 @@ public class UserService implements AuthService, ProfileService, AdminAccessUser
         User currentUser = PersonalMoneyTracker.getCurrentUser();
         if (currentUser.isAdmin()) {
             checkIfLastAdmin(user);
-            userRepository.delete(user); //TODO Cascade delete all transactions
+            userRepository.delete(user);
         } else if (currentUser.equals(user)) {
             checkPassword(currentUser, password);
-            userRepository.delete(user); //TODO Cascade delete all transactions
+            userRepository.delete(user);
             PersonalMoneyTracker.setCurrentUser(null);
         } else {
             throw new ForbiddenException();
