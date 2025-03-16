@@ -21,7 +21,7 @@ public class DependencyContainer {
         register(UserRepository.class, new UserRepository(this.get(SessionFactory.class)));
         register(GoalRepository.class, new GoalRepository(this.get(SessionFactory.class)));
         register(CategoryRepository.class, new CategoryRepository(this.get(SessionFactory.class)));
-        register(BudgetRepository.class, new BudgetRepository());
+        register(BudgetRepository.class, new BudgetRepository(this.get(SessionFactory.class)));
         register(TransactionRepository.class, new TransactionRepository());
         register(BalanceChangeSubject.class, new BalanceChangeSubject());
         register(ConsoleView.class, new ConsoleView());

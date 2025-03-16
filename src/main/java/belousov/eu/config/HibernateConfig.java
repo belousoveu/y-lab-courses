@@ -1,9 +1,7 @@
 package belousov.eu.config;
 
 import belousov.eu.exception.HibernateConfigException;
-import belousov.eu.model.Category;
-import belousov.eu.model.Goal;
-import belousov.eu.model.User;
+import belousov.eu.model.*;
 import lombok.Getter;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistry;
@@ -24,7 +22,9 @@ public class HibernateConfig {
             Configuration configuration = new Configuration()
                     .addAnnotatedClass(User.class)
                     .addAnnotatedClass(Category.class)
-                    .addAnnotatedClass(Goal.class);
+                    .addAnnotatedClass(Goal.class)
+                    .addAnnotatedClass(Budget.class)
+                    .addAnnotatedClass(Transaction.class);
 
             this.sessionFactory = configuration.buildSessionFactory(registry);
         } catch (Exception e) {

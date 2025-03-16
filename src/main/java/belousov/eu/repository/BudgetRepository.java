@@ -3,24 +3,23 @@ package belousov.eu.repository;
 import belousov.eu.model.Budget;
 import belousov.eu.model.Category;
 import belousov.eu.model.User;
-import belousov.eu.utils.IdGenerator;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 
 import java.time.YearMonth;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
  * Репозиторий для управления бюджетами пользователей.
  * Обеспечивает хранение, добавление и поиск бюджетов по категориям и периодам.
  */
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class BudgetRepository {
 
-    private final Map<Integer, Budget> budgetMap = new HashMap<>();
-    private final IdGenerator<Integer> idGenerator = IdGenerator.create(Integer.class);
+    private final SessionFactory sessionFactory;
+
 
     /**
      * Сохраняет бюджет в репозитории. Если бюджет новый (ID = 0), генерирует для него ID.
@@ -28,10 +27,7 @@ public class BudgetRepository {
      * @param budget бюджет для сохранения
      */
     public void save(Budget budget) {
-        if (budget.getId() == 0) {
-            budget.setId(idGenerator.nextId());
-        }
-        budgetMap.put(budget.getId(), budget);
+        sessionFactory.inTransaction(session -> session.merge(budget));
     }
 
     /**
@@ -42,9 +38,18 @@ public class BudgetRepository {
      * @return список бюджетов пользователя за указанный период
      */
     public List<Budget> findAllByPeriod(User currentUser, YearMonth period) {
-        return budgetMap.values().stream()
-                .filter(budget -> budget.getUser().equals(currentUser) && budget.getPeriod().equals(period))
-                .toList();
+
+        try (Session session = sessionFactory.openSession()) {
+            return session.createQuery("""
+                            SELECT b
+                            FROM Budget b
+                            WHERE b.user = :currentUser AND b.period = :period
+                            """, Budget.class)
+                    .setParameter("currentUser", currentUser)
+                    .setParameter("period", period.atDay(1))
+                    .getResultList();
+        }
+
     }
 
     /**
@@ -56,9 +61,21 @@ public class BudgetRepository {
      * @return Optional с бюджетом, если найден, иначе пустой Optional
      */
     public Optional<Budget> findByCategoryAndPeriod(Category category, User user, YearMonth period) {
-        return budgetMap.values().stream()
-                .filter(budget -> budget.getCategory().equals(category) && budget.getUser().equals(user) && budget.getPeriod().equals(period))
-                .findFirst();
+
+        try (Session session = sessionFactory.openSession()) {
+            return Optional.ofNullable(
+                    session.createQuery("""
+                                    
+                                                    SELECT b
+                                    FROM Budget b
+                                    WHERE b.category = :category AND b.user = :user AND b.period = :period
+                                    """, Budget.class)
+                            .setParameter("category", category)
+                            .setParameter("user", user)
+                            .setParameter("period", period.atDay(1))
+                            .getSingleResultOrNull());
+
+        }
     }
 
 }
