@@ -39,7 +39,7 @@ public class MenuInitializer {
         categoryMenu.add(2, "Изменить категорию", new ChangeCategoryCommand(container));
         categoryMenu.add(3, "Удалить категорию", new DeleteCategoryCommand(container));
         categoryMenu.add(4, "Посмотреть список категорий", new ListCategoriesCommand(container));
-        categoryMenu.add(0, BACK_TO_MAIN_MENU_MESSAGE, () -> categoryMenu.getParent().display());
+        categoryMenu.add(0, "Вернуться в предыдущее меню", () -> categoryMenu.getParent().display());
 
         Menu financeMenagementMenu = new Menu("Управление личными финансами", Role.USER);
         financeMenagementMenu.add(1, "Добавить операцию", new AddTransactionCommand(container));

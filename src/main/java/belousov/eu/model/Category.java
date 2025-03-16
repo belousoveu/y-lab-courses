@@ -31,7 +31,7 @@ public class Category {
     /**
      * Пользователь, которому принадлежит категория.
      */
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToOne(cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
