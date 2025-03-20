@@ -1,0 +1,314 @@
+databaseChangeLog:
+
+  - changeSet:
+      id: 1
+      author: belousov
+      changes:
+        - createSequence:
+            schemaName: app
+            sequenceName: user_id_seq
+            dataType: int
+            startValue: 1
+            incrementBy: 1
+            cacheSize: 10
+        - createTable:
+            schemaName: app
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                  defaultValueComputed: "nextval('app.user_id_seq')"
+              - column:
+                  name: name
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: email
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: password
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: is_active
+                  type: boolean
+                  defaultValue: "true"
+              - column:
+                  name: role
+                  type: varchar(10)
+                  defaultValue: "USER"
+                  constraints:
+                    nullable: false
+        - sql:
+            sql: ALTER TABLE app.users ADD CONSTRAINT check_role CHECK (role IN ('ADMIN', 'USER'))
+        - createIndex:
+            tableName: users
+            indexName: idx_user_email
+            columns:
+              - column:
+                  name: email
+
+  - changeSet:
+      id: 2
+      author: belousov
+      changes:
+        - createSequence:
+            schemaName: app
+            sequenceName: budget_id_seq
+            dataType: int
+            startValue: 1
+            incrementBy: 1
+            cacheSize: 10
+        - createTable:
+            schemaName: app
+            tableName: budgets
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                  defaultValueComputed: "nextval('app.budget_id_seq')"
+              - column:
+                  name: period
+                  type: date
+                  constraints:
+                    nullable: false
+              - column:
+                  name: category_id
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: amount
+                  type: bigint
+                  constraints:
+                    nullable: true
+                    checkConstraint: "amount >= 0"
+
+  - changeSet:
+      id: 3
+      author: belousov
+      changes:
+        - createSequence:
+            schemaName: app
+            sequenceName: category_id_seq
+            dataType: int
+            startValue: 1
+            incrementBy: 1
+            cacheSize: 10
+        - createTable:
+            schemaName: app
+            tableName: categories
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                  defaultValueComputed: "nextval('app.category_id_seq')"
+              - column:
+                  name: name
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+                    unique: false
+              - column:
+                  name: user_id
+                  type: int
+                  constraints:
+                    nullable: false
+
+  - changeSet:
+      id: 4
+      author: belousov
+      changes:
+        - createSequence:
+            schemaName: app
+            sequenceName: goal_id_seq
+            dataType: int
+            startValue: 1
+            incrementBy: 1
+            cacheSize: 10
+        - createTable:
+            schemaName: app
+            tableName: goals
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                  defaultValueComputed: "nextval('app.goal_id_seq')"
+              - column:
+                  name: user_id
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: name
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+                    unique: false
+              - column:
+                  name: description
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: point
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    checkConstraint: "point >= 0"
+
+  - changeSet:
+      id: 5
+      author: belousov
+      changes:
+        - createSequence:
+            schemaName: app
+            sequenceName: transaction_id_seq
+            dataType: int
+            startValue: 1
+            incrementBy: 1
+            cacheSize: 10
+        - createTable:
+            schemaName: app
+            tableName: transactions
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                  defaultValueComputed: "nextval('app.transaction_id_seq')"
+              - column:
+                  name: date
+                  type: date
+                  constraints:
+                    nullable: false
+              - column:
+                  name: operation_type
+                  type: varchar(10)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: category_id
+                  type: int
+                  constraints:
+                    nullable: true
+              - column:
+                  name: user_id
+                  type: int
+                  constraints:
+                    nullable: false
+              - column:
+                  name: amount
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    checkConstraint: "amount >= 0"
+              - column:
+                  name: description
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+        - createIndex:
+            tableName: transactions
+            indexName: idx_transaction_user
+            columns:
+              - column:
+                  name: user_id
+        - createIndex:
+            tableName: transactions
+            indexName: idx_transaction_date
+            columns:
+              - column:
+                  name: date
+        - sql:
+            sql: ALTER TABLE app.transactions ADD CONSTRAINT check_operation_type CHECK (operation_type IN ('DEPOSIT', 'WITHDRAW'))
+
+  - changeSet:
+      id: 6
+      author: belousov
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: categories
+            baseColumnNames: user_id
+            referencedTableName: users
+            referencedColumnNames: id
+            onDelete: CASCADE
+            onUpdate: CASCADE
+            constraintName: fk_category_user
+        - addForeignKeyConstraint:
+            baseTableName: goals
+            baseColumnNames: user_id
+            referencedTableName: users
+            referencedColumnNames: id
+            onDelete: CASCADE
+            onUpdate: CASCADE
+            constraintName: fk_goal_user
+        - addForeignKeyConstraint:
+            baseTableName: budgets
+            baseColumnNames: category_id
+            referencedTableName: categories
+            referencedColumnNames: id
+            onDelete: CASCADE
+            onUpdate: CASCADE
+            constraintName: fk_budget_category
+        - addForeignKeyConstraint:
+            baseTableName: budgets
+            baseColumnNames: user_id
+            referencedTableName: users
+            referencedColumnNames: id
+            onDelete: CASCADE
+            onUpdate: CASCADE
+            constraintName: fk_budget_user
+        - addForeignKeyConstraint:
+            baseTableName: transactions
+            baseColumnNames: user_id
+            referencedTableName: users
+            referencedColumnNames: id
+            onDelete: CASCADE
+            onUpdate: CASCADE
+            constraintName: fk_transaction_user
+        - addForeignKeyConstraint:
+            baseTableName: transactions
+            baseColumnNames: category_id
+            referencedTableName: categories
+            referencedColumnNames: id
+            onDelete: CASCADE
+            onUpdate: CASCADE
+            constraintName: fk_transaction_category
+
+
+
+
+
+
+
+
+
+
+
+

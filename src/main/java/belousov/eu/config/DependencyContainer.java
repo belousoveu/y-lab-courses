@@ -5,6 +5,7 @@ import belousov.eu.observer.BalanceChangeSubject;
 import belousov.eu.repository.*;
 import belousov.eu.service.*;
 import belousov.eu.view.ConsoleView;
+import org.hibernate.SessionFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,13 +14,15 @@ public class DependencyContainer {
 
     private final Map<Class<?>, Object> dependencies = new HashMap<>();
 
-    public DependencyContainer() {
+    public DependencyContainer(HibernateConfig hibernateConfig) {
 
-        register(UserRepository.class, new UserRepository());
-        register(GoalRepository.class, new GoalRepository());
-        register(CategoryRepository.class, new CategoryRepository());
-        register(BudgetRepository.class, new BudgetRepository());
-        register(TransactionRepository.class, new TransactionRepository());
+        register(SessionFactory.class, hibernateConfig.getSessionFactory());
+
+        register(UserRepository.class, new UserRepository(this.get(SessionFactory.class)));
+        register(GoalRepository.class, new GoalRepository(this.get(SessionFactory.class)));
+        register(CategoryRepository.class, new CategoryRepository(this.get(SessionFactory.class)));
+        register(BudgetRepository.class, new BudgetRepository(this.get(SessionFactory.class)));
+        register(TransactionRepository.class, new TransactionRepository(this.get(SessionFactory.class)));
         register(BalanceChangeSubject.class, new BalanceChangeSubject());
         register(ConsoleView.class, new ConsoleView());
 

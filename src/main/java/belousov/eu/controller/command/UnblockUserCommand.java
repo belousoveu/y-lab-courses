@@ -4,7 +4,7 @@ import belousov.eu.config.DependencyContainer;
 import belousov.eu.controller.AdminController;
 
 public class UnblockUserCommand implements CommandMenu {
-    AdminController controller;
+    private final AdminController controller;
 
     public UnblockUserCommand(DependencyContainer container) {
         controller = container.get(AdminController.class);

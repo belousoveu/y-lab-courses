@@ -39,7 +39,7 @@ public class MenuInitializer {
         categoryMenu.add(2, "Изменить категорию", new ChangeCategoryCommand(container));
         categoryMenu.add(3, "Удалить категорию", new DeleteCategoryCommand(container));
         categoryMenu.add(4, "Посмотреть список категорий", new ListCategoriesCommand(container));
-        categoryMenu.add(0, BACK_TO_MAIN_MENU_MESSAGE, () -> categoryMenu.getParent().display());
+        categoryMenu.add(0, "Вернуться в предыдущее меню", () -> categoryMenu.getParent().display());
 
         Menu financeMenagementMenu = new Menu("Управление личными финансами", Role.USER);
         financeMenagementMenu.add(1, "Добавить операцию", new AddTransactionCommand(container));
@@ -69,7 +69,7 @@ public class MenuInitializer {
         goalsMenu.add(0, BACK_TO_MAIN_MENU_MESSAGE, mainMenu::display);
 
         Menu reportMenu = new Menu("Статистика и аналитика", Role.USER);
-        reportMenu.add(1, "Текущий баланс", new ViewBalancCommand(container));
+        reportMenu.add(1, "Текущий баланс", new ViewBalanceCommand(container));
         reportMenu.add(2, "Отчет о доходах и расходах за период", new ViewIncomeStatementCommand(container));
         reportMenu.add(3, "Отчет о расходах по категориям", new ViewCategoryReportCommand(container));
         reportMenu.add(4, "Отчет о финансовом состоянии", new ViewFinancialReportCommand(container));

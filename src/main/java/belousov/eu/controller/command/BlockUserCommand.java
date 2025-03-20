@@ -5,7 +5,7 @@ import belousov.eu.controller.AdminController;
 
 public class BlockUserCommand implements CommandMenu {
 
-    AdminController controller;
+    private final AdminController controller;
 
     public BlockUserCommand(DependencyContainer container) {
         controller = container.get(AdminController.class);

@@ -5,7 +5,7 @@ import belousov.eu.controller.AuthController;
 
 public class AuthCommand implements CommandMenu {
 
-    AuthController controller;
+    private final AuthController controller;
 
     public AuthCommand(DependencyContainer container) {
         controller = container.get(AuthController.class);

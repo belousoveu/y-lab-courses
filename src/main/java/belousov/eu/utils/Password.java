@@ -4,7 +4,8 @@ import at.favre.lib.crypto.bcrypt.BCrypt;
 
 public class Password {
 
-    private Password() {}
+    private Password() {
+    }
 
     public static String encode(String password) {
         return BCrypt.withDefaults().hashToString(12, password.toCharArray());

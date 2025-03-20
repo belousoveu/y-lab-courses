@@ -7,6 +7,7 @@ import belousov.eu.model.User;
 import belousov.eu.repository.UserRepository;
 import belousov.eu.utils.Password;
 import lombok.AllArgsConstructor;
+import org.hibernate.exception.ConstraintViolationException;
 
 import java.util.List;
 
@@ -30,8 +31,13 @@ public class UserService implements AuthService, ProfileService, AdminAccessUser
      */
     @Override
     public void register(String name, String email, String password) {
-        User user = userRepository.save(new User(name, email.toLowerCase(), Password.encode(password)));
-        PersonalMoneyTracker.setCurrentUser(user);
+        try {
+            User user = userRepository.save(new User(0, name, email.toLowerCase(), Password.encode(password), Role.USER, true));
+            PersonalMoneyTracker.setCurrentUser(user);
+        } catch (ConstraintViolationException e) {
+            throw new EmailAlreadyExistsException(email.toLowerCase());
+        }
+
     }
 
     /**
@@ -88,7 +94,6 @@ public class UserService implements AuthService, ProfileService, AdminAccessUser
      */
     @Override
     public void changeEmail(User user, String email) {
-        userRepository.removeOldEmail(user.getEmail());
         user.setEmail(email.toLowerCase());
         userRepository.save(user);
     }
@@ -107,10 +112,10 @@ public class UserService implements AuthService, ProfileService, AdminAccessUser
         User currentUser = PersonalMoneyTracker.getCurrentUser();
         if (currentUser.isAdmin()) {
             checkIfLastAdmin(user);
-            userRepository.delete(user); //TODO Cascade delete all transactions
+            userRepository.delete(user);
         } else if (currentUser.equals(user)) {
             checkPassword(currentUser, password);
-            userRepository.delete(user); //TODO Cascade delete all transactions
+            userRepository.delete(user);
             PersonalMoneyTracker.setCurrentUser(null);
         } else {
             throw new ForbiddenException();

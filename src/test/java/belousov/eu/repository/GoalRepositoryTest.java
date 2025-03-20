@@ -1,90 +1,138 @@
 package belousov.eu.repository;
 
+import belousov.eu.config.ConfigLoader;
+import belousov.eu.config.HibernateConfig;
 import belousov.eu.model.Goal;
 import belousov.eu.model.Role;
 import belousov.eu.model.User;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-/**
- * Тестовый класс для {@link GoalRepository}.
- */
+@Testcontainers
 class GoalRepositoryTest {
+    private static final ConfigLoader configLoader = new ConfigLoader("test");
 
+    @Container
+    private static final PostgreSQLContainer<?> postgres;
+
+    private static SessionFactory sessionFactory;
     private GoalRepository goalRepository;
-    private User user;
+
+    private User testUser;
+
+    static {
+        postgres = new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"))
+                .withDatabaseName("pmt-test")
+                .withUsername("testuser")
+                .withPassword("testpassword")
+                .withInitScript("init.sql")
+        ;
+
+    }
+
+    @BeforeAll
+    static void init() {
+        postgres.start();
+        Map<String, Object> config = configLoader.getConfig();
+        config.put("hibernate.connection.url", postgres.getJdbcUrl());
+        config.put("hibernate.connection.username", postgres.getUsername());
+        config.put("hibernate.connection.password", postgres.getPassword());
+        config.put("hibernate.connection.driver_class", postgres.getDriverClassName());
+        config.put("hibernate.default_schema", "app");
+        sessionFactory = new HibernateConfig(config).getSessionFactory();
+    }
+
+    @AfterAll
+    static void tearDown() {
+        postgres.stop();
+    }
+
 
     @BeforeEach
     void setUp() {
-        goalRepository = new GoalRepository();
-        user = new User(1, "John Doe", "john@example.com", "password123", Role.USER, true);
+        try (Session session = sessionFactory.openSession()) {
+            session.beginTransaction();
+            session.createMutationQuery("DELETE FROM Goal").executeUpdate();
+            session.createMutationQuery("DELETE FROM User").executeUpdate();
+            session.createNativeQuery("ALTER SEQUENCE app.goal_id_seq RESTART WITH 1", Goal.class).executeUpdate();
+            session.getTransaction().commit();
+        }
+        try (Session session = sessionFactory.openSession()) {
+            session.beginTransaction();
+            User newUser = new User(0, "user1", "user1@example.com", "Password1", Role.USER, true);
+            testUser = session.merge(newUser);
+            session.getTransaction().commit();
+
+        }
+        goalRepository = new GoalRepository(sessionFactory);
     }
 
     @Test
-    void test_save_whenNewGoal_shouldAddGoalAndGenerateId() {
-        Goal goal = new Goal(0, user, "Накопить на машину", "Накопить 2 500 000 на машину", 2_500_000.0);
-        goalRepository.save(goal);
+    void test_findById() {
+        Goal newGoal = new Goal(0, testUser, "Test Goal", "Test Description", 100);
+        goalRepository.save(newGoal);
 
-        assertThat(goal.getId()).isNotZero();
-        assertThat(goalRepository.findById(goal.getId())).contains(goal);
+        Optional<Goal> foundGoal = goalRepository.findById(1);
+
+        assertThat(foundGoal).isPresent();
+        assertThat(foundGoal.get().getId()).isNotZero();
+        assertThat(foundGoal.get().getName()).isEqualTo("Test Goal");
+        assertThat(foundGoal.get().getDescription()).isEqualTo("Test Description");
     }
 
     @Test
-    void test_save_whenExistingGoal_shouldUpdateGoal() {
-        Goal goal = new Goal(0, user, "Накопить на машину", "Накопить 2 500 000 на машину", 2_500_000.0);
-        goalRepository.save(goal);
+    void test_findAllByUser() {
+        Goal newGoal = new Goal(0, testUser, "Test Goal", "Test Description", 100);
+        goalRepository.save(newGoal);
 
-        goal.setPoint(3_000_000.0);
-        goalRepository.save(goal);
+        List<Goal> foundGoals = goalRepository.findAllByUser(testUser);
+        assertThat(foundGoals).hasSize(1);
+        assertThat(foundGoals.get(0).getName()).isEqualTo("Test Goal");
+        assertThat(foundGoals.get(0).getDescription()).isEqualTo("Test Description");
 
-        Optional<Goal> updatedGoal = goalRepository.findById(goal.getId());
-        assertThat(updatedGoal).isPresent();
-        assertThat(updatedGoal.get().getPoint()).isEqualTo(3_000_000.0);
     }
 
     @Test
-    void test_delete_shouldRemoveGoal() {
-        Goal goal = new Goal(0, user, "Накопить на машину", "Накопить 2 500 000 на машину", 2_500_000.0);
-        goalRepository.save(goal);
+    void test_delete() {
+        Goal newGoal = new Goal(0, testUser, "Test Goal", "Test Description", 100);
+        goalRepository.save(newGoal);
 
-        goalRepository.delete(goal);
-        assertThat(goalRepository.findById(goal.getId())).isEmpty();
+        Optional<Goal> foundGoal = goalRepository.findById(1);
+
+        assertThat(foundGoal).isPresent();
+
+        goalRepository.delete(foundGoal.get());
+        Optional<Goal> deletedGoal = goalRepository.findById(1);
+        assertThat(deletedGoal).isNotPresent();
+
     }
 
     @Test
-    void test_findById_whenGoalExists_shouldReturnGoal() {
-        Goal goal = new Goal(0, user, "Накопить на машину", "Накопить 2 500 000 на машину", 2_500_000.0);
-        goalRepository.save(goal);
+    void test_save() {
 
-        Optional<Goal> foundGoal = goalRepository.findById(goal.getId());
-        assertThat(foundGoal).contains(goal);
-    }
+        Goal newGoal = new Goal(0, testUser, "Test Goal", "Test Description", 100);
+        goalRepository.save(newGoal);
 
-    @Test
-    void test_findById_whenGoalDoesNotExist_shouldReturnEmpty() {
-        Optional<Goal> foundGoal = goalRepository.findById(999);
-        assertThat(foundGoal).isEmpty();
-    }
+        Optional<Goal> foundGoal = goalRepository.findById(1);
 
-    @Test
-    void test_findAllByUser_shouldReturnGoalsForUser() {
-        Goal goal1 = new Goal(0, user, "Накопить на машину", "Накопить 2 500 000 на машину", 2_500_000.0);
-        Goal goal2 = new Goal(0, user, "Накопить на дом", "Накопить 10 000 000 на дом", 10_000_000.0);
-        goalRepository.save(goal1);
-        goalRepository.save(goal2);
-
-        List<Goal> goals = goalRepository.findAllByUser(user);
-        assertThat(goals).containsExactlyInAnyOrder(goal1, goal2);
-    }
-
-    @Test
-    void test_findAllByUser_whenNoGoalsExist_shouldReturnEmptyList() {
-        List<Goal> goals = goalRepository.findAllByUser(user);
-        assertThat(goals).isEmpty();
+        assertThat(foundGoal).isPresent();
+        assertThat(foundGoal.get().getId()).isNotZero();
+        assertThat(foundGoal.get().getName()).isEqualTo("Test Goal");
+        assertThat(foundGoal.get().getDescription()).isEqualTo("Test Description");
+        assertThat(foundGoal.get().getUser()).isEqualTo(testUser);
     }
 }

@@ -11,8 +11,8 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class ReportController {
 
-    ReportService reportService;
-    ConsoleView consoleView;
+    private final ReportService reportService;
+    private final ConsoleView consoleView;
 
     private static final String PROMPT_DATE_FROM = "Введите дату начала периода (YYYY-MM-DD): ";
     private static final String PROMPT_DATE_TO = "Введите дату конца периода (YYYY-MM-DD): ";

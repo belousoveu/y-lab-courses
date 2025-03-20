@@ -17,7 +17,6 @@ public enum InputPattern {
     DATE(Pattern.compile("^(20\\d\\d)-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$"), "Необходимо указать дату в формате YYYY-MM-DD");
 
 
-
     private final Pattern pattern;
     @Getter
     private final String message;

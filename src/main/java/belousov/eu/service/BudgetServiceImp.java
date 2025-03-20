@@ -41,7 +41,7 @@ public class BudgetServiceImp implements BudgetService {
     public void addBudget(YearMonth period, Map<Category, Double> budgetMap) {
         User user = PersonalMoneyTracker.getCurrentUser();
         budgetMap.forEach((category, amount) ->
-                budgetRepository.save(new Budget(0, period, category, user, amount.intValue())));
+                budgetRepository.save(new Budget(0, period.atDay(1), category, user, amount.intValue())));
 
     }
 

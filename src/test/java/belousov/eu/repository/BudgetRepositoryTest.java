@@ -1,89 +1,127 @@
 package belousov.eu.repository;
 
+import belousov.eu.config.ConfigLoader;
+import belousov.eu.config.HibernateConfig;
 import belousov.eu.model.Budget;
 import belousov.eu.model.Category;
 import belousov.eu.model.Role;
 import belousov.eu.model.User;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-/**
- * Тестовый класс для {@link BudgetRepository}.
- */
+@Testcontainers
 class BudgetRepositoryTest {
 
+    private static final ConfigLoader configLoader = new ConfigLoader("test");
+
+    @Container
+    private static final PostgreSQLContainer<?> postgres;
+
+    private static SessionFactory sessionFactory;
     private BudgetRepository budgetRepository;
-    private User user;
-    private Category category1;
-    private Category category2;
-    private YearMonth period;
+
+    private User testUser;
+    private Category testCategory;
+
+    static {
+        postgres = new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"))
+                .withDatabaseName("pmt-test")
+                .withUsername("testuser")
+                .withPassword("testpassword")
+                .withInitScript("init.sql")
+        ;
+
+    }
+
+    @BeforeAll
+    static void init() {
+        postgres.start();
+        Map<String, Object> config = configLoader.getConfig();
+        config.put("hibernate.connection.url", postgres.getJdbcUrl());
+        config.put("hibernate.connection.username", postgres.getUsername());
+        config.put("hibernate.connection.password", postgres.getPassword());
+        config.put("hibernate.connection.driver_class", postgres.getDriverClassName());
+        config.put("hibernate.default_schema", "app");
+        sessionFactory = new HibernateConfig(config).getSessionFactory();
+    }
+
+    @AfterAll
+    static void tearDown() {
+        postgres.stop();
+    }
+
 
     @BeforeEach
     void setUp() {
-        budgetRepository = new BudgetRepository();
-        user = new User(1, "John Doe", "john@example.com", "password123", Role.USER, true);
-        category1 = new Category(1, "Продукты", user);
-        category2 = new Category(2, "Транспорт", user);
-        period = YearMonth.of(2023, 10);
+        try (Session session = sessionFactory.openSession()) {
+            session.beginTransaction();
+            session.createMutationQuery("DELETE FROM Budget").executeUpdate();
+            session.createMutationQuery("DELETE FROM Category").executeUpdate();
+            session.createMutationQuery("DELETE FROM User").executeUpdate();
+            session.createNativeQuery("ALTER SEQUENCE app.budget_id_seq RESTART WITH 1", Budget.class).executeUpdate();
+            session.getTransaction().commit();
+        }
+        try (Session session = sessionFactory.openSession()) {
+            session.beginTransaction();
+            User newUser = new User(0, "user1", "user1@example.com", "Password1", Role.USER, true);
+            testUser = session.merge(newUser);
+            Category newCategory = new Category(0, "category1", testUser);
+            testCategory = session.merge(newCategory);
+            session.getTransaction().commit();
+
+        }
+        budgetRepository = new BudgetRepository(sessionFactory);
     }
 
     @Test
-    void test_save_whenNewBudget_shouldAddBudgetAndGenerateId() {
-        Budget budget = new Budget(0, period, category1, user, 10000.0);
+    void test_save() {
+        Budget budget = new Budget(0, LocalDate.of(2025, 3, 1), testCategory, testUser, 100);
         budgetRepository.save(budget);
 
-        assertThat(budget.getId()).isNotZero();
-        assertThat(budgetRepository.findByCategoryAndPeriod(category1, user, period)).contains(budget);
+        List<Budget> foundBudgets = budgetRepository.findAllByPeriod(testUser, YearMonth.of(2025, 3));
+        assertThat(foundBudgets).hasSize(1);
+        assertThat(foundBudgets.get(0).getId()).isEqualTo(1);
+        assertThat(foundBudgets.get(0).getUser()).isEqualTo(testUser);
     }
 
     @Test
-    void test_save_whenExistingBudget_shouldUpdateBudget() {
-        Budget budget = new Budget(0, period, category1, user, 10000.0);
+    void test_findAllByPeriod() {
+        Budget budget = new Budget(0, LocalDate.of(2025, 3, 1), testCategory, testUser, 100);
         budgetRepository.save(budget);
-
-        budget.setAmount(15000.0);
-        budgetRepository.save(budget);
-
-        Optional<Budget> updatedBudget = budgetRepository.findByCategoryAndPeriod(category1, user, period);
-        assertThat(updatedBudget).isPresent();
-        assertThat(updatedBudget.get().getAmount()).isEqualTo(15000.0);
-    }
-
-    @Test
-    void test_findAllByPeriod_shouldReturnBudgetsForUserAndPeriod() {
-        Budget budget1 = new Budget(0, period, category1, user, 10000.0);
-        Budget budget2 = new Budget(0, period, category2, user, 5000.0);
-        budgetRepository.save(budget1);
+        Budget budget2 = new Budget(0, LocalDate.of(2025, 3, 1), testCategory, testUser, 200);
         budgetRepository.save(budget2);
 
-        List<Budget> budgets = budgetRepository.findAllByPeriod(user, period);
-        assertThat(budgets).containsExactlyInAnyOrder(budget1, budget2);
+        List<Budget> foundBudgets = budgetRepository.findAllByPeriod(testUser, YearMonth.of(2025, 3));
+        assertThat(foundBudgets).hasSize(2);
     }
 
     @Test
-    void test_findAllByPeriod_whenNoBudgetsExist_shouldReturnEmptyList() {
-        List<Budget> budgets = budgetRepository.findAllByPeriod(user, period);
-        assertThat(budgets).isEmpty();
-    }
-
-    @Test
-    void test_findByCategoryAndPeriod_whenBudgetExists_shouldReturnBudget() {
-        Budget budget = new Budget(0, period, category1, user, 10000.0);
+    void test_findByCategoryAndPeriod() {
+        Budget budget = new Budget(0, LocalDate.of(2025, 3, 1), testCategory, testUser, 100);
         budgetRepository.save(budget);
+        Budget budget2 = new Budget(0, LocalDate.of(2025, 2, 1), testCategory, testUser, 200);
+        budgetRepository.save(budget2);
 
-        Optional<Budget> foundBudget = budgetRepository.findByCategoryAndPeriod(category1, user, period);
-        assertThat(foundBudget).contains(budget);
-    }
-
-    @Test
-    void test_findByCategoryAndPeriod_whenBudgetDoesNotExist_shouldReturnEmpty() {
-        Optional<Budget> foundBudget = budgetRepository.findByCategoryAndPeriod(category1, user, period);
-        assertThat(foundBudget).isEmpty();
+        Optional<Budget> foundBudget = budgetRepository.findByCategoryAndPeriod(testCategory, testUser, YearMonth.of(2025, 3));
+        assertThat(foundBudget).isPresent();
+        assertThat(foundBudget.get().getCategory()).isEqualTo(testCategory);
+        assertThat(foundBudget.get().getUser()).isEqualTo(testUser);
+        assertThat(foundBudget.get().getPeriod()).isEqualTo(YearMonth.of(2025, 3));
     }
 }

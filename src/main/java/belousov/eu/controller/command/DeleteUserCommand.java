@@ -5,7 +5,7 @@ import belousov.eu.controller.AdminController;
 
 public class DeleteUserCommand implements CommandMenu {
 
-    AdminController controller;
+    private final AdminController controller;
 
     public DeleteUserCommand(DependencyContainer container) {
         controller = container.get(AdminController.class);

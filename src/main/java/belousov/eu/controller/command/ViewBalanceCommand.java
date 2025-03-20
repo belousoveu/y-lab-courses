@@ -3,11 +3,11 @@ package belousov.eu.controller.command;
 import belousov.eu.config.DependencyContainer;
 import belousov.eu.controller.ReportController;
 
-public class ViewBalancCommand implements CommandMenu {
+public class ViewBalanceCommand implements CommandMenu {
 
-    ReportController controller;
+    private final ReportController controller;
 
-    public ViewBalancCommand(DependencyContainer container) {
+    public ViewBalanceCommand(DependencyContainer container) {
         controller = container.get(ReportController.class);
     }
 

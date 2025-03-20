@@ -5,7 +5,7 @@ import belousov.eu.controller.ReportController;
 
 public class ViewIncomeStatementCommand implements CommandMenu {
 
-    ReportController controller;
+    private final ReportController controller;
 
     public ViewIncomeStatementCommand(DependencyContainer container) {
         controller = container.get(ReportController.class);

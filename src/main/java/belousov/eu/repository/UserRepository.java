@@ -1,12 +1,13 @@
 package belousov.eu.repository;
 
-import belousov.eu.exception.EmailAlreadyExistsException;
 import belousov.eu.model.Role;
 import belousov.eu.model.User;
-import belousov.eu.utils.IdGenerator;
 import belousov.eu.utils.Password;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Репозиторий для управления пользователями.
@@ -14,15 +15,13 @@ import java.util.*;
  */
 public class UserRepository {
 
-    private final Map<Integer, User> users = new HashMap<>();
-    private final Set<Integer> admins = new HashSet<>();
-    private final Set<String> emails = new HashSet<>();
-    private final IdGenerator<Integer> idCounter = IdGenerator.create(Integer.class);
+    private final SessionFactory sessionFactory;
 
     /**
-     * Конструктор по умолчанию. Инициализирует репозиторий начальными данными.
+     * Конструктор по умолчанию. При отсутствии в базе данных администратора, добавляет администратора по умолчанию
      */
-    public UserRepository() {
+    public UserRepository(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
         init();
     }
 
@@ -30,32 +29,26 @@ public class UserRepository {
      * Инициализация репозитория. Добавляет администратора по умолчанию.
      */
     private void init() {
-        String encodedPassword = Password.encode("Admin123");
-        save(new User(idCounter.nextId(), "admin", "admin@admin.com", encodedPassword, Role.ADMIN, true));
+        if (getAllAdminIds().isEmpty()) {
+            String encodedPassword = Password.encode("Admin123");
+            save(new User(0, "admin", "admin@admin.com", encodedPassword, Role.ADMIN, true));
+        }
     }
 
     /**
-     * Сохраняет пользователя в репозитории. Если пользователь новый (ID = 0), генерирует для него ID.
+     * Сохраняет или обновляет пользователя в базе данных.
      *
-     * @param user пользователь для сохранения
-     * @return сохранённый пользователь
-     * @throws EmailAlreadyExistsException если пользователь с таким email уже существует
+     * @param user - пользователь для сохранения или обновления
+     * @return - сохраненный или обновленный пользователь
      */
     public User save(User user) {
-        if (user.getId() == 0 && emails.contains(user.getEmail())) {
-            throw new EmailAlreadyExistsException(user.getEmail());
-        }
-        if (user.getId() == 0) {
-            user.setId(idCounter.nextId());
-        }
+        Session session = sessionFactory.openSession();
+        session.beginTransaction();
+        User savedUser = session.merge(user);
+        session.getTransaction().commit();
+        session.close();
 
-        users.put(user.getId(), user);
-
-        if (user.getRole() == Role.ADMIN) {
-            admins.add(user.getId());
-        }
-        emails.add(user.getEmail());
-        return user;
+        return savedUser;
     }
 
     /**
@@ -64,9 +57,7 @@ public class UserRepository {
      * @param user пользователь для удаления
      */
     public void delete(User user) {
-        users.remove(user.getId());
-        admins.remove(user.getId());
-        emails.remove(user.getEmail());
+        sessionFactory.inTransaction(session -> session.remove(user));
     }
 
     /**
@@ -76,7 +67,10 @@ public class UserRepository {
      * @return найденный пользователь или Optional.empty(), если пользователь не найден
      */
     public Optional<User> findById(int id) {
-        return Optional.ofNullable(users.get(id));
+        try (Session session = sessionFactory.openSession()) {
+            User user = session.find(User.class, id);
+            return Optional.ofNullable(user);
+        }
     }
 
     /**
@@ -86,17 +80,14 @@ public class UserRepository {
      * @return найденный пользователь или Optional.empty(), если пользователь не найден
      */
     public Optional<User> findByEmail(String email) {
-        return users.values().stream().filter(user -> user.getEmail().equals(email)).findFirst();
+        try (Session session = sessionFactory.openSession()) {
+            User user = session.createQuery("SELECT u FROM User u WHERE u.email = :email", User.class)
+                    .setParameter("email", email)
+                    .uniqueResult();
+            return Optional.ofNullable(user);
+        }
     }
 
-    /**
-     * Удаляет email из хранилища email. Используется при обновлении email пользователя.
-     *
-     * @param email email для удаления
-     */
-    public void removeOldEmail(String email) {
-        emails.remove(email);
-    }
 
     /**
      * Возвращает список всех пользователей.
@@ -104,7 +95,9 @@ public class UserRepository {
      * @return список всех пользователей
      */
     public List<User> findAll() {
-        return new ArrayList<>(users.values());
+        try (Session session = sessionFactory.openSession()) {
+            return session.createQuery("SELECT u FROM User u", User.class).getResultList();
+        }
     }
 
     /**
@@ -113,7 +106,9 @@ public class UserRepository {
      * @return список всех ID администраторов
      */
     public List<Integer> getAllAdminIds() {
-        return new ArrayList<>(admins);
+        try (Session session = sessionFactory.openSession()) {
+            return session.createQuery("SELECT id FROM User WHERE role = 'ADMIN'", Integer.class).getResultList();
+        }
     }
 
 }

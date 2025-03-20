@@ -5,7 +5,7 @@ import belousov.eu.controller.AdminController;
 
 public class ListUsersCommand implements CommandMenu {
 
-    AdminController controller;
+    private final AdminController controller;
 
     public ListUsersCommand(DependencyContainer container) {
         controller = container.get(AdminController.class);

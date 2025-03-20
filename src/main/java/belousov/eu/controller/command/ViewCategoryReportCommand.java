@@ -5,7 +5,7 @@ import belousov.eu.controller.ReportController;
 
 public class ViewCategoryReportCommand implements CommandMenu {
 
-    ReportController controller;
+    private final ReportController controller;
 
     public ViewCategoryReportCommand(DependencyContainer container) {
 

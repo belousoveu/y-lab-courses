@@ -1,118 +1,152 @@
 package belousov.eu.repository;
 
-import belousov.eu.exception.EmailAlreadyExistsException;
+import belousov.eu.config.ConfigLoader;
+import belousov.eu.config.HibernateConfig;
 import belousov.eu.model.Role;
 import belousov.eu.model.User;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
-/**
- * Тестовый класс для {@link UserRepository}.
- */
+
+@Testcontainers
 class UserRepositoryTest {
 
+    private static final ConfigLoader configLoader = new ConfigLoader("test");
+
+    @Container
+    private static final PostgreSQLContainer<?> postgres;
+
+    private static SessionFactory sessionFactory;
     private UserRepository userRepository;
+
+    static {
+        postgres = new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"))
+                .withDatabaseName("pmt-test")
+                .withUsername("testuser")
+                .withPassword("testpassword")
+                .withInitScript("init.sql")
+        ;
+
+    }
+
+    @BeforeAll
+    static void init() {
+        postgres.start();
+        Map<String, Object> config = configLoader.getConfig();
+        config.put("hibernate.connection.url", postgres.getJdbcUrl());
+        config.put("hibernate.connection.username", postgres.getUsername());
+        config.put("hibernate.connection.password", postgres.getPassword());
+        config.put("hibernate.connection.driver_class", postgres.getDriverClassName());
+        config.put("hibernate.default_schema", "app");
+        sessionFactory = new HibernateConfig(config).getSessionFactory();
+    }
+
+    @AfterAll
+    static void tearDown() {
+        postgres.stop();
+    }
+
 
     @BeforeEach
     void setUp() {
-        userRepository = new UserRepository();
+        try (Session session = sessionFactory.openSession()) {
+            session.beginTransaction();
+            session.createMutationQuery("DELETE FROM User").executeUpdate();
+            session.createNativeQuery("ALTER SEQUENCE app.user_id_seq RESTART WITH 1", User.class).executeUpdate();
+            session.getTransaction().commit();
+        }
+        userRepository = new UserRepository(sessionFactory);
+    }
+
+
+    @Test
+    void test_init_checkForDefaultAdminWasCreated() {
+        List<Integer> adminIds = userRepository.getAllAdminIds();
+        assertThat(adminIds).hasSize(1);
+
+        Optional<User> admin = userRepository.findByEmail("admin@admin.com");
+        assertThat(admin).isPresent();
+        assertThat(admin.get().getName()).isEqualTo("admin");
+        assertThat(admin.get().getRole()).isEqualTo(Role.ADMIN);
     }
 
     @Test
-    void test_save_whenNewUser_shouldAddUserAndGenerateId() {
-        User user = new User(0, "John Doe", "john@example.com", "password123", Role.USER, true);
-        User savedUser = userRepository.save(user);
+    void save() {
+        User newUser = new User(0, "testuser", "test@test.com", "Password123", Role.USER, true);
+        User savedUser = userRepository.save(newUser);
 
         assertThat(savedUser.getId()).isNotZero();
-        assertThat(userRepository.findById(savedUser.getId())).contains(savedUser);
+        assertThat(savedUser.getName()).isEqualTo(newUser.getName());
+
+        Optional<User> foundUser = userRepository.findByEmail(newUser.getEmail());
+        assertThat(foundUser).isPresent();
+        assertThat(foundUser.get()).isEqualTo(savedUser);
     }
 
     @Test
-    void test_save_whenEmailAlreadyExists_shouldThrowException() {
-        User user1 = new User(0, "John Doe", "john@example.com", "password123", Role.USER, true);
-        userRepository.save(user1);
+    void delete() {
 
-        User user2 = new User(0, "Jane Doe", "john@example.com", "password456", Role.USER, true);
-        assertThatThrownBy(() -> userRepository.save(user2))
-                .isInstanceOf(EmailAlreadyExistsException.class)
-                .hasMessage("Пользователь с email john@example.com уже существует");
+        User newUser = new User(0, "testuser", "test@test.com", "Password123", Role.USER, true);
+        User savedUser = userRepository.save(newUser);
+
+        Optional<User> foundUser = userRepository.findByEmail(newUser.getEmail());
+        assertThat(foundUser).isPresent();
+
+        userRepository.delete(savedUser);
+
+        Optional<User> deletedUser = userRepository.findByEmail(newUser.getEmail());
+        assertThat(deletedUser).isNotPresent();
     }
 
     @Test
-    void test_save_whenUserIsAdmin_shouldAddToAdminsSet() {
-        User admin = new User(0, "Admin", "admin@example.com", "admin123", Role.ADMIN, true);
-        userRepository.save(admin);
+    void findById() {
 
-        assertThat(userRepository.getAllAdminIds()).contains(admin.getId());
+        Optional<User> foundUser = userRepository.findById(1);
+        assertThat(foundUser).isPresent();
+        assertThat(foundUser.get().getId()).isEqualTo(1);
+        assertThat(foundUser.get().getName()).isEqualTo("admin");
+        assertThat(foundUser.get().getEmail()).isEqualTo("admin@admin.com");
+        assertThat(foundUser.get().getRole()).isEqualTo(Role.ADMIN);
     }
 
     @Test
-    void test_delete_shouldRemoveUser() {
-        User user = new User(0, "John Doe", "john@example.com", "password123", Role.USER, true);
-        userRepository.save(user);
-
-        userRepository.delete(user);
-        assertThat(userRepository.findById(user.getId())).isEmpty();
+    void findByEmail() {
+        Optional<User> foundUser = userRepository.findByEmail("admin@admin.com");
+        assertThat(foundUser).isPresent();
+        assertThat(foundUser.get().getId()).isEqualTo(1);
+        assertThat(foundUser.get().getName()).isEqualTo("admin");
+        assertThat(foundUser.get().getEmail()).isEqualTo("admin@admin.com");
+        assertThat(foundUser.get().getRole()).isEqualTo(Role.ADMIN);
     }
 
     @Test
-    void test_findById_whenUserExists_shouldReturnUser() {
-        User user = new User(0, "John Doe", "john@example.com", "password123", Role.USER, true);
-        userRepository.save(user);
+    void findAll() {
 
-        Optional<User> foundUser = userRepository.findById(user.getId());
-        assertThat(foundUser).contains(user);
-    }
-
-    @Test
-    void test_findById_whenUserDoesNotExist_shouldReturnEmpty() {
-        Optional<User> foundUser = userRepository.findById(999);
-        assertThat(foundUser).isEmpty();
-    }
-
-    @Test
-    void test_findByEmail_whenUserExists_shouldReturnUser() {
-        User user = new User(0, "John Doe", "john@example.com", "password123", Role.USER, true);
-        userRepository.save(user);
-
-        Optional<User> foundUser = userRepository.findByEmail("john@example.com");
-        assertThat(foundUser).contains(user);
-    }
-
-    @Test
-    void test_findByEmail_whenUserDoesNotExist_shouldReturnEmpty() {
-        Optional<User> foundUser = userRepository.findByEmail("nonexistent@example.com");
-        assertThat(foundUser).isEmpty();
-    }
-
-
-    @Test
-    void test_findAll_shouldReturnAllUsers() {
-        User admin = userRepository.findById(1).get();
-        User user1 = new User(0, "John Doe", "john@example.com", "password123", Role.USER, true);
-        User user2 = new User(0, "Jane Doe", "jane@example.com", "password456", Role.USER, true);
-        userRepository.save(user1);
-        userRepository.save(user2);
-
+        User newUser = new User(0, "testuser", "test@test.com", "Password123", Role.USER, true);
+        userRepository.save(newUser);
         List<User> users = userRepository.findAll();
-        assertThat(users).containsExactlyInAnyOrder(user1, user2, admin);
+        assertThat(users).hasSize(2);
+
     }
 
     @Test
-    void test_getAllAdminIds_shouldReturnAdminIds() {
-        User admin = userRepository.findById(1).get();
-        User admin1 = new User(0, "Admin1", "admin1@example.com", "admin123", Role.ADMIN, true);
-        User admin2 = new User(0, "Admin2", "admin2@example.com", "admin456", Role.ADMIN, true);
-        userRepository.save(admin1);
-        userRepository.save(admin2);
-
+    void getAllAdminIds() {
         List<Integer> adminIds = userRepository.getAllAdminIds();
-        assertThat(adminIds).containsExactlyInAnyOrder(admin1.getId(), admin2.getId(), admin.getId());
+        assertThat(adminIds).hasSize(1);
     }
+
 }

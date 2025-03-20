@@ -3,10 +3,12 @@ package belousov.eu.repository;
 import belousov.eu.model.OperationType;
 import belousov.eu.model.Transaction;
 import belousov.eu.model.User;
-import belousov.eu.utils.IdGenerator;
 import lombok.AllArgsConstructor;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Репозиторий для управления транзакциями.
@@ -15,8 +17,8 @@ import java.util.*;
 @AllArgsConstructor
 public class TransactionRepository {
 
-    private final Map<Integer, Transaction> transactions = new HashMap<>();
-    private final IdGenerator<Integer> idCounter = IdGenerator.create(Integer.class);
+    private final SessionFactory sessionFactory;
+
 
     /**
      * Возвращает список всех транзакций.
@@ -24,7 +26,10 @@ public class TransactionRepository {
      * @return список всех транзакций
      */
     public List<Transaction> findAll() {
-        return new ArrayList<>(transactions.values());
+
+        try (Session session = sessionFactory.openSession()) {
+            return session.createQuery("FROM Transaction", Transaction.class).getResultList();
+        }
     }
 
     /**
@@ -34,7 +39,10 @@ public class TransactionRepository {
      * @return найденная транзакция или Optional.empty(), если транзакция не найдена
      */
     public Optional<Transaction> findById(int id) {
-        return Optional.ofNullable(transactions.get(id));
+
+        try (Session session = sessionFactory.openSession()) {
+            return Optional.ofNullable(session.find(Transaction.class, id));
+        }
     }
 
     /**
@@ -44,11 +52,13 @@ public class TransactionRepository {
      * @return сохранённая транзакция
      */
     public Transaction save(Transaction transaction) {
-        if (transaction.getId() == 0) {
-            transaction.setId(idCounter.nextId());
+        try (Session session = sessionFactory.openSession()) {
+            session.beginTransaction();
+            Transaction savedTransaction = session.merge(transaction);
+            session.getTransaction().commit();
+            return savedTransaction;
         }
-        transactions.put(transaction.getId(), transaction);
-        return transaction;
+
     }
 
     /**
@@ -57,7 +67,7 @@ public class TransactionRepository {
      * @param transaction транзакция для удаления
      */
     public void delete(Transaction transaction) {
-        transactions.remove(transaction.getId());
+        sessionFactory.inTransaction(session -> session.remove(transaction));
     }
 
     /**
@@ -67,12 +77,17 @@ public class TransactionRepository {
      * @return текущий баланс пользователя
      */
     public double getCurrentBalance(User currentUser) {
-        double totalDeposit = transactions.values().stream()
-                .filter(transaction -> transaction.getUser().equals(currentUser) && transaction.getOperationType() == OperationType.DEPOSIT)
-                .mapToDouble(Transaction::getAmount).sum();
-        double totalWithdraw = transactions.values().stream()
-                .filter(transaction -> transaction.getUser().equals(currentUser) && transaction.getOperationType() == OperationType.WITHDRAW)
-                .mapToDouble(Transaction::getAmount).sum();
-        return totalDeposit - totalWithdraw;
+
+        try (Session session = sessionFactory.openSession()) {
+            return session.createQuery("""
+                            SELECT sum(CASE WHEN t.operationType = :deposit THEN t.amount ELSE 0 END)
+                            - sum(CASE WHEN t.operationType != :deposit THEN t.amount ELSE 0 END)
+                            from Transaction t
+                            where t.user = :currentUser
+                            """, Double.class)
+                    .setParameter("currentUser", currentUser)
+                    .setParameter("deposit", OperationType.DEPOSIT)
+                    .getSingleResult();
+        }
     }
 }
