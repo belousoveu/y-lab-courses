@@ -4,6 +4,8 @@ import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.exception.*;
 import belousov.eu.model.Role;
 import belousov.eu.model.User;
+import belousov.eu.model.dto.LoginDto;
+import belousov.eu.model.dto.RegisterDto;
 import belousov.eu.repository.UserRepository;
 import belousov.eu.utils.Password;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,7 +47,7 @@ class UserServiceTest {
     void test_register_shouldSaveUserAndSetCurrentUser() {
         when(userRepository.save(any(User.class))).thenReturn(user);
 
-        userService.register("John Doe", "john@example.com", "password123");
+        userService.register(new RegisterDto("John Doe", "john@example.com", "password123"));
 
         verify(userRepository, times(1)).save(any(User.class));
         assertThat(PersonalMoneyTracker.getCurrentUser()).isEqualTo(user);
@@ -55,7 +57,7 @@ class UserServiceTest {
     void test_login_whenUserExistsAndActive_shouldSetCurrentUser() {
         when(userRepository.findByEmail("john@example.com")).thenReturn(Optional.of(user));
 
-        userService.login("john@example.com", "password123");
+        userService.login(new LoginDto("john@example.com", "password123"));
 
         assertThat(PersonalMoneyTracker.getCurrentUser()).isEqualTo(user);
     }
@@ -64,7 +66,7 @@ class UserServiceTest {
     void test_login_whenUserDoesNotExist_shouldThrowException() {
         when(userRepository.findByEmail("john@example.com")).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> userService.login("john@example.com", "password123"))
+        assertThatThrownBy(() -> userService.login(new LoginDto("john@example.com", "password123")))
                 .isInstanceOf(UserNotFoundException.class)
                 .hasMessage("Пользователь с электронной почтой john@example.com не найден");
     }
@@ -74,7 +76,7 @@ class UserServiceTest {
         user.setActive(false);
         when(userRepository.findByEmail("john@example.com")).thenReturn(Optional.of(user));
 
-        assertThatThrownBy(() -> userService.login("john@example.com", "password123"))
+        assertThatThrownBy(() -> userService.login(new LoginDto("john@example.com", "password123")))
                 .isInstanceOf(UserWasBlockedException.class)
                 .hasMessage("Пользователь John Doe заблокирован");
     }
@@ -83,7 +85,7 @@ class UserServiceTest {
     void test_login_whenPasswordIsIncorrect_shouldThrowException() {
         when(userRepository.findByEmail("john@example.com")).thenReturn(Optional.of(user));
 
-        assertThatThrownBy(() -> userService.login("john@example.com", "wrongpassword"))
+        assertThatThrownBy(() -> userService.login(new LoginDto("john@example.com", "password123")))
                 .isInstanceOf(InvalidPasswordException.class);
     }
 
@@ -114,7 +116,6 @@ class UserServiceTest {
         userService.changeEmail(user, "jane@example.com");
 
         assertThat(user.getEmail()).isEqualTo("jane@example.com");
-//        verify(userRepository, times(1)).removeOldEmail("john@example.com");
         verify(userRepository, times(1)).save(user);
     }
 

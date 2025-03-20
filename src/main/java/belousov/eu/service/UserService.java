@@ -4,6 +4,8 @@ import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.exception.*;
 import belousov.eu.model.Role;
 import belousov.eu.model.User;
+import belousov.eu.model.dto.LoginDto;
+import belousov.eu.model.dto.RegisterDto;
 import belousov.eu.repository.UserRepository;
 import belousov.eu.utils.Password;
 import lombok.AllArgsConstructor;
@@ -25,17 +27,23 @@ public class UserService implements AuthService, ProfileService, AdminAccessUser
     /**
      * Регистрирует нового пользователя.
      *
-     * @param name     имя пользователя
-     * @param email    электронная почта
-     * @param password пароль
+     * @param registerDto данные для регистрации (имя, электронная почта, пароль)
      */
     @Override
-    public void register(String name, String email, String password) {
+    public User register(RegisterDto registerDto) {
         try {
-            User user = userRepository.save(new User(0, name, email.toLowerCase(), Password.encode(password), Role.USER, true));
+            User user = userRepository.save(new User(
+                    0,
+                    registerDto.name(),
+                    registerDto.email().toLowerCase(),
+                    Password.encode(registerDto.password()),
+                    Role.USER,
+                    true
+            ));
             PersonalMoneyTracker.setCurrentUser(user);
+            return user;
         } catch (ConstraintViolationException e) {
-            throw new EmailAlreadyExistsException(email.toLowerCase());
+            throw new EmailAlreadyExistsException(registerDto.email().toLowerCase());
         }
 
     }
@@ -43,21 +51,21 @@ public class UserService implements AuthService, ProfileService, AdminAccessUser
     /**
      * Авторизует пользователя.
      *
-     * @param email    электронная почта
-     * @param password пароль
+     * @param loginDto данные для входа (электронная почта и пароль)
      * @throws UserNotFoundException    если пользователь не найден
      * @throws UserWasBlockedException  если пользователь заблокирован
      * @throws InvalidPasswordException если пароль неверный
      */
     @Override
-    public void login(String email, String password) {
-        User user = userRepository.findByEmail(email.toLowerCase())
-                .orElseThrow(() -> new UserNotFoundException(email.toLowerCase()));
+    public User login(LoginDto loginDto) {
+        User user = userRepository.findByEmail(loginDto.email().toLowerCase())
+                .orElseThrow(() -> new UserNotFoundException(loginDto.email().toLowerCase()));
         if (!user.isActive()) {
             throw new UserWasBlockedException(user.getName());
         }
-        checkPassword(user, password);
+        checkPassword(user, loginDto.password());
         PersonalMoneyTracker.setCurrentUser(user);
+        return user;
     }
 
     /**

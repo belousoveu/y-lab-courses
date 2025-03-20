@@ -3,6 +3,8 @@ package belousov.eu.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.io.Serializable;
+
 /**
  * Класс, представляющий пользователя системы.
  * Содержит информацию о пользователе, такую как идентификатор, имя, email, пароль, роль и статус активности.
@@ -14,7 +16,7 @@ import lombok.*;
 @EqualsAndHashCode(of = {"id"})
 @Entity
 @Table(name = "users", schema = "app", indexes = {@Index(name = "idx_user_email", columnList = "email", unique = true)})
-public class User {
+public class User implements Serializable {
 
     /**
      * Уникальный идентификатор пользователя.
