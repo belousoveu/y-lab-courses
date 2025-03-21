@@ -3,6 +3,7 @@ package belousov.eu.config;
 import belousov.eu.PersonalMoneyTracker;
 import lombok.Getter;
 
+
 @Getter
 public class ApplicationInitializer {
     private final DependencyContainer container;
@@ -31,14 +32,10 @@ public class ApplicationInitializer {
     }
 
     public void start() {
-//        Menu registrationMenu = MenuInitializer.initializeLoginMenu(container);
-//        Menu mainMenu = MenuInitializer.initializeMainMenu(container);
 
 
         while (PersonalMoneyTracker.isRunning()) {
             tomcatConfig.start();
-//            registrationMenu.display();
-//            mainMenu.display();
         }
     }
 
