@@ -1,12 +1,13 @@
 package belousov.eu.service;
 
 import belousov.eu.model.Role;
-import belousov.eu.model.User;
+import belousov.eu.model.dto.TransactionDto;
+import belousov.eu.model.dto.UserDto;
 
 import java.util.List;
 
 public interface AdminService {
-    List<User> getAllUsers();
+    List<UserDto> getAllUsers();
 
     void blockUser(int userId);
 
@@ -16,5 +17,5 @@ public interface AdminService {
 
     void unblockUser(int userId);
 
-    List<String> getAllTransactions();
+    List<TransactionDto> getAllTransactions();
 }

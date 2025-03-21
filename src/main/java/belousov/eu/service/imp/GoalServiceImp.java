@@ -1,10 +1,13 @@
-package belousov.eu.service;
+package belousov.eu.service.imp;
 
 import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.exception.GoalNotFoundException;
 import belousov.eu.model.Goal;
 import belousov.eu.model.Transaction;
 import belousov.eu.repository.GoalRepository;
+import belousov.eu.service.EmailService;
+import belousov.eu.service.GoalService;
+import belousov.eu.service.ReportService;
 import lombok.AllArgsConstructor;
 
 import java.util.ArrayList;

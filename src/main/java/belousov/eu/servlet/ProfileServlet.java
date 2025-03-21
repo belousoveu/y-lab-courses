@@ -37,9 +37,9 @@ public class ProfileServlet extends HttpServlet {
 
         String[] parts = path.split("/");
         try (ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory()) {
-            if (parts.length > 2 && parts[2].equals("update")) {
+            if (parts.length > 3 && parts[3].equals("update")) {
                 User currentUser = (User) session.getAttribute(CURRENT_USER);
-                int pathId = Integer.parseInt(parts[1]);
+                int pathId = Integer.parseInt(parts[2]);
                 if (currentUser.getId() != pathId && !currentUser.isAdmin()) {
                     throw new ForbiddenException();
                 }
@@ -47,7 +47,10 @@ public class ProfileServlet extends HttpServlet {
                 UserProfileUpdateDto updateDto = objectMapper.readValue(req.getInputStream(), UserProfileUpdateDto.class);
 
                 if (!validatorFactory.getValidator().validate(updateDto).isEmpty()) {
-                    throw new ValidationParametersException(validatorFactory.getValidator().validate(updateDto).toString());
+                    throw new ValidationParametersException(
+                            objectMapper.writeValueAsString(
+                                    validatorFactory.getValidator().validate(updateDto)
+                            ));
                 }
 
                 profileController.updateProfile(pathId, updateDto);
@@ -67,9 +70,9 @@ public class ProfileServlet extends HttpServlet {
 
         String[] parts = path.split("/");
 
-        if (parts.length > 1) {
+        if (parts.length > 2) {
             User currentUser = (User) session.getAttribute(CURRENT_USER);
-            int pathId = Integer.parseInt(parts[1]);
+            int pathId = Integer.parseInt(parts[2]);
             if (currentUser.getId() != pathId && !currentUser.isAdmin()) {
                 throw new ForbiddenException();
             }
@@ -94,9 +97,9 @@ public class ProfileServlet extends HttpServlet {
         String[] parts = path.split("/");
 
 
-        if (parts.length > 1) {
+        if (parts.length > 2) {
             User currentUser = (User) session.getAttribute(CURRENT_USER);
-            int pathId = Integer.parseInt(parts[1]);
+            int pathId = Integer.parseInt(parts[2]);
             if (currentUser.getId() != pathId && !currentUser.isAdmin()) {
                 throw new ForbiddenException();
             }

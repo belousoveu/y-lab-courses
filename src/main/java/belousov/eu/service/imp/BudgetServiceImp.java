@@ -1,9 +1,12 @@
-package belousov.eu.service;
+package belousov.eu.service.imp;
 
 import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.model.*;
 import belousov.eu.model.report_dto.BudgetReport;
 import belousov.eu.repository.BudgetRepository;
+import belousov.eu.service.BudgetService;
+import belousov.eu.service.EmailService;
+import belousov.eu.service.TransactionService;
 import lombok.AllArgsConstructor;
 
 import java.time.YearMonth;

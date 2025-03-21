@@ -1,6 +1,8 @@
 package belousov.eu.servlet;
 
 import belousov.eu.config.DependencyContainer;
+import belousov.eu.exception.ServletInitializationException;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,7 +22,16 @@ public class DispatcherServlet extends HttpServlet {
     public void init() {
         handlers.put("profile", container.get(ProfileServlet.class));
         handlers.put("auth", container.get(AuthServlet.class));
+        handlers.put("admin", container.get(AdminServlet.class));
 
+
+        for (HttpServlet handler : handlers.values()) {
+            try {
+                handler.init();
+            } catch (ServletException e) {
+                throw new ServletInitializationException(e.getMessage());
+            }
+        }
     }
 
     @Override

@@ -1,12 +1,18 @@
-package belousov.eu.service;
+package belousov.eu.service.imp;
 
 import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.exception.TransactionNotFoundException;
+import belousov.eu.mapper.TransactionMapper;
 import belousov.eu.model.*;
+import belousov.eu.model.dto.TransactionDto;
 import belousov.eu.model.report_dto.IncomeStatement;
 import belousov.eu.observer.BalanceChangeSubject;
 import belousov.eu.repository.TransactionRepository;
+import belousov.eu.service.AdminAccessTransactionService;
+import belousov.eu.service.ReportService;
+import belousov.eu.service.TransactionService;
 import lombok.AllArgsConstructor;
+import org.mapstruct.factory.Mappers;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -28,6 +34,11 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
      * Наблюдатель за изменением баланса
      */
     private final BalanceChangeSubject balanceChangeSubject;
+
+    /**
+     * Маппер для преобразования объектов транзакций в DTO и обратно.
+     */
+    private final TransactionMapper transactionMapper = Mappers.getMapper(TransactionMapper.class);
 
     /**
      * Добавляет новую транзакцию.
@@ -101,13 +112,13 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
     }
 
     /**
-     * Возвращает список всех транзакций текущего пользователя.
+     * Возвращает список всех транзакций.
      *
-     * @return список всех транзакций текущего пользователя
+     * @return список всех транзакций.
      */
     @Override
-    public List<String> getAllTransactions() {
-        return transactionRepository.findAll().stream().map(Transaction::toStringWithUser).toList();
+    public List<TransactionDto> getAllTransactions() {
+        return transactionRepository.findAll().stream().map(transactionMapper::toDto).toList();
     }
 
     /**

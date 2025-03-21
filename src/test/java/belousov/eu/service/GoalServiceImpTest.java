@@ -7,6 +7,7 @@ import belousov.eu.model.Role;
 import belousov.eu.model.Transaction;
 import belousov.eu.model.User;
 import belousov.eu.repository.GoalRepository;
+import belousov.eu.service.imp.GoalServiceImp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

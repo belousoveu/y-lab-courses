@@ -2,11 +2,15 @@ package belousov.eu.service;
 
 import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.exception.TransactionNotFoundException;
+import belousov.eu.mapper.TransactionMapper;
 import belousov.eu.model.*;
+import belousov.eu.model.dto.TransactionDto;
 import belousov.eu.observer.BalanceChangeSubject;
 import belousov.eu.repository.TransactionRepository;
+import belousov.eu.service.imp.TransactionServiceImp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -139,9 +143,10 @@ class TransactionServiceImpTest {
     @Test
     void test_getAllTransactions_shouldReturnAllTransactions() {
         when(transactionRepository.findAll()).thenReturn(List.of(transaction));
+        TransactionMapper mapper = Mappers.getMapper(TransactionMapper.class);
 
-        List<String> result = transactionServiceImp.getAllTransactions();
-        assertThat(result).containsExactly(transaction.toStringWithUser());
+        List<TransactionDto> result = transactionServiceImp.getAllTransactions();
+        assertThat(result).containsExactly(mapper.toDto(transaction));
     }
 
     @Test

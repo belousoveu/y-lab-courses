@@ -2,14 +2,21 @@ package belousov.eu.service;
 
 import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.exception.ForbiddenException;
+import belousov.eu.mapper.UserMapper;
+import belousov.eu.model.OperationType;
 import belousov.eu.model.Role;
 import belousov.eu.model.User;
+import belousov.eu.model.dto.TransactionDto;
+import belousov.eu.model.dto.UserDto;
+import belousov.eu.service.imp.AdminServiceImp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,11 +50,12 @@ class AdminServiceImpTest {
 
     @Test
     void test_getAllUsers_whenAdmin_shouldReturnAllUsers() {
-        List<User> users = List.of(adminUser, regularUser);
+        UserMapper mapper = Mappers.getMapper(UserMapper.class);
+        List<UserDto> users = List.of(mapper.toDto(adminUser), mapper.toDto(regularUser));
         when(adminAccessUserService.getAllUsers()).thenReturn(users);
 
-        List<User> result = adminServiceImp.getAllUsers();
-        assertThat(result).containsExactlyInAnyOrder(adminUser, regularUser);
+        List<UserDto> result = adminServiceImp.getAllUsers();
+        assertThat(result).containsExactlyInAnyOrder(mapper.toDto(adminUser), mapper.toDto(regularUser));
         verify(adminAccessUserService, times(1)).getAllUsers();
     }
 
@@ -84,11 +92,14 @@ class AdminServiceImpTest {
 
     @Test
     void test_getAllTransactions_whenAdmin_shouldReturnAllTransactions() {
-        List<String> transactions = List.of("Транзакция 1", "Транзакция 2");
+        TransactionDto dto1 = new TransactionDto(1, LocalDate.of(2025, 1, 10), OperationType.DEPOSIT, "Категория 1", 100.0, "Транзакция 1", 1);
+        TransactionDto dto2 = new TransactionDto(2, LocalDate.of(2025, 1, 15), OperationType.WITHDRAW, "Категория 2", 50.0, "Транзакция 2", 2);
+
+        List<TransactionDto> transactions = List.of(dto1, dto2);
         when(adminAccessTransactionService.getAllTransactions()).thenReturn(transactions);
 
-        List<String> result = adminServiceImp.getAllTransactions();
-        assertThat(result).containsExactlyInAnyOrder("Транзакция 1", "Транзакция 2");
+        List<TransactionDto> result = adminServiceImp.getAllTransactions();
+        assertThat(result).containsExactlyInAnyOrder(dto1, dto2);
         verify(adminAccessTransactionService, times(1)).getAllTransactions();
     }
 

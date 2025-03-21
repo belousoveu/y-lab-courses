@@ -42,8 +42,8 @@ public class AuthServlet extends HttpServlet {
 
         try (ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory()) {
             Validator validator = validatorFactory.getValidator();
-            if (parts.length > 1) {
-                switch (parts[1]) {
+            if (parts.length > 2) {
+                switch (parts[2]) {
                     case "login":
                         LoginDto loginDto = objectMapper.readValue(request.getInputStream(), LoginDto.class);
 
@@ -97,7 +97,7 @@ public class AuthServlet extends HttpServlet {
 
         String[] parts = path.split("/");
 
-        if (parts.length > 1 && parts[1].equals("login")) {
+        if (parts.length > 2 && parts[2].equals("login")) {
             resp.setStatus(HttpServletResponse.SC_OK);
             resp.getWriter().write("<h1>Авторизуйтесь или зарегистрируйтесь</h1>");
         }

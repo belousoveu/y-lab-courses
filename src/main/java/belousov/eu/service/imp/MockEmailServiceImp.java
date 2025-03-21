@@ -1,4 +1,6 @@
-package belousov.eu.service;
+package belousov.eu.service.imp;
+
+import belousov.eu.service.EmailService;
 
 /**
  * Класс для имитации отправки электронной почты.

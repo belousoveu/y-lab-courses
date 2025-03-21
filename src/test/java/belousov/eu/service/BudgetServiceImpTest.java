@@ -4,6 +4,7 @@ import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.model.*;
 import belousov.eu.model.report_dto.BudgetReport;
 import belousov.eu.repository.BudgetRepository;
+import belousov.eu.service.imp.BudgetServiceImp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

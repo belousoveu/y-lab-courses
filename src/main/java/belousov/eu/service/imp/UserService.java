@@ -1,15 +1,16 @@
-package belousov.eu.service;
+package belousov.eu.service.imp;
 
 import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.exception.*;
+import belousov.eu.mapper.UserMapper;
 import belousov.eu.mapper.UserProfileMapper;
 import belousov.eu.model.Role;
 import belousov.eu.model.User;
-import belousov.eu.model.dto.LoginDto;
-import belousov.eu.model.dto.RegisterDto;
-import belousov.eu.model.dto.UserProfileDto;
-import belousov.eu.model.dto.UserProfileUpdateDto;
+import belousov.eu.model.dto.*;
 import belousov.eu.repository.UserRepository;
+import belousov.eu.service.AdminAccessUserService;
+import belousov.eu.service.AuthService;
+import belousov.eu.service.ProfileService;
 import belousov.eu.utils.Password;
 import lombok.AllArgsConstructor;
 import org.hibernate.exception.ConstraintViolationException;
@@ -29,6 +30,7 @@ public class UserService implements AuthService, ProfileService, AdminAccessUser
      */
     private final UserRepository userRepository;
     private final UserProfileMapper userProfileMapper = Mappers.getMapper(UserProfileMapper.class);
+    private final UserMapper userMapper = Mappers.getMapper(UserMapper.class);
 
     /**
      * Регистрирует нового пользователя.
@@ -87,9 +89,10 @@ public class UserService implements AuthService, ProfileService, AdminAccessUser
         return userProfileMapper.toDto(findById(id));
     }
 
-    /** Изменяет поля профиля пользователя.
+    /**
+     * Изменяет поля профиля пользователя.
      *
-     * @param id идентификатор пользователя
+     * @param id        идентификатор пользователя
      * @param updateDto - объект с данными для изменения профиля (имя, электронная почта, пароль).
      *                  При изменении пароля требуется указать старый пароль.
      * @throws InvalidPasswordException если пароль неверный
@@ -169,8 +172,8 @@ public class UserService implements AuthService, ProfileService, AdminAccessUser
      *
      * @return список всех пользователей
      */
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public List<UserDto> getAllUsers() {
+        return userRepository.findAll().stream().map(userMapper::toDto).toList();
     }
 
     /**

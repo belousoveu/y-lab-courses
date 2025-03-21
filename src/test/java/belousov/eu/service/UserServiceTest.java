@@ -2,14 +2,18 @@ package belousov.eu.service;
 
 import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.exception.*;
+import belousov.eu.mapper.UserMapper;
 import belousov.eu.model.Role;
 import belousov.eu.model.User;
 import belousov.eu.model.dto.LoginDto;
 import belousov.eu.model.dto.RegisterDto;
+import belousov.eu.model.dto.UserDto;
 import belousov.eu.repository.UserRepository;
+import belousov.eu.service.imp.UserService;
 import belousov.eu.utils.Password;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -145,9 +149,10 @@ class UserServiceTest {
     @Test
     void test_getAllUsers_shouldReturnAllUsers() {
         when(userRepository.findAll()).thenReturn(List.of(user, admin));
+        UserMapper mapper = Mappers.getMapper(UserMapper.class);
 
-        List<User> users = userService.getAllUsers();
-        assertThat(users).containsExactlyInAnyOrder(user, admin);
+        List<UserDto> users = userService.getAllUsers();
+        assertThat(users).containsExactlyInAnyOrder(mapper.toDto(user), mapper.toDto(admin));
     }
 
     @Test

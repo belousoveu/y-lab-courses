@@ -4,6 +4,8 @@ import belousov.eu.controller.*;
 import belousov.eu.observer.BalanceChangeSubject;
 import belousov.eu.repository.*;
 import belousov.eu.service.*;
+import belousov.eu.service.imp.*;
+import belousov.eu.servlet.AdminServlet;
 import belousov.eu.servlet.AuthServlet;
 import belousov.eu.servlet.ProfileServlet;
 import belousov.eu.view.ConsoleView;
@@ -57,12 +59,13 @@ public class DependencyContainer {
         register(CategoryController.class, new CategoryController(this.get(CategoryService.class), this.get(ConsoleView.class)));
         register(AuthController.class, new AuthController(this.get(AuthService.class)));
         register(ProfileController.class, new ProfileController(this.get(ProfileService.class)));
-        register(AdminController.class, new AdminController(this.get(AdminService.class), this.get(ConsoleView.class)));
+        register(AdminController.class, new AdminController(this.get(AdminService.class)));
         register(GoalController.class, new GoalController(this.get(GoalService.class), this.get(ConsoleView.class)));
         register(ReportController.class, new ReportController(this.get(ReportService.class), this.get(ConsoleView.class)));
 
         register(AuthServlet.class, new AuthServlet(this.get(AuthController.class), this.get(ObjectMapper.class)));
         register(ProfileServlet.class, new ProfileServlet(this.get(ProfileController.class), this.get(ObjectMapper.class)));
+        register(AdminServlet.class, new AdminServlet(this.get(AdminController.class), this.get(ObjectMapper.class)));
 
         BalanceChangeSubject subject = this.get(BalanceChangeSubject.class);
         subject.addObserver(this.get(BudgetController.class));

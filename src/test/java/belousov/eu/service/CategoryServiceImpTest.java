@@ -6,6 +6,7 @@ import belousov.eu.model.Category;
 import belousov.eu.model.Role;
 import belousov.eu.model.User;
 import belousov.eu.repository.CategoryRepository;
+import belousov.eu.service.imp.CategoryServiceImp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

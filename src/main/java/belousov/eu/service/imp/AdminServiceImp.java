@@ -1,9 +1,14 @@
-package belousov.eu.service;
+package belousov.eu.service.imp;
 
 import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.exception.ForbiddenException;
 import belousov.eu.model.Role;
 import belousov.eu.model.User;
+import belousov.eu.model.dto.TransactionDto;
+import belousov.eu.model.dto.UserDto;
+import belousov.eu.service.AdminAccessTransactionService;
+import belousov.eu.service.AdminAccessUserService;
+import belousov.eu.service.AdminService;
 import lombok.AllArgsConstructor;
 
 import java.util.List;
@@ -30,7 +35,7 @@ public class AdminServiceImp implements AdminService {
      * @throws ForbiddenException если текущий пользователь не является администратором
      */
     @Override
-    public List<User> getAllUsers() {
+    public List<UserDto> getAllUsers() {
         checkAccess();
         return adminAccessUserService.getAllUsers();
     }
@@ -69,7 +74,7 @@ public class AdminServiceImp implements AdminService {
      * @throws ForbiddenException если текущий пользователь не является администратором
      */
     @Override
-    public List<String> getAllTransactions() {
+    public List<TransactionDto> getAllTransactions() {
         checkAccess();
         return adminAccessTransactionService.getAllTransactions();
     }

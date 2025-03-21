@@ -1,9 +1,10 @@
-package belousov.eu.service;
+package belousov.eu.service.imp;
 
 import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.exception.CategoryNotFoundException;
 import belousov.eu.model.Category;
 import belousov.eu.repository.CategoryRepository;
+import belousov.eu.service.CategoryService;
 import lombok.AllArgsConstructor;
 
 import java.util.List;
