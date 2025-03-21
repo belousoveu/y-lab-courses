@@ -1,7 +1,6 @@
 package belousov.eu.repository;
 
 import belousov.eu.model.Goal;
-import belousov.eu.model.User;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -34,13 +33,13 @@ public class GoalRepository {
     /**
      * Возвращает список всех целей, созданных пользователем.
      *
-     * @param currentUser текущий пользователь
+     * @param userId идентификатор текущего пользователя
      * @return список всех целей пользователя
      */
-    public List<Goal> findAllByUser(User currentUser) {
+    public List<Goal> findAllByUser(int userId) {
         try (Session session = sessionFactory.openSession()) {
-            return session.createQuery("FROM Goal WHERE user = :currentUser", Goal.class)
-                    .setParameter("currentUser", currentUser)
+            return session.createQuery("FROM Goal WHERE user.id = :userId", Goal.class)
+                    .setParameter("userId", userId)
                     .getResultList();
         }
     }

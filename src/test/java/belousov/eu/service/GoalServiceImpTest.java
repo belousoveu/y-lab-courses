@@ -2,14 +2,17 @@ package belousov.eu.service;
 
 import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.exception.GoalNotFoundException;
+import belousov.eu.mapper.GoalMapper;
 import belousov.eu.model.Goal;
 import belousov.eu.model.Role;
 import belousov.eu.model.Transaction;
 import belousov.eu.model.User;
+import belousov.eu.model.dto.GoalDto;
 import belousov.eu.repository.GoalRepository;
 import belousov.eu.service.imp.GoalServiceImp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -51,7 +54,7 @@ class GoalServiceImpTest {
 
     @Test
     void test_addGoal_shouldSaveGoal() {
-        goalServiceImp.addGoal("Новая машина", "Накопить на новую машину", 1000000.0);
+        goalServiceImp.addGoal(user, new GoalDto(0, null, "Новая машина", "Накопить на новую машину", 1000000.0));
 
         verify(goalRepository, times(1)).save(any(Goal.class));
     }
@@ -60,7 +63,7 @@ class GoalServiceImpTest {
     void test_deleteGoal_whenGoalExistsAndBelongsToUser_shouldDeleteGoal() {
         when(goalRepository.findById(1)).thenReturn(Optional.of(goal));
 
-        goalServiceImp.deleteGoal(1);
+        goalServiceImp.deleteGoal(1, user);
 
         verify(goalRepository, times(1)).delete(goal);
     }
@@ -69,7 +72,7 @@ class GoalServiceImpTest {
     void test_deleteGoal_whenGoalDoesNotExist_shouldThrowException() {
         when(goalRepository.findById(1)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> goalServiceImp.deleteGoal(1))
+        assertThatThrownBy(() -> goalServiceImp.deleteGoal(1, user))
                 .isInstanceOf(GoalNotFoundException.class)
                 .hasMessage("Не найдена цель с идентификатором 1");
     }
@@ -80,7 +83,7 @@ class GoalServiceImpTest {
         Goal otherGoal = new Goal(1, otherUser, "Новая машина", "Накопить на новую машину", 1000000.0);
         when(goalRepository.findById(1)).thenReturn(Optional.of(otherGoal));
 
-        assertThatThrownBy(() -> goalServiceImp.deleteGoal(1))
+        assertThatThrownBy(() -> goalServiceImp.deleteGoal(1, user))
                 .isInstanceOf(GoalNotFoundException.class)
                 .hasMessage("Не найдена цель с идентификатором 1");
     }
@@ -89,7 +92,7 @@ class GoalServiceImpTest {
     void test_editGoal_whenGoalExistsAndBelongsToUser_shouldUpdateGoal() {
         when(goalRepository.findById(1)).thenReturn(Optional.of(goal));
 
-        goalServiceImp.editGoal(1, "Квартира", "Накопить на квартиру", 5000000.0);
+        goalServiceImp.editGoal(1, user, new GoalDto(1, user, "Квартира", "Накопить на квартиру", 5000000.0));
 
         assertThat(goal.getName()).isEqualTo("Квартира");
         assertThat(goal.getDescription()).isEqualTo("Накопить на квартиру");
@@ -101,7 +104,7 @@ class GoalServiceImpTest {
     void test_editGoal_whenGoalDoesNotExist_shouldThrowException() {
         when(goalRepository.findById(1)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> goalServiceImp.editGoal(1, "Квартира", "Накопить на квартиру", 5000000.0))
+        assertThatThrownBy(() -> goalServiceImp.editGoal(1, user, new GoalDto(1, user, "Квартира", "Накопить на квартиру", 5000000.0)))
                 .isInstanceOf(GoalNotFoundException.class)
                 .hasMessage("Не найдена цель с идентификатором 1");
     }
@@ -112,23 +115,24 @@ class GoalServiceImpTest {
         Goal otherGoal = new Goal(1, otherUser, "Новая машина", "Накопить на новую машину", 1000000.0);
         when(goalRepository.findById(1)).thenReturn(Optional.of(otherGoal));
 
-        assertThatThrownBy(() -> goalServiceImp.editGoal(1, "Квартира", "Накопить на квартиру", 5000000.0))
+        assertThatThrownBy(() -> goalServiceImp.editGoal(1, user, new GoalDto(1, user, "Квартира", "Накопить на квартиру", 5000000.0)))
                 .isInstanceOf(GoalNotFoundException.class)
                 .hasMessage("Не найдена цель с идентификатором 1");
     }
 
     @Test
     void test_getAll_shouldReturnGoalsForUser() {
-        when(goalRepository.findAllByUser(user)).thenReturn(List.of(goal));
+        when(goalRepository.findAllByUser(user.getId())).thenReturn(List.of(goal));
+        GoalMapper mapper = Mappers.getMapper(GoalMapper.class);
 
-        List<Goal> goals = goalServiceImp.getAll();
-        assertThat(goals).containsExactly(goal);
+        List<GoalDto> goals = goalServiceImp.getAllByUserId(user.getId());
+        assertThat(goals).containsExactly(mapper.toDto(goal));
     }
 
     @Test
     void test_checkGoal_whenGoalsAreAchieved_shouldSendEmailAndReturnMessages() {
         when(reportService.getCurrentBalance()).thenReturn(1500000.0);
-        when(goalRepository.findAllByUser(user)).thenReturn(List.of(goal));
+        when(goalRepository.findAllByUser(user.getId())).thenReturn(List.of(goal));
 
         Transaction transaction = new Transaction(1, null, null, null, 0.0, null, user);
         List<String> result = goalServiceImp.checkGoal(transaction);
@@ -140,7 +144,7 @@ class GoalServiceImpTest {
     @Test
     void test_checkGoal_whenNoGoalsAreAchieved_shouldReturnEmptyList() {
         when(reportService.getCurrentBalance()).thenReturn(500000.0);
-        when(goalRepository.findAllByUser(user)).thenReturn(List.of(goal));
+        when(goalRepository.findAllByUser(user.getId())).thenReturn(List.of(goal));
 
         Transaction transaction = new Transaction(1, null, null, null, 0.0, null, user);
         List<String> result = goalServiceImp.checkGoal(transaction);

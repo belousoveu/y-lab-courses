@@ -99,7 +99,7 @@ class GoalRepositoryTest {
         Goal newGoal = new Goal(0, testUser, "Test Goal", "Test Description", 100);
         goalRepository.save(newGoal);
 
-        List<Goal> foundGoals = goalRepository.findAllByUser(testUser);
+        List<Goal> foundGoals = goalRepository.findAllByUser(testUser.getId());
         assertThat(foundGoals).hasSize(1);
         assertThat(foundGoals.get(0).getName()).isEqualTo("Test Goal");
         assertThat(foundGoals.get(0).getDescription()).isEqualTo("Test Description");

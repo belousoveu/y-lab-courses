@@ -2,13 +2,17 @@ package belousov.eu.service.imp;
 
 import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.exception.GoalNotFoundException;
+import belousov.eu.mapper.GoalMapper;
 import belousov.eu.model.Goal;
 import belousov.eu.model.Transaction;
+import belousov.eu.model.User;
+import belousov.eu.model.dto.GoalDto;
 import belousov.eu.repository.GoalRepository;
 import belousov.eu.service.EmailService;
 import belousov.eu.service.GoalService;
 import belousov.eu.service.ReportService;
 import lombok.AllArgsConstructor;
+import org.mapstruct.factory.Mappers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,30 +36,33 @@ public class GoalServiceImp implements GoalService {
      */
     private final GoalRepository goalRepository;
 
+    private final GoalMapper goalMapper = Mappers.getMapper(GoalMapper.class);
     /**
      * Добавляет новую финансовую цель.
      *
-     * @param name        название цели
-     * @param description описание цели
-     * @param point       количество средств для достижения цели
+     * @param user    текущий пользователь
+     * @param goalDto объект с данными о цели
      */
     @Override
-    public void addGoal(String name, String description, Double point) {
-
-        goalRepository.save(new Goal(0, PersonalMoneyTracker.getCurrentUser(), name, description, point));
-
+    public void addGoal(User user, GoalDto goalDto) {
+        Goal goal = goalMapper.toEntity(goalDto);
+        goal.setId(0);
+        goal.setUser(user);
+        goalRepository.save(goal);
     }
 
     /**
      * Удаляет финансовую цель по ID.
      *
      * @param id ID цели
+     * @param user    текущий пользователь
+     *
      * @throws GoalNotFoundException если цель не найдена или не принадлежит текущему пользователю
      */
     @Override
-    public void deleteGoal(int id) {
+    public void deleteGoal(int id, User user) {
         Goal goal = goalRepository.findById(id).orElseThrow(() -> new GoalNotFoundException(id));
-        checkIfGoalBelongsToUser(goal);
+        checkIfGoalBelongsToUser(goal, user);
         goalRepository.delete(goal);
     }
 
@@ -63,18 +70,18 @@ public class GoalServiceImp implements GoalService {
      * Редактирует финансовую цель по ID.
      *
      * @param id          ID цели
-     * @param name        новое название цели
-     * @param description новое описание цели
-     * @param point       новое количество средств для достижения цели
+     * @param user        текущий пользователь
+     * @param goalDto     объект с обновленными данными о цели
+     *
      * @throws GoalNotFoundException если цель не найдена или не принадлежит текущему пользователю
      */
     @Override
-    public void editGoal(int id, String name, String description, Double point) {
+    public void editGoal(int id, User user, GoalDto goalDto) {
         Goal goal = goalRepository.findById(id).orElseThrow(() -> new GoalNotFoundException(id));
-        checkIfGoalBelongsToUser(goal);
-        goal.setName(name);
-        goal.setDescription(description);
-        goal.setPoint(point);
+        checkIfGoalBelongsToUser(goal, user);
+        goal.setName(goalDto.name());
+        goal.setDescription(goalDto.description());
+        goal.setPoint(goalDto.point());
         goalRepository.save(goal);
     }
 
@@ -84,8 +91,8 @@ public class GoalServiceImp implements GoalService {
      * @return список всех финансовых целей текущего пользователя
      */
     @Override
-    public List<Goal> getAll() {
-        return goalRepository.findAllByUser(PersonalMoneyTracker.getCurrentUser());
+    public List<GoalDto> getAllByUserId(int userId) {
+        return goalRepository.findAllByUser(userId).stream().map(goalMapper::toDto).toList();
     }
 
     /**
@@ -98,7 +105,7 @@ public class GoalServiceImp implements GoalService {
     @Override
     public List<String> checkGoal(Transaction lastTransaction) {
         double balance = reportService.getCurrentBalance();
-        List<Goal> goals = getAll();
+        List<Goal> goals = goalRepository.findAllByUser(PersonalMoneyTracker.getCurrentUser().getId());
         List<String> result = new ArrayList<>();
         for (Goal goal : goals) {
             if (goal.getPoint() <= balance) {
@@ -118,10 +125,12 @@ public class GoalServiceImp implements GoalService {
      * Проверяет, принадлежит ли цель текущему пользователю.
      *
      * @param goal цель для проверки
+     * @param user текущий пользователь
+     *
      * @throws GoalNotFoundException если цель не найдена или не принадлежит текущему пользователю
      */
-    private void checkIfGoalBelongsToUser(Goal goal) {
-        if (!goal.getUser().equals(PersonalMoneyTracker.getCurrentUser())) {
+    private void checkIfGoalBelongsToUser(Goal goal, User user) {
+        if (!goal.getUser().equals(user)) {
             throw new GoalNotFoundException(goal.getId());
         }
     }

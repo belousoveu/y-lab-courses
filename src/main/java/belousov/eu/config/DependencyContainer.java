@@ -7,6 +7,7 @@ import belousov.eu.service.*;
 import belousov.eu.service.imp.*;
 import belousov.eu.servlet.AdminServlet;
 import belousov.eu.servlet.AuthServlet;
+import belousov.eu.servlet.GoalServlet;
 import belousov.eu.servlet.ProfileServlet;
 import belousov.eu.view.ConsoleView;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -66,6 +67,7 @@ public class DependencyContainer {
         register(AuthServlet.class, new AuthServlet(this.get(AuthController.class), this.get(ObjectMapper.class)));
         register(ProfileServlet.class, new ProfileServlet(this.get(ProfileController.class), this.get(ObjectMapper.class)));
         register(AdminServlet.class, new AdminServlet(this.get(AdminController.class), this.get(ObjectMapper.class)));
+        register(GoalServlet.class, new GoalServlet(this.get(GoalController.class), this.get(ObjectMapper.class)));
 
         BalanceChangeSubject subject = this.get(BalanceChangeSubject.class);
         subject.addObserver(this.get(BudgetController.class));
