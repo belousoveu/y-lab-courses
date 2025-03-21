@@ -56,7 +56,7 @@ public class DependencyContainer {
                 new BudgetController(this.get(BudgetService.class), this.get(CategoryService.class), this.get(ConsoleView.class)));
         register(CategoryController.class, new CategoryController(this.get(CategoryService.class), this.get(ConsoleView.class)));
         register(AuthController.class, new AuthController(this.get(AuthService.class)));
-        register(ProfileController.class, new ProfileController(this.get(ProfileService.class), this.get(ConsoleView.class)));
+        register(ProfileController.class, new ProfileController(this.get(ProfileService.class)));
         register(AdminController.class, new AdminController(this.get(AdminService.class), this.get(ConsoleView.class)));
         register(GoalController.class, new GoalController(this.get(GoalService.class), this.get(ConsoleView.class)));
         register(ReportController.class, new ReportController(this.get(ReportService.class), this.get(ConsoleView.class)));

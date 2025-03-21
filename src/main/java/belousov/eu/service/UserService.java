@@ -8,6 +8,7 @@ import belousov.eu.model.User;
 import belousov.eu.model.dto.LoginDto;
 import belousov.eu.model.dto.RegisterDto;
 import belousov.eu.model.dto.UserProfileDto;
+import belousov.eu.model.dto.UserProfileUpdateDto;
 import belousov.eu.repository.UserRepository;
 import belousov.eu.utils.Password;
 import lombok.AllArgsConstructor;
@@ -15,6 +16,7 @@ import org.hibernate.exception.ConstraintViolationException;
 import org.mapstruct.factory.Mappers;
 
 import java.util.List;
+
 
 /**
  * Реализация сервиса для управления пользователями.
@@ -85,57 +87,38 @@ public class UserService implements AuthService, ProfileService, AdminAccessUser
         return userProfileMapper.toDto(findById(id));
     }
 
-
-    /**
-     * Изменяет имя пользователя.
+    /** Изменяет поля профиля пользователя.
      *
-     * @param user пользователь
-     * @param name новое имя
+     * @param id идентификатор пользователя
+     * @param updateDto - объект с данными для изменения профиля (имя, электронная почта, пароль).
+     *                  При изменении пароля требуется указать старый пароль.
+     * @throws InvalidPasswordException если пароль неверный
      */
     @Override
-    public void changeName(User user, String name) {
-        user.setName(name);
-        userRepository.save(user);
-    }
-
-    /**
-     * Изменяет пароль пользователя.
-     *
-     * @param user        пользователь
-     * @param oldPassword старый пароль
-     * @param newPassword новый пароль
-     * @throws InvalidPasswordException если старый пароль неверный
-     */
-    public void changePassword(User user, String oldPassword, String newPassword) {
-        checkPassword(user, oldPassword);
-        user.setPassword(Password.encode(newPassword));
-        userRepository.save(user);
-    }
-
-    /**
-     * Изменяет электронную почту пользователя.
-     *
-     * @param user  пользователь
-     * @param email новая электронная почта
-     */
-    @Override
-    public void changeEmail(User user, String email) {
-        user.setEmail(email.toLowerCase());
+    public void updateUser(int id, UserProfileUpdateDto updateDto) {
+        User user = findById(id);
+        if (updateDto.password() != null) {
+            checkPassword(user, updateDto.oldPassword());
+            user.setPassword(Password.encode(updateDto.password()));
+        }
+        user.setName(updateDto.name() != null ? updateDto.name() : user.getName());
+        user.setEmail(updateDto.email() != null ? updateDto.email().toLowerCase() : user.getEmail());
         userRepository.save(user);
     }
 
     /**
      * Удаляет пользователя.
      *
-     * @param user     пользователь
-     * @param password пароль (требуется, если пользователь удаляет себя)
+     * @param id          идентификатор пользователя
+     * @param password    пароль (требуется, если пользователь удаляет себя)
+     * @param currentUser текущий авторизованный пользователь
      * @throws ForbiddenException       если попытка удалить другого пользователя без прав администратора
      * @throws LastAdminDeleteException если попытка удалить последнего администратора
      * @throws InvalidPasswordException если пароль неверный
      */
     @Override
-    public void deleteUser(User user, String password) {
-        User currentUser = PersonalMoneyTracker.getCurrentUser();
+    public void deleteUser(int id, String password, User currentUser) {
+        User user = findById(id);
         if (currentUser.isAdmin()) {
             checkIfLastAdmin(user);
             userRepository.delete(user);
@@ -154,8 +137,7 @@ public class UserService implements AuthService, ProfileService, AdminAccessUser
      * @param id ID пользователя
      */
     public void deleteUserById(int id) {
-        User user = findById(id);
-        deleteUser(user, "");
+        deleteUser(id, "", PersonalMoneyTracker.getCurrentUser());
     }
 
     /**

@@ -75,7 +75,7 @@ public class AuthServlet extends HttpServlet {
                         session.setAttribute("currentUser", newUser);
 
                         response.setStatus(HttpServletResponse.SC_SEE_OTHER);
-                        response.sendRedirect("/api/profile" + newUser.getId());
+                        response.sendRedirect("/api/profile/" + newUser.getId());
                         break;
                     case "logout":
                         session.invalidate();

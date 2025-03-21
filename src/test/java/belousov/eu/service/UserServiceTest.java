@@ -90,48 +90,18 @@ class UserServiceTest {
     }
 
     @Test
-    void test_changeName_shouldUpdateUserName() {
-        userService.changeName(user, "Jane Doe");
-
-        assertThat(user.getName()).isEqualTo("Jane Doe");
-        verify(userRepository, times(1)).save(user);
-    }
-
-    @Test
-    void test_changePassword_whenOldPasswordIsCorrect_shouldUpdatePassword() {
-        userService.changePassword(user, "password123", "newpassword");
-
-        assertThat(Password.verify("newpassword", user.getPassword())).isTrue();
-        verify(userRepository, times(1)).save(user);
-    }
-
-    @Test
-    void test_changePassword_whenOldPasswordIsIncorrect_shouldThrowException() {
-        assertThatThrownBy(() -> userService.changePassword(user, "wrongpassword", "newpassword"))
-                .isInstanceOf(InvalidPasswordException.class);
-    }
-
-    @Test
-    void test_changeEmail_shouldUpdateUserEmail() {
-        userService.changeEmail(user, "jane@example.com");
-
-        assertThat(user.getEmail()).isEqualTo("jane@example.com");
-        verify(userRepository, times(1)).save(user);
-    }
-
-    @Test
     void test_deleteUser_whenAdminDeletesAnotherUser_shouldDeleteUser() {
         PersonalMoneyTracker.setCurrentUser(admin);
         when(userRepository.getAllAdminIds()).thenReturn(List.of(admin.getId()));
 
-        userService.deleteUser(user, "");
+        userService.deleteUser(user.getId(), "", admin);
 
         verify(userRepository, times(1)).delete(user);
     }
 
     @Test
     void test_deleteUser_whenUserDeletesSelf_shouldDeleteUserAndSetCurrentUserToNull() {
-        userService.deleteUser(user, "password123");
+        userService.deleteUser(user.getId(), "password123", user);
 
         verify(userRepository, times(1)).delete(user);
         assertThat(PersonalMoneyTracker.getCurrentUser()).isNull();
@@ -140,7 +110,7 @@ class UserServiceTest {
     @Test
     void test_deleteUser_whenUserDeletesAnotherUser_shouldThrowException() {
         User otherUser = new User(3, "Jane Doe", "jane@example.com", Password.encode("password456"), Role.USER, true);
-        assertThatThrownBy(() -> userService.deleteUser(otherUser, ""))
+        assertThatThrownBy(() -> userService.deleteUser(otherUser.getId(), "", user))
                 .isInstanceOf(ForbiddenException.class);
     }
 
@@ -149,7 +119,7 @@ class UserServiceTest {
         PersonalMoneyTracker.setCurrentUser(admin);
         when(userRepository.getAllAdminIds()).thenReturn(List.of(admin.getId()));
 
-        assertThatThrownBy(() -> userService.deleteUser(admin, ""))
+        assertThatThrownBy(() -> userService.deleteUser(admin.getId(), "", admin))
                 .isInstanceOf(LastAdminDeleteException.class);
     }
 
