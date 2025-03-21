@@ -1,9 +1,8 @@
 package belousov.eu.config;
 
-import belousov.eu.controller.InfoController;
-import belousov.eu.servlet.AuthServlet;
 import belousov.eu.servlet.CharsetFilter;
-import belousov.eu.servlet.ProfileServlet;
+import belousov.eu.servlet.DispatcherServlet;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
@@ -13,12 +12,14 @@ import org.apache.tomcat.util.descriptor.web.FilterMap;
 
 import java.io.File;
 
+@Slf4j
 public class TomcatConfig {
 
     private final Tomcat tomcat = new Tomcat();
+    private static final int PORT = 8080;
 
     public TomcatConfig(DependencyContainer container) {
-        tomcat.setPort(8080);
+        tomcat.setPort(PORT);
 
         tomcat.setBaseDir(".");
         Connector connector = tomcat.getConnector();
@@ -36,11 +37,8 @@ public class TomcatConfig {
         filterMap.addURLPattern("/*");
         tomcatContext.addFilterMap(filterMap);
 
-        Tomcat.addServlet(tomcatContext, "info", new InfoController());
-        Tomcat.addServlet(tomcatContext, "auth", container.get(AuthServlet.class));
-        Tomcat.addServlet(tomcatContext, "profile", container.get(ProfileServlet.class));
-        tomcatContext.addServletMappingDecoded("/api/auth/*", "auth");
-        tomcatContext.addServletMappingDecoded("/api/profile/*", "profile");
+        Tomcat.addServlet(tomcatContext, "main", new DispatcherServlet(container));
+        tomcatContext.addServletMappingDecoded("/api/*", "main");
 
 
     }
@@ -48,10 +46,10 @@ public class TomcatConfig {
     public void start() {
         try {
             tomcat.start();
-            System.out.println("Server started on port 8080");
+            log.info("Server Tomcat started on port {}", PORT);
             tomcat.getServer().await();
         } catch (LifecycleException e) {
-            throw new RuntimeException(e); //TODO
+            log.error("Error starting Tomcat server", e);
         }
     }
 }

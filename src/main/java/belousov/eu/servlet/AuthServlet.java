@@ -1,12 +1,12 @@
 package belousov.eu.servlet;
 
 import belousov.eu.controller.AuthController;
-import belousov.eu.exception.InvalidPasswordException;
+import belousov.eu.exception.PathNotFoundException;
+import belousov.eu.exception.ValidationParametersException;
 import belousov.eu.model.User;
 import belousov.eu.model.dto.LoginDto;
 import belousov.eu.model.dto.RegisterDto;
 import belousov.eu.model.dto.Validatable;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,8 +32,7 @@ public class AuthServlet extends HttpServlet {
 
         String path = request.getPathInfo();
         if (path == null || path.isEmpty()) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND);
-            return;
+            throw new PathNotFoundException(path);
         }
 
         String[] parts = path.split("/");
@@ -51,9 +50,7 @@ public class AuthServlet extends HttpServlet {
                         violations = validator.validate(loginDto);
 
                         if (!violations.isEmpty()) {
-                            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                            response.getWriter().write("Указаны неверные данные: " + violations);
-                            return;
+                            throw new ValidationParametersException(violations.toString());
                         }
                         User authUser = authController.login(loginDto);
                         session.setAttribute("currentUser", authUser);
@@ -61,15 +58,14 @@ public class AuthServlet extends HttpServlet {
                         response.setStatus(HttpServletResponse.SC_SEE_OTHER);
                         response.sendRedirect("/api/profile/" + authUser.getId());
                         break;
+
                     case "register":
                         RegisterDto registerDto = objectMapper.readValue(request.getInputStream(), RegisterDto.class);
 
                         violations = validator.validate(registerDto);
 
                         if (!violations.isEmpty()) {
-                            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                            response.getWriter().write("Указаны неверные данные: " + violations);
-                            return;
+                            throw new ValidationParametersException(violations.toString());
                         }
                         User newUser = authController.register(registerDto);
                         session.setAttribute("currentUser", newUser);
@@ -77,23 +73,17 @@ public class AuthServlet extends HttpServlet {
                         response.setStatus(HttpServletResponse.SC_SEE_OTHER);
                         response.sendRedirect("/api/profile/" + newUser.getId());
                         break;
+
                     case "logout":
                         session.invalidate();
                         response.setStatus(HttpServletResponse.SC_SEE_OTHER);
                         response.sendRedirect("/api/auth/login");
                         break;
                     default:
-                        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                        throw new PathNotFoundException(path);
 
                 }
             }
-        } catch (JsonProcessingException e) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        } catch (IOException e) {
-            response.setStatus(416);
-        } catch (InvalidPasswordException e) {
-            response.setStatus(401);
-            response.getWriter().write("Invalid Password");
         }
     }
 
@@ -102,8 +92,7 @@ public class AuthServlet extends HttpServlet {
 
         String path = req.getPathInfo();
         if (path == null || path.isEmpty()) {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
-            return;
+            throw new PathNotFoundException(path);
         }
 
         String[] parts = path.split("/");

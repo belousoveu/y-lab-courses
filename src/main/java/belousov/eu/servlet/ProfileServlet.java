@@ -1,9 +1,11 @@
 package belousov.eu.servlet;
 
 import belousov.eu.controller.ProfileController;
+import belousov.eu.exception.ForbiddenException;
+import belousov.eu.exception.PathNotFoundException;
+import belousov.eu.exception.ValidationParametersException;
 import belousov.eu.model.User;
 import belousov.eu.model.dto.UserProfileUpdateDto;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,6 +20,8 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class ProfileServlet extends HttpServlet {
 
+    private static final String CURRENT_USER = "currentUser";
+
     private final transient ProfileController profileController;
     private final transient ObjectMapper objectMapper;
 
@@ -28,31 +32,26 @@ public class ProfileServlet extends HttpServlet {
         String path = req.getPathInfo();
 
         if (path == null || path.isEmpty()) {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
-            return;
+            throw new PathNotFoundException(path);
         }
 
         String[] parts = path.split("/");
         try (ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory()) {
             if (parts.length > 2 && parts[2].equals("update")) {
-                User currentUser = (User) session.getAttribute("currentUser");
+                User currentUser = (User) session.getAttribute(CURRENT_USER);
                 int pathId = Integer.parseInt(parts[1]);
                 if (currentUser.getId() != pathId && !currentUser.isAdmin()) {
-                    resp.sendError(HttpServletResponse.SC_FORBIDDEN);
-                    return;
+                    throw new ForbiddenException();
                 }
 
                 UserProfileUpdateDto updateDto = objectMapper.readValue(req.getInputStream(), UserProfileUpdateDto.class);
 
                 if (!validatorFactory.getValidator().validate(updateDto).isEmpty()) {
-                    resp.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                    return;
+                    throw new ValidationParametersException(validatorFactory.getValidator().validate(updateDto).toString());
                 }
 
                 profileController.updateProfile(pathId, updateDto);
             }
-        } catch (JsonProcessingException e) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
     }
 
@@ -63,18 +62,16 @@ public class ProfileServlet extends HttpServlet {
         String path = req.getPathInfo();
 
         if (path == null || path.isEmpty()) {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
-            return;
+            throw new PathNotFoundException(path);
         }
 
         String[] parts = path.split("/");
 
         if (parts.length > 1) {
-            User currentUser = (User) session.getAttribute("currentUser");
+            User currentUser = (User) session.getAttribute(CURRENT_USER);
             int pathId = Integer.parseInt(parts[1]);
             if (currentUser.getId() != pathId && !currentUser.isAdmin()) {
-                resp.sendError(HttpServletResponse.SC_FORBIDDEN);
-                return;
+                throw new ForbiddenException();
             }
             String password = objectMapper.readValue(req.getInputStream(), String.class);
             profileController.deleteProfile(pathId, password, currentUser);
@@ -91,28 +88,23 @@ public class ProfileServlet extends HttpServlet {
 
         String path = req.getPathInfo();
         if (path == null || path.isEmpty()) {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
-            return;
+            throw new PathNotFoundException(path);
         }
 
         String[] parts = path.split("/");
 
 
         if (parts.length > 1) {
-            User currentUser = (User) session.getAttribute("currentUser");
+            User currentUser = (User) session.getAttribute(CURRENT_USER);
             int pathId = Integer.parseInt(parts[1]);
             if (currentUser.getId() != pathId && !currentUser.isAdmin()) {
-                resp.sendError(HttpServletResponse.SC_FORBIDDEN);
-                return;
+                throw new ForbiddenException();
             }
 
             resp.setContentType("application/json");
             resp.getWriter().write(String.format("<h1>Добро пожаловать, %s!</h1>", currentUser.getName()));
             objectMapper.writeValue(resp.getWriter(), profileController.viewProfile(pathId));
 
-
         }
-
-
     }
 }
