@@ -31,6 +31,10 @@ public class AuthServlet extends HttpServlet {
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         String path = request.getPathInfo();
+        if (path == null || path.isEmpty()) {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
 
         String[] parts = path.split("/");
 
@@ -55,7 +59,7 @@ public class AuthServlet extends HttpServlet {
                         session.setAttribute("currentUser", authUser);
 
                         response.setStatus(HttpServletResponse.SC_SEE_OTHER);
-                        response.sendRedirect("/profile");
+                        response.sendRedirect("/api/profile/" + authUser.getId());
                         break;
                     case "register":
                         RegisterDto registerDto = objectMapper.readValue(request.getInputStream(), RegisterDto.class);
@@ -71,12 +75,12 @@ public class AuthServlet extends HttpServlet {
                         session.setAttribute("currentUser", newUser);
 
                         response.setStatus(HttpServletResponse.SC_SEE_OTHER);
-                        response.sendRedirect("/profile");
+                        response.sendRedirect("/api/profile" + newUser.getId());
                         break;
                     case "logout":
                         session.invalidate();
                         response.setStatus(HttpServletResponse.SC_SEE_OTHER);
-                        response.sendRedirect("/login");
+                        response.sendRedirect("/api/auth/login");
                         break;
                     default:
                         response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -91,5 +95,23 @@ public class AuthServlet extends HttpServlet {
             response.setStatus(401);
             response.getWriter().write("Invalid Password");
         }
+    }
+
+    @Override
+    public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+
+        String path = req.getPathInfo();
+        if (path == null || path.isEmpty()) {
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return;
+        }
+
+        String[] parts = path.split("/");
+
+        if (parts.length > 1 && parts[1].equals("login")) {
+            resp.setStatus(HttpServletResponse.SC_OK);
+            resp.getWriter().write("<h1>Авторизуйтесь или зарегистрируйтесь</h1>");
+        }
+
     }
 }

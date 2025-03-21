@@ -39,8 +39,8 @@ public class TomcatConfig {
         Tomcat.addServlet(tomcatContext, "info", new InfoController());
         Tomcat.addServlet(tomcatContext, "auth", container.get(AuthServlet.class));
         Tomcat.addServlet(tomcatContext, "profile", container.get(ProfileServlet.class));
-        tomcatContext.addServletMappingDecoded("/auth/*", "auth");
-        tomcatContext.addServletMappingDecoded("/profile/*", "profile");
+        tomcatContext.addServletMappingDecoded("/api/auth/*", "auth");
+        tomcatContext.addServletMappingDecoded("/api/profile/*", "profile");
 
 
     }

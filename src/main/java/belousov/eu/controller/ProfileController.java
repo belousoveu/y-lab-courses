@@ -2,6 +2,7 @@ package belousov.eu.controller;
 
 import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.model.User;
+import belousov.eu.model.dto.UserProfileDto;
 import belousov.eu.service.ProfileService;
 import belousov.eu.utils.InputPattern;
 import belousov.eu.utils.MessageColor;
@@ -43,8 +44,7 @@ public class ProfileController {
         consoleView.println("Пользователь успешно удален", MessageColor.CYAN);
     }
 
-    public void viewProfile() {
-        User currentUser = PersonalMoneyTracker.getCurrentUser();
-        consoleView.printUser(currentUser);
+    public UserProfileDto viewProfile(int id) {
+        return profileService.getUserById(id);
     }
 }

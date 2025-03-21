@@ -2,14 +2,17 @@ package belousov.eu.service;
 
 import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.exception.*;
+import belousov.eu.mapper.UserProfileMapper;
 import belousov.eu.model.Role;
 import belousov.eu.model.User;
 import belousov.eu.model.dto.LoginDto;
 import belousov.eu.model.dto.RegisterDto;
+import belousov.eu.model.dto.UserProfileDto;
 import belousov.eu.repository.UserRepository;
 import belousov.eu.utils.Password;
 import lombok.AllArgsConstructor;
 import org.hibernate.exception.ConstraintViolationException;
+import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 
@@ -23,6 +26,7 @@ public class UserService implements AuthService, ProfileService, AdminAccessUser
      * Репозиторий для работы с пользователями.
      */
     private final UserRepository userRepository;
+    private final UserProfileMapper userProfileMapper = Mappers.getMapper(UserProfileMapper.class);
 
     /**
      * Регистрирует нового пользователя.
@@ -67,6 +71,20 @@ public class UserService implements AuthService, ProfileService, AdminAccessUser
         PersonalMoneyTracker.setCurrentUser(user);
         return user;
     }
+
+
+    /**
+     * Возвращает пользователя по идентификатору.
+     *
+     * @param id идентификатор пользователя
+     * @return пользователь с указанным идентификатором
+     * @throws UserNotFoundException если пользователь не найден
+     */
+    @Override
+    public UserProfileDto getUserById(int id) {
+        return userProfileMapper.toDto(findById(id));
+    }
+
 
     /**
      * Изменяет имя пользователя.
