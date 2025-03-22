@@ -39,6 +39,11 @@ public class IncomeStatement {
     private double outcome;
 
     /**
+     * Итог, разность доходов и расходов.
+     */
+    private double total;
+
+    /**
      * Возвращает итоговый баланс, который равен разности доходов и расходов.
      *
      * @return итоговый баланс

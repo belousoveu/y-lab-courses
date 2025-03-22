@@ -157,7 +157,7 @@ class TransactionServiceImpTest {
     void test_getCurrentBalance_shouldReturnCurrentBalance() {
         when(transactionRepository.getCurrentBalance(user)).thenReturn(5000.0);
 
-        double balance = transactionServiceImp.getCurrentBalance();
+        double balance = transactionServiceImp.getCurrentBalance(user).amount();
         assertThat(balance).isEqualTo(5000.0);
     }
 
@@ -168,7 +168,7 @@ class TransactionServiceImpTest {
 
         when(transactionRepository.findAll()).thenReturn(List.of(deposit, withdraw));
 
-        String result = transactionServiceImp.getIncomeStatement(LocalDate.of(2023, 10, 1), LocalDate.of(2023, 10, 31));
+        String result = transactionServiceImp.getIncomeStatement(user, LocalDate.of(2023, 10, 1), LocalDate.of(2023, 10, 31)).toString();
         assertThat(result).contains("Доход: 10 000,00").contains("Расход: 5 000,00");
     }
 
@@ -179,7 +179,7 @@ class TransactionServiceImpTest {
 
         when(transactionRepository.findAll()).thenReturn(List.of(transaction1, transaction2));
 
-        List<String> result = transactionServiceImp.getCostsByCategory(LocalDate.of(2023, 10, 1), LocalDate.of(2023, 10, 31));
+        List<String> result = transactionServiceImp.getCostsByCategory(user, LocalDate.of(2023, 10, 1), LocalDate.of(2023, 10, 31));
         assertThat(result).contains("Продукты : 3000.0").contains("Без категории : 2000.0").contains("Итого по всем категориям: : 5000.0");
     }
 }

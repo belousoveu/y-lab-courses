@@ -7,6 +7,7 @@ import belousov.eu.model.Goal;
 import belousov.eu.model.Role;
 import belousov.eu.model.Transaction;
 import belousov.eu.model.User;
+import belousov.eu.model.dto.BalanceDto;
 import belousov.eu.model.dto.GoalDto;
 import belousov.eu.repository.GoalRepository;
 import belousov.eu.service.imp.GoalServiceImp;
@@ -131,7 +132,7 @@ class GoalServiceImpTest {
 
     @Test
     void test_checkGoal_whenGoalsAreAchieved_shouldSendEmailAndReturnMessages() {
-        when(reportService.getCurrentBalance()).thenReturn(1500000.0);
+        when(reportService.getCurrentBalance(user)).thenReturn(new BalanceDto("01.01.2025", user.getName(), 1500000.0));
         when(goalRepository.findAllByUser(user.getId())).thenReturn(List.of(goal));
 
         Transaction transaction = new Transaction(1, null, null, null, 0.0, null, user);
@@ -143,7 +144,7 @@ class GoalServiceImpTest {
 
     @Test
     void test_checkGoal_whenNoGoalsAreAchieved_shouldReturnEmptyList() {
-        when(reportService.getCurrentBalance()).thenReturn(500000.0);
+        when(reportService.getCurrentBalance(user)).thenReturn(new BalanceDto("01.01.2025", user.getName(), 500000.0));
         when(goalRepository.findAllByUser(user.getId())).thenReturn(List.of(goal));
 
         Transaction transaction = new Transaction(1, null, null, null, 0.0, null, user);

@@ -135,8 +135,8 @@ public class DependencyContainer {
                         this.get(ConsoleView.class)
                 ));
         register(ReportController.class,
-                new ReportController(this.get(ReportService.class),
-                        this.get(ConsoleView.class)
+                new ReportController(
+                        this.get(ReportService.class)
                 ));
 
         register(AuthServlet.class,
@@ -172,6 +172,11 @@ public class DependencyContainer {
         register(TransactionServlet.class,
                 new TransactionServlet(
                         this.get(TransactionController.class),
+                        this.get(ObjectMapper.class)
+                ));
+        register(ReportServlet.class,
+                new ReportServlet(
+                        this.get(ReportController.class),
                         this.get(ObjectMapper.class)
                 ));
 

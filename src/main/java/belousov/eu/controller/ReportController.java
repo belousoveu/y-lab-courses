@@ -1,46 +1,28 @@
 package belousov.eu.controller;
 
+import belousov.eu.model.User;
+import belousov.eu.model.dto.BalanceDto;
+import belousov.eu.model.report_dto.IncomeStatement;
 import belousov.eu.service.ReportService;
-import belousov.eu.utils.InputPattern;
-import belousov.eu.utils.MessageColor;
-import belousov.eu.view.ConsoleView;
 import lombok.AllArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @AllArgsConstructor
 public class ReportController {
 
     private final ReportService reportService;
-    private final ConsoleView consoleView;
 
-    private static final String PROMPT_DATE_FROM = "Введите дату начала периода (YYYY-MM-DD): ";
-    private static final String PROMPT_DATE_TO = "Введите дату конца периода (YYYY-MM-DD): ";
-
-
-    public void viewCurrentBalance() {
-        consoleView.println("Текущий баланс: %,.2f".formatted(reportService.getCurrentBalance()), MessageColor.CYAN);
+    public BalanceDto getCurrentBalance(User user) {
+        return reportService.getCurrentBalance(user);
     }
 
-    public void viewIncomeStatement() {
-        LocalDate from = consoleView.readPeriod(PROMPT_DATE_FROM, InputPattern.DATE, LocalDate::parse);
-        LocalDate to = consoleView.readPeriod(PROMPT_DATE_TO, InputPattern.DATE, LocalDate::parse);
-        consoleView.println(reportService.getIncomeStatement(from, to), MessageColor.YELLOW);
+    public IncomeStatement getStatement(User user, LocalDate from, LocalDate to) {
+        return reportService.getIncomeStatement(user, from, to);
     }
 
-    public void viewCostsByCategory() {
-        LocalDate from = consoleView.readPeriod(PROMPT_DATE_FROM, InputPattern.DATE, LocalDate::parse);
-        LocalDate to = consoleView.readPeriod(PROMPT_DATE_TO, InputPattern.DATE, LocalDate::parse);
-        consoleView.println("Отчет расходов по категориям за период: %s - %s".formatted(from, to),
-                reportService.getCostsByCategory(from, to),
-                MessageColor.CYAN, MessageColor.YELLOW);
-    }
-
-    public void viewBalanceSheet() {
-        LocalDate from = consoleView.readPeriod(PROMPT_DATE_FROM, InputPattern.DATE, LocalDate::parse);
-        LocalDate to = consoleView.readPeriod(PROMPT_DATE_TO, InputPattern.DATE, LocalDate::parse);
-        consoleView.println("Отчет о финансовом состоянии за период: %s - %s".formatted(from, to));
-        consoleView.println("В задании отсутствуют правила создания отчета о финансовом состоянии", MessageColor.RED);
-
+    public List<String> getCategories(User user, LocalDate from, LocalDate to) {
+        return reportService.getCostsByCategory(user, from, to);
     }
 }

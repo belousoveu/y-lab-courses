@@ -1,12 +1,12 @@
 package belousov.eu.service.imp;
 
-import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.exception.TransactionNotFoundException;
 import belousov.eu.mapper.TransactionMapper;
 import belousov.eu.model.OperationType;
 import belousov.eu.model.Transaction;
 import belousov.eu.model.TransactionFilter;
 import belousov.eu.model.User;
+import belousov.eu.model.dto.BalanceDto;
 import belousov.eu.model.dto.TransactionDto;
 import belousov.eu.model.report_dto.IncomeStatement;
 import belousov.eu.observer.BalanceChangeSubject;
@@ -19,9 +19,11 @@ import lombok.AllArgsConstructor;
 import org.mapstruct.factory.Mappers;
 
 import java.time.LocalDate;
-import java.util.HashMap;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Реализация сервиса для управления транзакциями.
@@ -48,9 +50,8 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
     /**
      * Добавляет новую транзакцию.
      *
-     * @param user        текущий авторизованный пользователь
-     * @param dto         объект с данными транзакции
-     *
+     * @param user текущий авторизованный пользователь
+     * @param dto  объект с данными транзакции
      * @return добавленная транзакция
      */
     @Override
@@ -82,10 +83,9 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
     /**
      * Обновляет существующую транзакцию.
      *
-     * @param id          ID транзакции
+     * @param id             ID транзакции
      * @param transactionDto новые данные транзакции
-     * @param user        текущий авторизованный пользователь
-     *
+     * @param user           текущий авторизованный пользователь
      * @return обновлённая транзакция
      * @throws TransactionNotFoundException если транзакция не найдена или не принадлежит текущему пользователю
      */
@@ -104,9 +104,8 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
     /**
      * Удаляет транзакцию по ID.
      *
-     * @param id            ID транзакции
-     * @param user          текущий авторизованный пользователь
-     *
+     * @param id   ID транзакции
+     * @param user текущий авторизованный пользователь
      * @throws TransactionNotFoundException если транзакция не найдена или не принадлежит текущему пользователю
      */
     @Override
@@ -153,21 +152,22 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
      * @return текущий баланс
      */
     @Override
-    public double getCurrentBalance() {
-        User currentUser = PersonalMoneyTracker.getCurrentUser();
-        return transactionRepository.getCurrentBalance(currentUser);
+    public BalanceDto getCurrentBalance(User user) {
+        return new BalanceDto(LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")),
+                user.getName(),
+                transactionRepository.getCurrentBalance(user));
     }
 
     /**
      * Возвращает отчёт о доходах и расходах за указанный период.
      *
+     * @param currentUser текущий авторизованный пользователь
      * @param from начальная дата периода
      * @param to   конечная дата периода
      * @return строковое представление отчёта
      */
     @Override
-    public String getIncomeStatement(LocalDate from, LocalDate to) {
-        User currentUser = PersonalMoneyTracker.getCurrentUser();
+    public IncomeStatement getIncomeStatement(User currentUser, LocalDate from, LocalDate to) {
         List<TransactionDto> transactions = getTransactions(TransactionFilter.builder().user(currentUser).from(from).to(to).build());
         return IncomeStatement.builder()
                 .user(currentUser)
@@ -175,34 +175,30 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
                 .to(to)
                 .income(transactions.stream().filter(t -> t.operationType().equals(OperationType.DEPOSIT.name())).mapToDouble(TransactionDto::amount).sum())
                 .outcome(transactions.stream().filter(t -> t.operationType().equals(OperationType.WITHDRAW.name())).mapToDouble(TransactionDto::amount).sum())
-                .build()
-                .toString();
+                .build();
     }
 
     /**
      * Возвращает список расходов по категориям за указанный период.
      *
+     * @param user текущий авторизованный пользователь
      * @param from начальная дата периода
      * @param to   конечная дата периода
      * @return список строк с информацией о расходах по категориям
      */
     @Override
-    public List<String> getCostsByCategory(LocalDate from, LocalDate to) {
-        User currentUser = PersonalMoneyTracker.getCurrentUser();
+    public List<String> getCostsByCategory(User user, LocalDate from, LocalDate to) {
         List<TransactionDto> transactions = getTransactions(
-                TransactionFilter.builder().user(currentUser).from(from).to(to).type(OperationType.WITHDRAW).build()
+                TransactionFilter.builder().user(user).from(from).to(to).type(OperationType.WITHDRAW).build()
         );
 
-//        Map<String, Double> costByCategory = transactions.stream().collect(Collectors.groupingBy(
-//                t -> Optional.ofNullable(t.getCategory())
-//                        .map(Category::getName)
-//                        .orElse("Без категории"),
-//                Collectors.summingDouble(Transaction::getAmount)));
-
-        //TODO
+        Map<String, Double> costByCategory = transactions.stream()
+                .collect(Collectors.groupingBy(
+                        t -> Optional.ofNullable(t.category()).orElse("Без категории"),
+                        Collectors.summingDouble(TransactionDto::amount)
+                ));
         double totalCost = transactions.stream().mapToDouble(TransactionDto::amount).sum();
 
-        Map<String, Double> costByCategory = new HashMap<>();
         costByCategory.put("Итого по всем категориям:", totalCost);
 
         return costByCategory
@@ -215,6 +211,7 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
      * Проверяет, принадлежит ли транзакция текущему пользователю.
      *
      * @param transaction транзакция для проверки
+     * @param user        текущий авторизованный пользователь
      * @throws TransactionNotFoundException если транзакция не принадлежит текущему пользователю
      */
     private void checkTransactionBelongsToCurrentUser(Transaction transaction, User user) {

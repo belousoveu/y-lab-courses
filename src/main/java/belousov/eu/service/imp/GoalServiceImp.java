@@ -104,7 +104,7 @@ public class GoalServiceImp implements GoalService {
      */
     @Override
     public List<String> checkGoal(Transaction lastTransaction) {
-        double balance = reportService.getCurrentBalance();
+        double balance = reportService.getCurrentBalance(lastTransaction.getUser()).amount();
         List<Goal> goals = goalRepository.findAllByUser(PersonalMoneyTracker.getCurrentUser().getId());
         List<String> result = new ArrayList<>();
         for (Goal goal : goals) {
