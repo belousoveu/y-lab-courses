@@ -102,6 +102,12 @@ public class CategoryServiceImp implements CategoryService {
         return categoryMapper.toDto(category);
     }
 
+    @Override
+    public Category getCategoryByName(String categoryName, User user) {
+        return categoryRepository.findByNameAndUser(categoryName, user)
+                .orElseThrow(() -> new CategoryNotFoundException(categoryName, user.getId()));
+    }
+
     /**
      * Проверяет, принадлежит ли категория текущему пользователю.
      *

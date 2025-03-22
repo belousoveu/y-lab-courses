@@ -55,9 +55,14 @@ public class DependencyContainer {
                 new UserService(
                         this.get(UserRepository.class)
                 ));
+        register(CategoryService.class,
+                new CategoryServiceImp(
+                        this.get(CategoryRepository.class)
+                ));
         register(TransactionServiceImp.class,
                 new TransactionServiceImp(
                         this.get(TransactionRepository.class),
+                        this.get(CategoryService.class),
                         this.get(BalanceChangeSubject.class)
                 ));
         register(ReportService.class,
@@ -67,10 +72,6 @@ public class DependencyContainer {
                 this.get(TransactionServiceImp.class)
         );
 
-        register(CategoryService.class,
-                new CategoryServiceImp(
-                        this.get(CategoryRepository.class)
-                ));
         register(GoalService.class,
                 new GoalServiceImp(
                         this.get(ReportService.class),
@@ -105,9 +106,7 @@ public class DependencyContainer {
         //Controllers
         register(TransactionController.class,
                 new TransactionController(
-                        this.get(TransactionService.class),
-                        this.get(CategoryService.class),
-                        this.get(ConsoleView.class)
+                        this.get(TransactionService.class)
                 ));
         register(BudgetController.class,
                 new BudgetController(
@@ -168,6 +167,11 @@ public class DependencyContainer {
         register(BudgetServlet.class,
                 new BudgetServlet(
                         this.get(BudgetController.class),
+                        this.get(ObjectMapper.class)
+                ));
+        register(TransactionServlet.class,
+                new TransactionServlet(
+                        this.get(TransactionController.class),
                         this.get(ObjectMapper.class)
                 ));
 

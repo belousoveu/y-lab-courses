@@ -73,4 +73,13 @@ public class CategoryRepository {
                     .getResultList();
         }
     }
+
+    public Optional<Category> findByNameAndUser(String categoryName, User user) {
+        try (Session session = sessionFactory.openSession()) {
+            return session.createQuery("FROM Category WHERE name = :categoryName AND user = :user", Category.class)
+                    .setParameter("categoryName", categoryName)
+                    .setParameter("user", user)
+                    .uniqueResultOptional();
+        }
+    }
 }

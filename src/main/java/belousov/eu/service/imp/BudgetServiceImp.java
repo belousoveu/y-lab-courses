@@ -5,6 +5,7 @@ import belousov.eu.mapper.CategoryMapper;
 import belousov.eu.model.*;
 import belousov.eu.model.dto.BudgetDto;
 import belousov.eu.model.dto.CategoryDto;
+import belousov.eu.model.dto.TransactionDto;
 import belousov.eu.model.report_dto.BudgetReport;
 import belousov.eu.repository.BudgetRepository;
 import belousov.eu.service.BudgetService;
@@ -92,13 +93,13 @@ public class BudgetServiceImp implements BudgetService {
                 .to(period.atEndOfMonth())
                 .build();
 
-        List<Transaction> transactions = transactionService.getTransactions(filter);
+        List<TransactionDto> transactions = transactionService.getTransactions(filter);
 
 
         for (Budget budget : budgets) {
             double spent = transactions.stream()
-                    .filter(t -> t.getCategory() != null)
-                    .filter(t -> t.getCategory().equals(budget.getCategory())).mapToDouble(Transaction::getAmount).sum();
+                    .filter(t -> t.category() != null)
+                    .filter(t -> t.category().equals(budget.getCategory().getName())).mapToDouble(TransactionDto::amount).sum();
             budgetReport.addReportRow(budget.getCategory(), budget.getAmount(), spent);
         }
 
@@ -121,14 +122,14 @@ public class BudgetServiceImp implements BudgetService {
                 .findByCategoryAndPeriod(lastTransaction.getCategory(), lastTransaction.getUser(), period);
 
         if (budget.isPresent()) {
-            List<Transaction> transactions = transactionService.getTransactions(TransactionFilter.builder()
+            List<TransactionDto> transactions = transactionService.getTransactions(TransactionFilter.builder()
                     .user(lastTransaction.getUser())
                     .category(lastTransaction.getCategory())
                     .from(period.atDay(1))
                     .to(period.atEndOfMonth())
                     .type(OperationType.WITHDRAW)
                     .build());
-            double spent = transactions.stream().mapToDouble(Transaction::getAmount).sum();
+            double spent = transactions.stream().mapToDouble(TransactionDto::amount).sum();
             if (spent >= budget.get().getAmount()) {
                 emailService.sendEmail(lastTransaction.getUser().getEmail(), "Бюджет превышен", "Превышен бюджет по категории %s на сумму %.2f");
                 return "Превышен бюджет по категории %s на сумму %.2f"

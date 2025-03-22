@@ -1,19 +1,19 @@
 package belousov.eu.service;
 
-import belousov.eu.model.Category;
-import belousov.eu.model.OperationType;
-import belousov.eu.model.Transaction;
 import belousov.eu.model.TransactionFilter;
+import belousov.eu.model.User;
+import belousov.eu.model.dto.TransactionDto;
 
-import java.time.LocalDate;
 import java.util.List;
 
 public interface TransactionService {
-    Transaction addTransaction(LocalDate date, OperationType type, Category category, double amount, String description);
+    TransactionDto addTransaction(User user, TransactionDto transactionDto);
 
-    Transaction updateTransaction(int id, Category category, double amount, String description);
+    TransactionDto updateTransaction(int id, TransactionDto transactionDto, User user);
 
-    void deleteTransaction(int id);
+    void deleteTransaction(int id, User user);
 
-    List<Transaction> getTransactions(TransactionFilter filter);
+    List<TransactionDto> getTransactions(TransactionFilter filter);
+
+    TransactionDto getTransactionById(int id, User user);
 }

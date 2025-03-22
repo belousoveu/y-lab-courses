@@ -19,4 +19,13 @@ public interface TransactionMapper {
     @Mapping(target = "description", source = "description")
     @Mapping(target = "userId", source = "user.id")
     TransactionDto toDto(Transaction transaction);
+
+    @Mapping(target = "id", source = "id")
+    @Mapping(target = "date", source = "date")
+    @Mapping(target = "operationType", source = "operationType")
+    @Mapping(target = "category", ignore = true)
+    @Mapping(target = "amount", source = "amount")
+    @Mapping(target = "description", source = "description")
+    @Mapping(target = "user", ignore = true)
+    Transaction toEntity(TransactionDto transactionDto);
 }

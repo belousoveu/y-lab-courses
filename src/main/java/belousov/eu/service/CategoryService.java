@@ -1,5 +1,6 @@
 package belousov.eu.service;
 
+import belousov.eu.model.Category;
 import belousov.eu.model.User;
 import belousov.eu.model.dto.CategoryDto;
 
@@ -15,4 +16,6 @@ public interface CategoryService {
     CategoryDto getCategory(int categoryId, User user);
 
     List<CategoryDto> getAllCategories(User user);
+
+    Category getCategoryByName(String categoryName, User user);
 }
