@@ -2,13 +2,16 @@ package belousov.eu.service;
 
 import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.exception.CategoryNotFoundException;
+import belousov.eu.mapper.CategoryMapper;
 import belousov.eu.model.Category;
 import belousov.eu.model.Role;
 import belousov.eu.model.User;
+import belousov.eu.model.dto.CategoryDto;
 import belousov.eu.repository.CategoryRepository;
 import belousov.eu.service.imp.CategoryServiceImp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -44,7 +47,9 @@ class CategoryServiceImpTest {
 
     @Test
     void test_addCategory_shouldSaveCategory() {
-        categoryServiceImp.addCategory("Продукты");
+        CategoryDto dto = new CategoryDto();
+        dto.setName("Продукты");
+        categoryServiceImp.addCategory(user, dto);
 
         verify(categoryRepository, times(1)).save(any(Category.class));
     }
@@ -53,7 +58,7 @@ class CategoryServiceImpTest {
     void test_deleteCategory_whenCategoryExistsAndBelongsToUser_shouldDeleteCategory() {
         when(categoryRepository.findById(1)).thenReturn(Optional.of(category));
 
-        categoryServiceImp.deleteCategory(1);
+        categoryServiceImp.deleteCategory(1, user);
 
         verify(categoryRepository, times(1)).delete(category);
     }
@@ -62,7 +67,7 @@ class CategoryServiceImpTest {
     void test_deleteCategory_whenCategoryDoesNotExist_shouldThrowException() {
         when(categoryRepository.findById(1)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> categoryServiceImp.deleteCategory(1))
+        assertThatThrownBy(() -> categoryServiceImp.deleteCategory(1, user))
                 .isInstanceOf(CategoryNotFoundException.class)
                 .hasMessage("Не найдена категория с идентификатором 1");
     }
@@ -73,7 +78,7 @@ class CategoryServiceImpTest {
         Category otherCategory = new Category(1, "Продукты", otherUser);
         when(categoryRepository.findById(1)).thenReturn(Optional.of(otherCategory));
 
-        assertThatThrownBy(() -> categoryServiceImp.deleteCategory(1))
+        assertThatThrownBy(() -> categoryServiceImp.deleteCategory(1, user))
                 .isInstanceOf(CategoryNotFoundException.class)
                 .hasMessage("Не найдена категория с идентификатором 1");
     }
@@ -81,8 +86,11 @@ class CategoryServiceImpTest {
     @Test
     void test_editCategory_whenCategoryExistsAndBelongsToUser_shouldUpdateCategory() {
         when(categoryRepository.findById(1)).thenReturn(Optional.of(category));
+        CategoryDto dto = new CategoryDto();
+        dto.setName("Транспорт");
 
-        categoryServiceImp.editCategory(1, "Транспорт");
+
+        categoryServiceImp.editCategory(1, user, dto);
 
         assertThat(category.getName()).isEqualTo("Транспорт");
         verify(categoryRepository, times(1)).save(category);
@@ -91,8 +99,10 @@ class CategoryServiceImpTest {
     @Test
     void test_editCategory_whenCategoryDoesNotExist_shouldThrowException() {
         when(categoryRepository.findById(1)).thenReturn(Optional.empty());
+        CategoryDto dto = new CategoryDto();
+        dto.setName("Транспорт");
 
-        assertThatThrownBy(() -> categoryServiceImp.editCategory(1, "Транспорт"))
+        assertThatThrownBy(() -> categoryServiceImp.editCategory(1, user, dto))
                 .isInstanceOf(CategoryNotFoundException.class)
                 .hasMessage("Не найдена категория с идентификатором 1");
     }
@@ -102,8 +112,10 @@ class CategoryServiceImpTest {
         User otherUser = new User(2, "Jane Doe", "jane@example.com", "password456", Role.USER, true);
         Category otherCategory = new Category(1, "Продукты", otherUser);
         when(categoryRepository.findById(1)).thenReturn(Optional.of(otherCategory));
+        CategoryDto dto = new CategoryDto();
+        dto.setName("Транспорт");
 
-        assertThatThrownBy(() -> categoryServiceImp.editCategory(1, "Транспорт"))
+        assertThatThrownBy(() -> categoryServiceImp.editCategory(1, user, dto))
                 .isInstanceOf(CategoryNotFoundException.class)
                 .hasMessage("Не найдена категория с идентификатором 1");
     }
@@ -111,8 +123,9 @@ class CategoryServiceImpTest {
     @Test
     void test_getAllCategories_shouldReturnCategoriesForUser() {
         when(categoryRepository.findAllByUser(user)).thenReturn(List.of(category));
+        CategoryMapper mapper = Mappers.getMapper(CategoryMapper.class);
 
-        List<Category> categories = categoryServiceImp.getAllCategories();
-        assertThat(categories).containsExactly(category);
+        List<CategoryDto> categories = categoryServiceImp.getAllCategories(user);
+        assertThat(categories).containsExactly(mapper.toDto(category));
     }
 }

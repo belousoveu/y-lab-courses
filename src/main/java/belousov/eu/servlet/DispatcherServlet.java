@@ -24,6 +24,7 @@ public class DispatcherServlet extends HttpServlet {
         handlers.put("auth", container.get(AuthServlet.class));
         handlers.put("admin", container.get(AdminServlet.class));
         handlers.put("goals", container.get(GoalServlet.class));
+        handlers.put("categories", container.get(CategoryServlet.class));
 
 
         for (HttpServlet handler : handlers.values()) {

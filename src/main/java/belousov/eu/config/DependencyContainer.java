@@ -5,10 +5,7 @@ import belousov.eu.observer.BalanceChangeSubject;
 import belousov.eu.repository.*;
 import belousov.eu.service.*;
 import belousov.eu.service.imp.*;
-import belousov.eu.servlet.AdminServlet;
-import belousov.eu.servlet.AuthServlet;
-import belousov.eu.servlet.GoalServlet;
-import belousov.eu.servlet.ProfileServlet;
+import belousov.eu.servlet.*;
 import belousov.eu.view.ConsoleView;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hibernate.SessionFactory;
@@ -57,7 +54,7 @@ public class DependencyContainer {
                 new TransactionController(this.get(TransactionService.class), this.get(CategoryService.class), this.get(ConsoleView.class)));
         register(BudgetController.class,
                 new BudgetController(this.get(BudgetService.class), this.get(CategoryService.class), this.get(ConsoleView.class)));
-        register(CategoryController.class, new CategoryController(this.get(CategoryService.class), this.get(ConsoleView.class)));
+        register(CategoryController.class, new CategoryController(this.get(CategoryService.class)));
         register(AuthController.class, new AuthController(this.get(AuthService.class)));
         register(ProfileController.class, new ProfileController(this.get(ProfileService.class)));
         register(AdminController.class, new AdminController(this.get(AdminService.class)));
@@ -68,6 +65,7 @@ public class DependencyContainer {
         register(ProfileServlet.class, new ProfileServlet(this.get(ProfileController.class), this.get(ObjectMapper.class)));
         register(AdminServlet.class, new AdminServlet(this.get(AdminController.class), this.get(ObjectMapper.class)));
         register(GoalServlet.class, new GoalServlet(this.get(GoalController.class), this.get(ObjectMapper.class)));
+        register(CategoryServlet.class, new CategoryServlet(this.get(CategoryController.class), this.get(ObjectMapper.class)));
 
         BalanceChangeSubject subject = this.get(BalanceChangeSubject.class);
         subject.addObserver(this.get(BudgetController.class));

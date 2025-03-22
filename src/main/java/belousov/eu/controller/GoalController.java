@@ -27,7 +27,6 @@ public class GoalController implements BalanceChangeObserver {
 
     public void editGoal(int goalId, User user, GoalDto goalDto) {
         goalService.editGoal(goalId, user, goalDto);
-        consoleView.println(String.format("Цель с id %d успешно отредактирована", goalId), MessageColor.CYAN);
     }
 
     public List<GoalDto> getAllGoals(int userId) {
