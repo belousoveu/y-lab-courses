@@ -1,17 +1,21 @@
 package belousov.eu.service.imp;
 
-import belousov.eu.PersonalMoneyTracker;
+import belousov.eu.mapper.BudgetMapper;
+import belousov.eu.mapper.CategoryMapper;
 import belousov.eu.model.*;
+import belousov.eu.model.dto.BudgetDto;
+import belousov.eu.model.dto.CategoryDto;
 import belousov.eu.model.report_dto.BudgetReport;
 import belousov.eu.repository.BudgetRepository;
 import belousov.eu.service.BudgetService;
+import belousov.eu.service.CategoryService;
 import belousov.eu.service.EmailService;
 import belousov.eu.service.TransactionService;
 import lombok.AllArgsConstructor;
+import org.mapstruct.factory.Mappers;
 
 import java.time.YearMonth;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -26,52 +30,71 @@ public class BudgetServiceImp implements BudgetService {
      */
     private final TransactionService transactionService;
     /**
+     * Сервис для работы с категориями.
+     */
+    private final CategoryService categoryService;
+    /**
      * Сервис для отправки уведомлений по электронной почте.
      */
     private final EmailService emailService;
+
     /**
      * Репозиторий для управления бюджетами.
      */
     private final BudgetRepository budgetRepository;
+    /**
+     * Маппер для преобразования объектов бюджета в DTO и обратно.
+     */
+    private final BudgetMapper budgetMapper = Mappers.getMapper(BudgetMapper.class);
+    /**
+     * Маппер для преобразования объектов категории в DTO и обратно.
+     */
+    private final CategoryMapper categoryMapper = Mappers.getMapper(CategoryMapper.class);
 
     /**
      * Добавляет бюджеты для указанного периода и категории.
      *
-     * @param period    период
-     * @param budgetMap карта категорий и их бюджетов
+     * @param user      текущий авторизованный пользователь
+     * @param budgetDto объект с данными бюджета
      */
     @Override
-    public void addBudget(YearMonth period, Map<Category, Double> budgetMap) {
-        User user = PersonalMoneyTracker.getCurrentUser();
-        budgetMap.forEach((category, amount) ->
-                budgetRepository.save(new Budget(0, period.atDay(1), category, user, amount.intValue())));
-
+    public void addBudget(User user, BudgetDto budgetDto) {
+        budgetDto.setUserId(user.getId());
+        CategoryDto categoryDto = categoryService.getCategory(budgetDto.getCategoryId(), user);
+        Budget budget = budgetMapper.toEntity(budgetDto);
+        budget.setCategory(categoryMapper.toEntity(categoryDto));
+        budget.setUser(user);
+        budgetRepository.save(budget);
     }
 
     /**
      * Подготавливает отчёт о бюджете для указанного периода.
      *
+     * @param user   текущий авторизованный пользователь
      * @param period период
-     * @return отчёт о бюджете или Optional.empty(), если не найден
+     * @return Возвращает объект BudgetReport, содержащий информацию о бюджете за указанный период.
      */
     @Override
-    public Optional<BudgetReport> getBudgetReport(YearMonth period) {
-        List<Budget> budgets = budgetRepository.findAllByPeriod(PersonalMoneyTracker.getCurrentUser(), period);
+    public BudgetReport getBudgetReport(User user, YearMonth period) {
+
+        BudgetReport budgetReport = new BudgetReport();
+        budgetReport.setPeriod(period);
+        budgetReport.setUser(user);
+
+        List<Budget> budgets = budgetRepository.findAllByPeriod(user, period);
         if (budgets.isEmpty()) {
-            return Optional.empty();
+            return budgetReport;
         }
 
         TransactionFilter filter = TransactionFilter.builder()
-                .user(PersonalMoneyTracker.getCurrentUser())
+                .user(user)
                 .from(period.atDay(1))
                 .to(period.atEndOfMonth())
                 .build();
 
         List<Transaction> transactions = transactionService.getTransactions(filter);
 
-        BudgetReport budgetReport = new BudgetReport();
-        budgetReport.setPeriod(period);
-        budgetReport.setUser(PersonalMoneyTracker.getCurrentUser());
+
         for (Budget budget : budgets) {
             double spent = transactions.stream()
                     .filter(t -> t.getCategory() != null)
@@ -79,7 +102,7 @@ public class BudgetServiceImp implements BudgetService {
             budgetReport.addReportRow(budget.getCategory(), budget.getAmount(), spent);
         }
 
-        return Optional.of(budgetReport);
+        return budgetReport;
     }
 
     /**

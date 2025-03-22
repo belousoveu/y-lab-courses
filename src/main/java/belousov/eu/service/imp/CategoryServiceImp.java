@@ -86,6 +86,22 @@ public class CategoryServiceImp implements CategoryService {
                 .toList();
     }
 
+
+    /**
+     * Возвращает категорию по ID.
+     *
+     * @param categoryId ID категории
+     * @param user       текущий авторизованный пользователь
+     * @return объект CategoryDto с данными о категории
+     */
+    @Override
+    public CategoryDto getCategory(int categoryId, User user) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new CategoryNotFoundException(categoryId));
+        checkForCategoryBelongsToUser(category, user);
+        return categoryMapper.toDto(category);
+    }
+
     /**
      * Проверяет, принадлежит ли категория текущему пользователю.
      *

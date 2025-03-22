@@ -1,18 +1,17 @@
 package belousov.eu.service;
 
-import belousov.eu.model.Category;
 import belousov.eu.model.Transaction;
+import belousov.eu.model.User;
+import belousov.eu.model.dto.BudgetDto;
 import belousov.eu.model.report_dto.BudgetReport;
 
 import java.time.YearMonth;
-import java.util.Map;
-import java.util.Optional;
 
 public interface BudgetService {
 
-    void addBudget(YearMonth period, Map<Category, Double> budgetMap);
+    void addBudget(User user, BudgetDto budgetDto);
 
-    Optional<BudgetReport> getBudgetReport(YearMonth period);
+    BudgetReport getBudgetReport(User user, YearMonth period);
 
     String checkBudget(Transaction lastTransaction);
 }

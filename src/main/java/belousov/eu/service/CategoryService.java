@@ -12,5 +12,7 @@ public interface CategoryService {
 
     void editCategory(int categoryId, User user, CategoryDto categoryDto);
 
+    CategoryDto getCategory(int categoryId, User user);
+
     List<CategoryDto> getAllCategories(User user);
 }
