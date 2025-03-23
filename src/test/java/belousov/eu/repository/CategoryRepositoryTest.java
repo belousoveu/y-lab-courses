@@ -34,7 +34,7 @@ class CategoryRepositoryTest {
     private User testUser;
 
     static {
-        postgres = new PostgreSQLContainer<>(DockerImageName.parse("postgres:16-alpine"))
+        postgres = new PostgreSQLContainer<>(DockerImageName.parse("postgres:17-alpine"))
                 .withDatabaseName("pmt-test")
                 .withUsername("testuser")
                 .withPassword("testpassword")

@@ -8,6 +8,7 @@ import belousov.eu.service.imp.*;
 import belousov.eu.servlet.*;
 import belousov.eu.view.ConsoleView;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.hibernate.SessionFactory;
 
 import java.util.HashMap;
@@ -19,8 +20,11 @@ public class DependencyContainer {
 
     public DependencyContainer(HibernateConfig hibernateConfig) {
 
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+
         register(SessionFactory.class, hibernateConfig.getSessionFactory());
-        register(ObjectMapper.class, new ObjectMapper());
+        register(ObjectMapper.class, objectMapper);
 
         //Repositories
         register(UserRepository.class,

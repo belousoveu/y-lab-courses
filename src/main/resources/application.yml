@@ -1,7 +1,7 @@
 hibernate:
   connection:
     driver_class: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/pmt_db
+    url: ${HIBERNATE_CONNECTION_URL}
     username: ${PMT_DB_USER}
     password: ${PMT_DB_PASSWORD}
   hbm2ddl.auto: none
