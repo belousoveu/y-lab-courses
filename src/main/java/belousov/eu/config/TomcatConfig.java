@@ -9,6 +9,8 @@ import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.tomcat.util.descriptor.web.FilterDef;
 import org.apache.tomcat.util.descriptor.web.FilterMap;
+import org.apache.tomcat.util.scan.StandardJarScanner;
+import org.apache.tomcat.websocket.server.WsSci;
 
 import java.io.File;
 
@@ -26,6 +28,14 @@ public class TomcatConfig {
         connector.setProperty("address", "0.0.0.0");
 
         Context tomcatContext = tomcat.addContext("", new File(".").getAbsolutePath());
+
+        StandardJarScanner jarScanner = (StandardJarScanner) tomcatContext.getJarScanner();
+
+        jarScanner.setScanAllDirectories(true);  // Важно для сканирования всех директорий
+        jarScanner.setScanAllFiles(true);  //Сканирование всех файлов JAR
+
+        // Добавляем обработчик для сервлетов и фильтров
+        tomcatContext.addServletContainerInitializer(new WsSci(), null);
 
         FilterDef filterDef = new FilterDef();
         filterDef.setFilterName("CharsetFilter");

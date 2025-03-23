@@ -7,8 +7,8 @@ import belousov.eu.model.Transaction;
 import belousov.eu.model.TransactionFilter;
 import belousov.eu.model.User;
 import belousov.eu.model.dto.BalanceDto;
+import belousov.eu.model.dto.IncomeStatement;
 import belousov.eu.model.dto.TransactionDto;
-import belousov.eu.model.report_dto.IncomeStatement;
 import belousov.eu.observer.BalanceChangeSubject;
 import belousov.eu.repository.TransactionRepository;
 import belousov.eu.service.AdminAccessTransactionService;
@@ -36,6 +36,9 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
      */
     private final TransactionRepository transactionRepository;
 
+    /**
+     * Сервис для работы с категориями.
+     */
     private final CategoryService categoryService;
     /**
      * Наблюдатель за изменением баланса
@@ -62,7 +65,7 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
 
         Transaction savedTransaction = transactionRepository
                 .save(transaction);
-        balanceChangeSubject.notifyObservers(transaction);
+        balanceChangeSubject.notifyObservers(savedTransaction);
         return transactionMapper.toDto(savedTransaction);
     }
 

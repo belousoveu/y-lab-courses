@@ -32,6 +32,7 @@ public class GlobalExceptionHandler {
         statusCodes.put(IllegalArgumentException.class, HttpServletResponse.SC_BAD_REQUEST);
         statusCodes.put(IllegalStateException.class, HttpServletResponse.SC_CONFLICT);
         statusCodes.put(RequiredArgumentException.class, HttpServletResponse.SC_BAD_REQUEST);
+        statusCodes.put(UnAuthorizedAccessException.class, HttpServletResponse.SC_UNAUTHORIZED);
     }
 
     public void handle(Throwable e, HttpServletResponse resp) {

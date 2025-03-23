@@ -80,7 +80,6 @@ class AdminServiceImpTest {
         adminServiceImp.blockUser(adminUser.getId());
 
         verify(adminAccessUserService, times(1)).blockUser(adminUser.getId());
-        assertThat(PersonalMoneyTracker.getCurrentUser()).isNull();
     }
 
     @Test
@@ -92,8 +91,8 @@ class AdminServiceImpTest {
 
     @Test
     void test_getAllTransactions_whenAdmin_shouldReturnAllTransactions() {
-        TransactionDto dto1 = new TransactionDto(1, LocalDate.of(2025, 1, 10), OperationType.DEPOSIT, "Категория 1", 100.0, "Транзакция 1", 1);
-        TransactionDto dto2 = new TransactionDto(2, LocalDate.of(2025, 1, 15), OperationType.WITHDRAW, "Категория 2", 50.0, "Транзакция 2", 2);
+        TransactionDto dto1 = new TransactionDto(1, LocalDate.of(2025, 1, 10), OperationType.DEPOSIT.name(), "Категория 1", 100.0, "Транзакция 1", 1);
+        TransactionDto dto2 = new TransactionDto(2, LocalDate.of(2025, 1, 15), OperationType.WITHDRAW.name(), "Категория 2", 50.0, "Транзакция 2", 2);
 
         List<TransactionDto> transactions = List.of(dto1, dto2);
         when(adminAccessTransactionService.getAllTransactions()).thenReturn(transactions);
@@ -115,7 +114,6 @@ class AdminServiceImpTest {
         adminServiceImp.deleteUserById(adminUser.getId());
 
         verify(adminAccessUserService, times(1)).deleteUserById(adminUser.getId());
-        assertThat(PersonalMoneyTracker.getCurrentUser()).isNull();
     }
 
     @Test

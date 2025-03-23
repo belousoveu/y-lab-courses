@@ -1,5 +1,6 @@
 package belousov.eu.servlet;
 
+import belousov.eu.annotation.AuthorizationRequired;
 import belousov.eu.controller.ReportController;
 import belousov.eu.exception.PathNotFoundException;
 import belousov.eu.exception.RequiredArgumentException;
@@ -17,6 +18,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.regex.Pattern;
 
+@AuthorizationRequired
 @RequiredArgsConstructor
 public class ReportServlet extends HttpServlet {
 
@@ -29,7 +31,7 @@ public class ReportServlet extends HttpServlet {
     private static final Pattern PATTERN_CATEGORIES = Pattern.compile("^/reports/(\\d+)/categories\\?*$");
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    private final ReportController reportController;
+    private final transient ReportController reportController;
     private final ObjectMapper objectMapper;
 
     @Override

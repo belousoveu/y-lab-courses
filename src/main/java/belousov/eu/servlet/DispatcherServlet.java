@@ -14,9 +14,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class DispatcherServlet extends HttpServlet {
 
-    private final DependencyContainer container;
+    private final transient DependencyContainer container;
     private final Map<String, HttpServlet> handlers = new HashMap<>();
-    private final GlobalExceptionHandler exceptionHandler = new GlobalExceptionHandler();
+    private final transient GlobalExceptionHandler exceptionHandler = new GlobalExceptionHandler();
 
     @Override
     public void init() {

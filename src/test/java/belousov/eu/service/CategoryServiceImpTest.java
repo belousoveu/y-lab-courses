@@ -34,8 +34,11 @@ class CategoryServiceImpTest {
     @InjectMocks
     private CategoryServiceImp categoryServiceImp;
 
+    private final CategoryMapper categoryMapper = Mappers.getMapper(CategoryMapper.class);
+
     private User user;
     private Category category;
+
 
     @BeforeEach
     void setUp() {
@@ -85,15 +88,19 @@ class CategoryServiceImpTest {
 
     @Test
     void test_editCategory_whenCategoryExistsAndBelongsToUser_shouldUpdateCategory() {
-        when(categoryRepository.findById(1)).thenReturn(Optional.of(category));
         CategoryDto dto = new CategoryDto();
+        dto.setId(1);
         dto.setName("Транспорт");
+        dto.setUser(user);
+        Category updatedCategory = categoryMapper.toEntity(dto);
+        when(categoryRepository.findById(1)).thenReturn(Optional.of(category));
 
 
         categoryServiceImp.editCategory(1, user, dto);
 
-        assertThat(category.getName()).isEqualTo("Транспорт");
-        verify(categoryRepository, times(1)).save(category);
+
+        assertThat(updatedCategory.getName()).isEqualTo("Транспорт");
+        verify(categoryRepository, times(1)).save(updatedCategory);
     }
 
     @Test

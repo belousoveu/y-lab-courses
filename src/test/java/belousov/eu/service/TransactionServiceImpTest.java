@@ -34,6 +34,9 @@ class TransactionServiceImpTest {
     @Mock
     private BalanceChangeSubject balanceChangeSubject;
 
+    @Mock
+    private CategoryService categoryService;
+
     @InjectMocks
     private TransactionServiceImp transactionServiceImp;
 
@@ -55,6 +58,7 @@ class TransactionServiceImpTest {
     @Test
     void test_addTransaction_shouldSaveTransactionAndNotifyObservers() {
         when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
+        when(categoryService.getCategoryByName(category.getName(), user)).thenReturn(category);
         TransactionDto dto = new TransactionDto(0, LocalDate.of(2023, 10, 1), OperationType.WITHDRAW.toString(), category.getName(), 1000.0, "Покупка продуктов", user.getId());
         TransactionDto result = transactionServiceImp.addTransaction(user, dto);
         assertThat(result).isEqualTo(transactionMapper.toDto(transaction));
@@ -66,6 +70,7 @@ class TransactionServiceImpTest {
     void test_updateTransaction_whenTransactionExistsAndBelongsToUser_shouldUpdateTransactionAndNotifyObservers() {
         when(transactionRepository.findById(1)).thenReturn(Optional.of(transaction));
         when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
+        when(categoryService.getCategoryByName(category.getName(), user)).thenReturn(category);
         TransactionDto updatedDto = new TransactionDto(1, LocalDate.of(2023, 10, 1), OperationType.WITHDRAW.toString(), category.getName(), 1500.0, "Покупка продуктов и напитков", user.getId());
 
         TransactionDto updatedTransaction = transactionServiceImp.updateTransaction(1, updatedDto, user);

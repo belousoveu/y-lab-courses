@@ -1,5 +1,6 @@
 package belousov.eu.servlet;
 
+import belousov.eu.annotation.AuthorizationRequired;
 import belousov.eu.controller.BudgetController;
 import belousov.eu.exception.PathNotFoundException;
 import belousov.eu.model.User;
@@ -19,6 +20,7 @@ import java.util.regex.Pattern;
 
 import static jakarta.servlet.http.HttpServletResponse.SC_MOVED_TEMPORARILY;
 
+@AuthorizationRequired
 @RequiredArgsConstructor
 public class BudgetServlet extends HttpServlet {
 
@@ -28,7 +30,7 @@ public class BudgetServlet extends HttpServlet {
     private static final Pattern PATTERN_BUDGET = Pattern.compile("^/budgets/(\\d{4}-\\d{2})$");
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM");
 
-    private final BudgetController budgetController;
+    private final transient BudgetController budgetController;
     private final ObjectMapper objectMapper;
 
 

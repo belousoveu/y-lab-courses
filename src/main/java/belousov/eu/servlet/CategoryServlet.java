@@ -1,5 +1,6 @@
 package belousov.eu.servlet;
 
+import belousov.eu.annotation.AuthorizationRequired;
 import belousov.eu.controller.CategoryController;
 import belousov.eu.exception.PathNotFoundException;
 import belousov.eu.model.User;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@AuthorizationRequired
 @RequiredArgsConstructor
 public class CategoryServlet extends HttpServlet {
 
@@ -23,7 +25,7 @@ public class CategoryServlet extends HttpServlet {
     private static final String PATH_CATEGORY = "/categories";
     private static final Pattern PATTERN_CATEGORY = Pattern.compile("/categories/(\\d+)");
 
-    private final CategoryController categoryController;
+    private final transient CategoryController categoryController;
     private final ObjectMapper objectMapper;
 
     @Override

@@ -1,5 +1,6 @@
 package belousov.eu.servlet;
 
+import belousov.eu.annotation.AuthorizationRequired;
 import belousov.eu.controller.ProfileController;
 import belousov.eu.exception.ForbiddenException;
 import belousov.eu.exception.PathNotFoundException;
@@ -18,12 +19,13 @@ import lombok.RequiredArgsConstructor;
 import java.io.IOException;
 
 @RequiredArgsConstructor
+@AuthorizationRequired
 public class ProfileServlet extends HttpServlet {
 
     private static final String CURRENT_USER = "currentUser";
 
     private final transient ProfileController profileController;
-    private final transient ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
 
     @Override

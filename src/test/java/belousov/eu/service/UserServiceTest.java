@@ -89,12 +89,13 @@ class UserServiceTest {
     void test_login_whenPasswordIsIncorrect_shouldThrowException() {
         when(userRepository.findByEmail("john@example.com")).thenReturn(Optional.of(user));
 
-        assertThatThrownBy(() -> userService.login(new LoginDto("john@example.com", "password123")))
+        assertThatThrownBy(() -> userService.login(new LoginDto("john@example.com", "unknown")))
                 .isInstanceOf(InvalidPasswordException.class);
     }
 
     @Test
     void test_deleteUser_whenAdminDeletesAnotherUser_shouldDeleteUser() {
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
         PersonalMoneyTracker.setCurrentUser(admin);
         when(userRepository.getAllAdminIds()).thenReturn(List.of(admin.getId()));
 
@@ -105,6 +106,7 @@ class UserServiceTest {
 
     @Test
     void test_deleteUser_whenUserDeletesSelf_shouldDeleteUserAndSetCurrentUserToNull() {
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
         userService.deleteUser(user.getId(), "password123", user);
 
         verify(userRepository, times(1)).delete(user);
@@ -113,7 +115,9 @@ class UserServiceTest {
 
     @Test
     void test_deleteUser_whenUserDeletesAnotherUser_shouldThrowException() {
+
         User otherUser = new User(3, "Jane Doe", "jane@example.com", Password.encode("password456"), Role.USER, true);
+        when(userRepository.findById(otherUser.getId())).thenReturn(Optional.of(otherUser));
         assertThatThrownBy(() -> userService.deleteUser(otherUser.getId(), "", user))
                 .isInstanceOf(ForbiddenException.class);
     }
@@ -122,6 +126,7 @@ class UserServiceTest {
     void test_deleteUser_whenDeletingLastAdmin_shouldThrowException() {
         PersonalMoneyTracker.setCurrentUser(admin);
         when(userRepository.getAllAdminIds()).thenReturn(List.of(admin.getId()));
+        when(userRepository.findById(admin.getId())).thenReturn(Optional.of(admin));
 
         assertThatThrownBy(() -> userService.deleteUser(admin.getId(), "", admin))
                 .isInstanceOf(LastAdminDeleteException.class);

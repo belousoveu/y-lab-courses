@@ -1,5 +1,6 @@
 package belousov.eu.servlet;
 
+import belousov.eu.annotation.AuthorizationRequired;
 import belousov.eu.controller.GoalController;
 import belousov.eu.exception.PathNotFoundException;
 import belousov.eu.model.User;
@@ -15,6 +16,7 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@AuthorizationRequired
 @RequiredArgsConstructor
 public class GoalServlet extends HttpServlet {
 
@@ -23,7 +25,7 @@ public class GoalServlet extends HttpServlet {
     private static final Pattern PATTERN_GOAL = Pattern.compile("/goals/(\\d+)");
     private static final String PATH_GOAL = "/goals";
 
-    private final GoalController goalController;
+    private final transient GoalController goalController;
     private final ObjectMapper objectMapper;
 
     @Override

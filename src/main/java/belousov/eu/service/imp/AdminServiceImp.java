@@ -50,9 +50,6 @@ public class AdminServiceImp implements AdminService {
     public void blockUser(int userId) {
         checkAccess();
         adminAccessUserService.blockUser(userId);
-        if (PersonalMoneyTracker.getCurrentUser().getId() == userId) {
-            PersonalMoneyTracker.setCurrentUser(null);
-        }
     }
 
     /**
@@ -89,9 +86,6 @@ public class AdminServiceImp implements AdminService {
     public void deleteUserById(int userId) {
         checkAccess();
         adminAccessUserService.deleteUserById(userId);
-        if (PersonalMoneyTracker.getCurrentUser().getId() == userId) {
-            PersonalMoneyTracker.setCurrentUser(null);
-        }
     }
 
     /**

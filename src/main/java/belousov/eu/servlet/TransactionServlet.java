@@ -1,5 +1,6 @@
 package belousov.eu.servlet;
 
+import belousov.eu.annotation.AuthorizationRequired;
 import belousov.eu.controller.TransactionController;
 import belousov.eu.exception.PathNotFoundException;
 import belousov.eu.model.Category;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@AuthorizationRequired
 @RequiredArgsConstructor
 public class TransactionServlet extends HttpServlet {
 
@@ -32,7 +34,7 @@ public class TransactionServlet extends HttpServlet {
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
 
-    private final TransactionController transactionController;
+    private final transient TransactionController transactionController;
     private final ObjectMapper objectMapper;
 
     @Override

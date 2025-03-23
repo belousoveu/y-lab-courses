@@ -1,4 +1,4 @@
-package belousov.eu.model.report_dto;
+package belousov.eu.model.dto;
 
 import belousov.eu.model.User;
 import lombok.AllArgsConstructor;
