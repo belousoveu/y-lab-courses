@@ -1,6 +1,5 @@
 package belousov.eu.service;
 
-import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.mapper.TransactionMapper;
 import belousov.eu.model.*;
 import belousov.eu.model.dto.BudgetReport;
@@ -53,21 +52,8 @@ class BudgetServiceImpTest {
         category1 = new Category(1, "Продукты", user);
         category2 = new Category(2, "Транспорт", user);
         period = YearMonth.of(2023, 10);
-        PersonalMoneyTracker.setCurrentUser(user); // Устанавливаем текущего пользователя
     }
 
-//    @Test
-//    void test_addBudget_shouldSaveBudgets() {
-//        Map<Category, Double> budgetMap = Map.of(
-//                category1, 10000.0,
-//                category2, 5000.0
-//        );
-//
-//
-//        budgetServiceImp.addBudget(period, budgetMap);
-//
-//        verify(budgetRepository, times(2)).save(any(Budget.class));
-//    }
 
     @Test
     void test_getBudgetReport_whenBudgetsExist_shouldReturnReport() {

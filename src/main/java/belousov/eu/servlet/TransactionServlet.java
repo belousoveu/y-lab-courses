@@ -55,6 +55,7 @@ public class TransactionServlet extends HttpServlet {
             HttpSession session = req.getSession();
             User user = (User) session.getAttribute(CURRENT_USER);
             Matcher matcher = PATTERN_ONE_TRANSACTION.matcher(path);
+            matcher.matches();
             int id = Integer.parseInt(matcher.group(2));
             resp.setContentType(CONTENT_TYPE);
             resp.getWriter().write(objectMapper.writeValueAsString(transactionController.getTransactionById(id, user)));
@@ -98,10 +99,10 @@ public class TransactionServlet extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String path = req.getPathInfo();
-        if (PATTERN_ONE_TRANSACTION.matcher(path).matches()) {
+        Matcher matcher = PATTERN_ONE_TRANSACTION.matcher(path);
+        if (matcher.matches()) {
             HttpSession session = req.getSession();
             User user = (User) session.getAttribute(CURRENT_USER);
-            Matcher matcher = PATTERN_ONE_TRANSACTION.matcher(path);
             int id = Integer.parseInt(matcher.group(2));
             TransactionDto transactionDto = objectMapper.readValue(req.getInputStream(), TransactionDto.class);
             resp.getWriter().write(objectMapper.writeValueAsString(transactionController.updateTransaction(id, transactionDto, user)));
@@ -115,10 +116,10 @@ public class TransactionServlet extends HttpServlet {
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) {
         String path = req.getPathInfo();
-        if (PATTERN_ONE_TRANSACTION.matcher(path).matches()) {
+        Matcher matcher = PATTERN_ONE_TRANSACTION.matcher(path);
+        if (matcher.matches()) {
             HttpSession session = req.getSession();
             User user = (User) session.getAttribute(CURRENT_USER);
-            Matcher matcher = PATTERN_ONE_TRANSACTION.matcher(path);
             int id = Integer.parseInt(matcher.group(2));
             transactionController.deleteTransaction(id, user);
             resp.setStatus(HttpServletResponse.SC_NO_CONTENT);

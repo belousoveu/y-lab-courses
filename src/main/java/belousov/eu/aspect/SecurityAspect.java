@@ -15,10 +15,12 @@ import org.aspectj.lang.annotation.Before;
 public class SecurityAspect {
 
     private static final String CURRENT_USER = "currentUser";
-//&& args(req : HttpServletRequest, ..)
 
     @Before("@within(belousov.eu.annotation.AuthorizationRequired) && execution(* belousov.eu.servlet.*.*(..))")
     public void checkAuthorization(JoinPoint joinPoint) {
+        if (joinPoint.getArgs().length == 0) {
+            return;
+        }
         HttpServletRequest req = (HttpServletRequest) joinPoint.getArgs()[0];
         HttpSession session = req.getSession();
         User user = (User) session.getAttribute(CURRENT_USER);
@@ -31,6 +33,9 @@ public class SecurityAspect {
 
     @Before("@within(belousov.eu.annotation.AdminAccessRequired) && execution(* belousov.eu.servlet.*.*(..))")
     public void checkAdminAuthorization(JoinPoint joinPoint) {
+        if (joinPoint.getArgs().length == 0) {
+            return;
+        }
         HttpServletRequest req = (HttpServletRequest) joinPoint.getArgs()[0];
         HttpSession session = req.getSession();
         User user = (User) session.getAttribute(CURRENT_USER);

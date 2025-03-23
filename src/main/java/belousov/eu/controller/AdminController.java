@@ -1,6 +1,7 @@
 package belousov.eu.controller;
 
 import belousov.eu.model.Role;
+import belousov.eu.model.User;
 import belousov.eu.model.dto.TransactionDto;
 import belousov.eu.model.dto.UserDto;
 import belousov.eu.service.AdminService;
@@ -26,8 +27,8 @@ public class AdminController {
         adminService.unblockUser(userId);
     }
 
-    public void deleteUser(int userId) {
-        adminService.deleteUserById(userId);
+    public void deleteUser(int userId, User user) {
+        adminService.deleteUserById(userId, user);
     }
 
     public void setRole(int userId, Role role) {

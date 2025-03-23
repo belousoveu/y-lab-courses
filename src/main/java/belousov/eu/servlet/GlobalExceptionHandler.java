@@ -41,6 +41,7 @@ public class GlobalExceptionHandler {
         resp.setContentType("text/plain");
         resp.setCharacterEncoding("UTF-8");
         try {
+            log.error("Exception: {}, Response status: {}", e.getMessage(), statusCode);
             resp.getWriter().println("Error: " + e.getMessage());
         } catch (IOException ex) {
             log.error("Failed to write error response: {}", ex.getMessage());

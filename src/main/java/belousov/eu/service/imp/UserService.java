@@ -1,6 +1,5 @@
 package belousov.eu.service.imp;
 
-import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.exception.*;
 import belousov.eu.mapper.UserMapper;
 import belousov.eu.mapper.UserProfileMapper;
@@ -40,7 +39,7 @@ public class UserService implements AuthService, ProfileService, AdminAccessUser
     @Override
     public User register(RegisterDto registerDto) {
         try {
-            User user = userRepository.save(new User(
+            return userRepository.save(new User(
                     0,
                     registerDto.name(),
                     registerDto.email().toLowerCase(),
@@ -48,8 +47,6 @@ public class UserService implements AuthService, ProfileService, AdminAccessUser
                     Role.USER,
                     true
             ));
-            PersonalMoneyTracker.setCurrentUser(user);
-            return user;
         } catch (ConstraintViolationException e) {
             throw new EmailAlreadyExistsException(registerDto.email().toLowerCase());
         }
@@ -72,7 +69,6 @@ public class UserService implements AuthService, ProfileService, AdminAccessUser
             throw new UserWasBlockedException(user.getName());
         }
         checkPassword(user, loginDto.password());
-        PersonalMoneyTracker.setCurrentUser(user);
         return user;
     }
 
@@ -98,7 +94,7 @@ public class UserService implements AuthService, ProfileService, AdminAccessUser
      * @throws InvalidPasswordException если пароль неверный
      */
     @Override
-    public void updateUser(int id, UserProfileUpdateDto updateDto) {
+    public void updateUser(int id, UserProfileUpdateDto updateDto, User currentUser) {
         User user = findById(id);
         if (updateDto.password() != null) {
             checkPassword(user, updateDto.oldPassword());
@@ -128,7 +124,6 @@ public class UserService implements AuthService, ProfileService, AdminAccessUser
         } else if (currentUser.equals(user)) {
             checkPassword(currentUser, password);
             userRepository.delete(user);
-            PersonalMoneyTracker.setCurrentUser(null);
         } else {
             throw new ForbiddenException();
         }
@@ -137,10 +132,11 @@ public class UserService implements AuthService, ProfileService, AdminAccessUser
     /**
      * Удаляет пользователя по ID.
      *
-     * @param id ID пользователя
+     * @param id          ID пользователя
+     * @param currentUser текущий авторизованный пользователь
      */
-    public void deleteUserById(int id) {
-        deleteUser(id, "", PersonalMoneyTracker.getCurrentUser());
+    public void deleteUserById(int id, User currentUser) {
+        deleteUser(id, "", currentUser);
     }
 
     /**
@@ -192,9 +188,6 @@ public class UserService implements AuthService, ProfileService, AdminAccessUser
             checkIfLastAdmin(user);
             user.setRole(Role.USER);
             userRepository.save(user);
-        }
-        if (PersonalMoneyTracker.getCurrentUser().getId() == userId) {
-            PersonalMoneyTracker.setCurrentUser(user);
         }
     }
 

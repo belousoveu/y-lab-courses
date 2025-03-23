@@ -20,6 +20,7 @@ public class ApplicationInitializer {
 
     public static ApplicationInitializer initialize() {
         if (instance == null) {
+            LogbackConfig.configure();
             ConfigLoader config = new ConfigLoader();
             LiquibaseConfig.initialize(config.getConfig());
             HibernateConfig hibernateConfig = new HibernateConfig(config.getConfig());

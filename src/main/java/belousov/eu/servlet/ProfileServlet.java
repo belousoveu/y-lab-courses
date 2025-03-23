@@ -55,7 +55,7 @@ public class ProfileServlet extends HttpServlet {
                             ));
                 }
 
-                profileController.updateProfile(pathId, updateDto);
+                profileController.updateProfile(pathId, updateDto, currentUser);
             }
         }
     }

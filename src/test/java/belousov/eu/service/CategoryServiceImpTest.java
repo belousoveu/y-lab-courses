@@ -1,6 +1,5 @@
 package belousov.eu.service;
 
-import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.exception.CategoryNotFoundException;
 import belousov.eu.mapper.CategoryMapper;
 import belousov.eu.model.Category;
@@ -45,7 +44,6 @@ class CategoryServiceImpTest {
         MockitoAnnotations.openMocks(this);
         user = new User(1, "John Doe", "john@example.com", "password123", Role.USER, true);
         category = new Category(1, "Продукты", user);
-        PersonalMoneyTracker.setCurrentUser(user); // Устанавливаем текущего пользователя
     }
 
     @Test

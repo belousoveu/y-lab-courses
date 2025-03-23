@@ -37,14 +37,14 @@ public class BudgetServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String path = req.getPathInfo();
+        Matcher matcher = PATTERN_BUDGET.matcher(path);
         if (PATH_BUDGET.equals(path)) {
             String currentPeriod = LocalDate.now().format(DATE_FORMAT);
             resp.sendRedirect("/api" + PATH_BUDGET + "/" + currentPeriod);
             return;
-        } else if (PATTERN_BUDGET.matcher(path).matches()) {
+        } else if (matcher.matches()) {
             HttpSession session = req.getSession();
             User user = (User) session.getAttribute(CURRENT_USER);
-            Matcher matcher = PATTERN_BUDGET.matcher(path);
             String period = matcher.group(1);
             resp.setContentType(CONTENT_TYPE);
             resp.setStatus(HttpServletResponse.SC_OK);

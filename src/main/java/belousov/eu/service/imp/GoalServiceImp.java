@@ -1,6 +1,5 @@
 package belousov.eu.service.imp;
 
-import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.exception.GoalNotFoundException;
 import belousov.eu.mapper.GoalMapper;
 import belousov.eu.model.Goal;
@@ -37,6 +36,7 @@ public class GoalServiceImp implements GoalService {
     private final GoalRepository goalRepository;
 
     private final GoalMapper goalMapper = Mappers.getMapper(GoalMapper.class);
+
     /**
      * Добавляет новую финансовую цель.
      *
@@ -54,9 +54,8 @@ public class GoalServiceImp implements GoalService {
     /**
      * Удаляет финансовую цель по ID.
      *
-     * @param id ID цели
-     * @param user    текущий пользователь
-     *
+     * @param id   ID цели
+     * @param user текущий пользователь
      * @throws GoalNotFoundException если цель не найдена или не принадлежит текущему пользователю
      */
     @Override
@@ -69,10 +68,9 @@ public class GoalServiceImp implements GoalService {
     /**
      * Редактирует финансовую цель по ID.
      *
-     * @param id          ID цели
-     * @param user        текущий пользователь
-     * @param goalDto     объект с обновленными данными о цели
-     *
+     * @param id      ID цели
+     * @param user    текущий пользователь
+     * @param goalDto объект с обновленными данными о цели
      * @throws GoalNotFoundException если цель не найдена или не принадлежит текущему пользователю
      */
     @Override
@@ -105,7 +103,7 @@ public class GoalServiceImp implements GoalService {
     @Override
     public List<String> checkGoal(Transaction lastTransaction) {
         double balance = reportService.getCurrentBalance(lastTransaction.getUser()).amount();
-        List<Goal> goals = goalRepository.findAllByUser(PersonalMoneyTracker.getCurrentUser().getId());
+        List<Goal> goals = goalRepository.findAllByUser(lastTransaction.getUser().getId());
         List<String> result = new ArrayList<>();
         for (Goal goal : goals) {
             if (goal.getPoint() <= balance) {
@@ -126,7 +124,6 @@ public class GoalServiceImp implements GoalService {
      *
      * @param goal цель для проверки
      * @param user текущий пользователь
-     *
      * @throws GoalNotFoundException если цель не найдена или не принадлежит текущему пользователю
      */
     private void checkIfGoalBelongsToUser(Goal goal, User user) {

@@ -1,6 +1,5 @@
 package belousov.eu.service;
 
-import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.exception.GoalNotFoundException;
 import belousov.eu.mapper.GoalMapper;
 import belousov.eu.model.Goal;
@@ -50,7 +49,6 @@ class GoalServiceImpTest {
         MockitoAnnotations.openMocks(this);
         user = new User(1, "John Doe", "john@example.com", "password123", Role.USER, true);
         goal = new Goal(1, user, "Новая машина", "Накопить на новую машину", 1000000.0);
-        PersonalMoneyTracker.setCurrentUser(user); // Устанавливаем текущего пользователя
     }
 
     @Test

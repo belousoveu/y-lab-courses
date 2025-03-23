@@ -83,7 +83,7 @@ public class AdminServlet extends HttpServlet {
             HttpSession session = req.getSession();
             User user = (User) session.getAttribute(CURRENT_USER);
             int userId = Integer.parseInt(matcher.group(1));
-            adminController.deleteUser(userId);
+            adminController.deleteUser(userId, user);
             if (user.getId() == userId) {
                 session.invalidate();
                 resp.sendRedirect(LOGIN_PATH);

@@ -9,6 +9,24 @@ databaseChangeLog:
             columns:
               - column:
                   name: id
+                  value: '1'
+              - column:
+                  name: name
+                  value: 'Admin'
+              - column:
+                  name: email
+                  value: 'admin@admin.com'
+              - column:
+                  name: password
+                  value: '$2a$12$CsFdceiIKJ/yQUWh00mUbu0sebujZlCfMOdXONRmRALwK9lB7u3YO'
+              - column:
+                  name: role
+                  value: 'ADMIN'
+              - column:
+                  name: is_active
+                  value: 'true'
+              - column:
+                  name: id
                   value: '2'
               - column:
                   name: name
@@ -71,7 +89,7 @@ databaseChangeLog:
                   value: 'Продукты'
               - column:
                   name: user_id
-                  value: '1'
+                  value: '2'
         - insert:
             schemaName: app
             tableName: categories
@@ -84,7 +102,7 @@ databaseChangeLog:
                   value: 'Книги'
               - column:
                   name: user_id
-                  value: '1'
+                  value: '2'
         - insert:
             schemaName: app
             tableName: categories
@@ -97,7 +115,7 @@ databaseChangeLog:
                   value: 'Продукты'
               - column:
                   name: user_id
-                  value: '2'
+                  value: '3'
         - insert:
             schemaName: app
             tableName: categories
@@ -110,7 +128,7 @@ databaseChangeLog:
                   value: 'Кредиты'
               - column:
                   name: user_id
-                  value: '2'
+                  value: '3'
         - insert:
             schemaName: app
             tableName: categories
@@ -123,7 +141,7 @@ databaseChangeLog:
                   value: 'Подарки'
               - column:
                   name: user_id
-                  value: '2'
+                  value: '3'
 
   - changeSet:
       id: data-4

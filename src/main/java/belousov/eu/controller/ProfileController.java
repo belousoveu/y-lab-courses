@@ -10,8 +10,8 @@ import lombok.AllArgsConstructor;
 public class ProfileController {
     private final ProfileService profileService;
 
-    public void updateProfile(int id, UserProfileUpdateDto updateDto) {
-        profileService.updateUser(id, updateDto);
+    public void updateProfile(int id, UserProfileUpdateDto updateDto, User currentUser) {
+        profileService.updateUser(id, updateDto, currentUser);
     }
 
     public void deleteProfile(int id, String password, User currentUser) {

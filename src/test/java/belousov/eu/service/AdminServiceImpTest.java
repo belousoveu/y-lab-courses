@@ -1,7 +1,5 @@
 package belousov.eu.service;
 
-import belousov.eu.PersonalMoneyTracker;
-import belousov.eu.exception.ForbiddenException;
 import belousov.eu.mapper.UserMapper;
 import belousov.eu.model.OperationType;
 import belousov.eu.model.Role;
@@ -20,7 +18,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 /**
@@ -45,7 +42,6 @@ class AdminServiceImpTest {
         MockitoAnnotations.openMocks(this);
         adminUser = new User(1, "John Doe", "john@example.com", "password123", Role.ADMIN, true);
         regularUser = new User(2, "Jane Doe", "jane@example.com", "password456", Role.USER, true);
-        PersonalMoneyTracker.setCurrentUser(adminUser); // Устанавливаем текущего пользователя как администратора
     }
 
     @Test
@@ -59,14 +55,6 @@ class AdminServiceImpTest {
         verify(adminAccessUserService, times(1)).getAllUsers();
     }
 
-    @Test
-    void test_getAllUsers_whenNotAdmin_shouldThrowForbiddenException() {
-        PersonalMoneyTracker.setCurrentUser(regularUser); // Устанавливаем текущего пользователя как обычного пользователя
-
-        assertThatThrownBy(() -> adminServiceImp.getAllUsers())
-                .isInstanceOf(ForbiddenException.class);
-        verify(adminAccessUserService, never()).getAllUsers();
-    }
 
     @Test
     void test_blockUser_whenAdmin_shouldBlockUser() {
@@ -104,16 +92,16 @@ class AdminServiceImpTest {
 
     @Test
     void test_deleteUserById_whenAdmin_shouldDeleteUser() {
-        adminServiceImp.deleteUserById(regularUser.getId());
+        adminServiceImp.deleteUserById(regularUser.getId(), adminUser);
 
-        verify(adminAccessUserService, times(1)).deleteUserById(regularUser.getId());
+        verify(adminAccessUserService, times(1)).deleteUserById(regularUser.getId(), adminUser);
     }
 
     @Test
     void test_deleteUserById_whenDeletingSelf_shouldSetCurrentUserToNull() {
-        adminServiceImp.deleteUserById(adminUser.getId());
+        adminServiceImp.deleteUserById(adminUser.getId(), adminUser);
 
-        verify(adminAccessUserService, times(1)).deleteUserById(adminUser.getId());
+        verify(adminAccessUserService, times(1)).deleteUserById(adminUser.getId(), adminUser);
     }
 
     @Test

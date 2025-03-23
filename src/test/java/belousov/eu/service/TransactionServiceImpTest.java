@@ -1,6 +1,5 @@
 package belousov.eu.service;
 
-import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.exception.TransactionNotFoundException;
 import belousov.eu.mapper.TransactionMapper;
 import belousov.eu.model.*;
@@ -52,7 +51,6 @@ class TransactionServiceImpTest {
         user = new User(1, "John Doe", "john@example.com", "password123", Role.USER, true);
         category = new Category(1, "Продукты", user);
         transaction = new Transaction(1, LocalDate.of(2023, 10, 1), OperationType.WITHDRAW, category, 1000.0, "Покупка продуктов", user);
-        PersonalMoneyTracker.setCurrentUser(user); // Устанавливаем текущего пользователя
     }
 
     @Test

@@ -1,6 +1,5 @@
 package belousov.eu.service.imp;
 
-import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.exception.ForbiddenException;
 import belousov.eu.model.Role;
 import belousov.eu.model.User;
@@ -36,7 +35,6 @@ public class AdminServiceImp implements AdminService {
      */
     @Override
     public List<UserDto> getAllUsers() {
-        checkAccess();
         return adminAccessUserService.getAllUsers();
     }
 
@@ -48,7 +46,6 @@ public class AdminServiceImp implements AdminService {
      */
     @Override
     public void blockUser(int userId) {
-        checkAccess();
         adminAccessUserService.blockUser(userId);
     }
 
@@ -60,7 +57,6 @@ public class AdminServiceImp implements AdminService {
      */
     @Override
     public void unblockUser(int userId) {
-        checkAccess();
         adminAccessUserService.unblockUser(userId);
     }
 
@@ -72,7 +68,6 @@ public class AdminServiceImp implements AdminService {
      */
     @Override
     public List<TransactionDto> getAllTransactions() {
-        checkAccess();
         return adminAccessTransactionService.getAllTransactions();
     }
 
@@ -83,9 +78,8 @@ public class AdminServiceImp implements AdminService {
      * @throws ForbiddenException если текущий пользователь не является администратором
      */
     @Override
-    public void deleteUserById(int userId) {
-        checkAccess();
-        adminAccessUserService.deleteUserById(userId);
+    public void deleteUserById(int userId, User currentUser) {
+        adminAccessUserService.deleteUserById(userId, currentUser);
     }
 
     /**
@@ -97,19 +91,7 @@ public class AdminServiceImp implements AdminService {
      */
     @Override
     public void setRole(int userId, Role role) {
-        checkAccess();
         adminAccessUserService.setRole(userId, role);
     }
 
-    /**
-     * Проверяет, имеет ли текущий пользователь права администратора.
-     *
-     * @throws ForbiddenException если текущий пользователь не является администратором
-     */
-    private void checkAccess() {
-        User currentUser = PersonalMoneyTracker.getCurrentUser();
-        if (!currentUser.isAdmin()) {
-            throw new ForbiddenException();
-        }
-    }
 }
