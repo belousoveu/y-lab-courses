@@ -31,10 +31,9 @@ public class TomcatConfig {
 
         StandardJarScanner jarScanner = (StandardJarScanner) tomcatContext.getJarScanner();
 
-        jarScanner.setScanAllDirectories(true);  // Важно для сканирования всех директорий
-        jarScanner.setScanAllFiles(true);  //Сканирование всех файлов JAR
+        jarScanner.setScanAllDirectories(true);
+        jarScanner.setScanAllFiles(true);
 
-        // Добавляем обработчик для сервлетов и фильтров
         tomcatContext.addServletContainerInitializer(new WsSci(), null);
 
         FilterDef filterDef = new FilterDef();
