@@ -14,7 +14,3 @@ liquibase:
   schemaName: service
   defaultSchemaName: app
 
-logging:
-  level:
-    liquibase: OFF
-    org.hibernate: OFF
