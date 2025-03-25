@@ -110,6 +110,8 @@ public class ProfileServlet extends HttpServlet {
             resp.getWriter().write(String.format("<h1>Добро пожаловать, %s!</h1>", currentUser.getName()));
             objectMapper.writeValue(resp.getWriter(), profileController.viewProfile(pathId));
 
+        } else {
+            throw new PathNotFoundException(path);
         }
     }
 }

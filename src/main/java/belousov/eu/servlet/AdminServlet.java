@@ -48,11 +48,10 @@ public class AdminServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 
         String path = req.getPathInfo();
-        String queryString = req.getQueryString();
-        String fullPath = queryString != null ? path + "?" + queryString : path;
+
 
         for (Map.Entry<Pattern, RequestHandler> entry : handlers.entrySet()) {
-            Matcher matcher = entry.getKey().matcher(fullPath);
+            Matcher matcher = entry.getKey().matcher(path);
             if (matcher.matches()) {
                 entry.getValue().handle(req, resp, matcher);
                 return;
@@ -64,7 +63,9 @@ public class AdminServlet extends HttpServlet {
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) {
         String path = req.getPathInfo();
-        Matcher matcher = PATTERN_ROLE.matcher(path);
+        String queryString = req.getQueryString();
+        String fullPath = queryString != null ? path + "?" + queryString : path;
+        Matcher matcher = PATTERN_ROLE.matcher(fullPath);
         if (matcher.matches()) {
             int userId = Integer.parseInt(matcher.group(1));
             String role = matcher.group(3);

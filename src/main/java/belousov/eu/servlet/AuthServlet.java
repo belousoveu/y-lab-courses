@@ -100,6 +100,8 @@ public class AuthServlet extends HttpServlet {
         if (parts.length > 2 && parts[2].equals("login")) {
             resp.setStatus(HttpServletResponse.SC_OK);
             resp.getWriter().write("<h1>Авторизуйтесь или зарегистрируйтесь</h1>");
+        } else {
+            throw new PathNotFoundException(path);
         }
 
     }

@@ -41,7 +41,7 @@ public class TransactionServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String path = req.getPathInfo();
         String query = req.getQueryString();
-        String fullPath = query == null ? "" : path + "?" + query;
+        String fullPath = query == null ? path : path + "?" + query;
         if (PATTERN_ALL_TRANSACTIONS.matcher(fullPath).matches()) {
             HttpSession session = req.getSession();
             User user = (User) session.getAttribute(CURRENT_USER);
