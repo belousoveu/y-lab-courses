@@ -1,6 +1,5 @@
 package belousov.eu.config;
 
-import belousov.eu.PersonalMoneyTracker;
 import lombok.Getter;
 
 
@@ -17,27 +16,5 @@ public class ApplicationInitializer {
         this.config = config;
     }
 
-
-    public static ApplicationInitializer initialize() {
-        if (instance == null) {
-            LogbackConfig.configure();
-            ConfigLoader config = new ConfigLoader();
-            LiquibaseConfig.initialize(config.getConfig());
-            HibernateConfig hibernateConfig = new HibernateConfig(config.getConfig());
-            DependencyContainer container = new DependencyContainer(hibernateConfig);
-            instance = new ApplicationInitializer(container, config);
-            tomcatConfig = new TomcatConfig(container);
-        }
-        return instance;
-
-    }
-
-    public void start() {
-
-
-        while (PersonalMoneyTracker.isRunning()) {
-            tomcatConfig.start();
-        }
-    }
 
 }
