@@ -2,7 +2,7 @@ package belousov.eu.aspect;
 
 import belousov.eu.exception.ForbiddenException;
 import belousov.eu.exception.UnAuthorizedAccessException;
-import belousov.eu.model.User;
+import belousov.eu.model.entity.User;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;

@@ -1,8 +1,8 @@
 package belousov.eu.controller;
 
-import belousov.eu.model.User;
 import belousov.eu.model.dto.BalanceDto;
 import belousov.eu.model.dto.IncomeStatement;
+import belousov.eu.model.entity.User;
 import belousov.eu.service.ReportService;
 import lombok.AllArgsConstructor;
 

@@ -1,9 +1,9 @@
 package belousov.eu.service;
 
 import belousov.eu.annotation.Loggable;
-import belousov.eu.model.User;
 import belousov.eu.model.dto.UserProfileDto;
 import belousov.eu.model.dto.UserProfileUpdateDto;
+import belousov.eu.model.entity.User;
 
 public interface ProfileService {
 

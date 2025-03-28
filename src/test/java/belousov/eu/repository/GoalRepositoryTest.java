@@ -2,9 +2,10 @@ package belousov.eu.repository;
 
 import belousov.eu.config.ConfigLoader;
 import belousov.eu.config.HibernateConfig;
-import belousov.eu.model.Goal;
-import belousov.eu.model.Role;
-import belousov.eu.model.User;
+import belousov.eu.model.entity.Goal;
+import belousov.eu.model.entity.Role;
+import belousov.eu.model.entity.User;
+import belousov.eu.repository.imp.GoalRepositoryImp;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.junit.jupiter.api.AfterAll;
@@ -30,7 +31,7 @@ class GoalRepositoryTest {
     private static final PostgreSQLContainer<?> postgres;
 
     private static SessionFactory sessionFactory;
-    private GoalRepository goalRepository;
+    private GoalRepositoryImp goalRepository;
 
     private User testUser;
 
@@ -78,7 +79,7 @@ class GoalRepositoryTest {
             session.getTransaction().commit();
 
         }
-        goalRepository = new GoalRepository(sessionFactory);
+//        goalRepository = new GoalRepositoryImp(sessionFactory);
     }
 
     @Test

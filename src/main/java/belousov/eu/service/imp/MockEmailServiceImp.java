@@ -1,12 +1,14 @@
 package belousov.eu.service.imp;
 
 import belousov.eu.service.EmailService;
+import org.springframework.stereotype.Service;
 
 /**
  * Класс для имитации отправки электронной почты.
  * В этом примере он просто выводит информацию об отправляемой почте в консоль.
  * Это может быть заменено на реальный код для отправки электронной почты.
  */
+@Service
 public class MockEmailServiceImp implements EmailService {
 
     /**

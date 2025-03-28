@@ -1,8 +1,8 @@
 package belousov.eu.controller;
 
-import belousov.eu.model.User;
 import belousov.eu.model.dto.UserProfileDto;
 import belousov.eu.model.dto.UserProfileUpdateDto;
+import belousov.eu.model.entity.User;
 import belousov.eu.service.ProfileService;
 import lombok.AllArgsConstructor;
 

@@ -1,10 +1,11 @@
 package belousov.eu.service;
 
 import belousov.eu.mapper.TransactionMapper;
-import belousov.eu.model.*;
 import belousov.eu.model.dto.BudgetReport;
 import belousov.eu.model.dto.TransactionDto;
-import belousov.eu.repository.BudgetRepository;
+import belousov.eu.model.dto.TransactionFilter;
+import belousov.eu.model.entity.*;
+import belousov.eu.repository.imp.BudgetRepositoryImp;
 import belousov.eu.service.imp.BudgetServiceImp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,7 +34,7 @@ class BudgetServiceImpTest {
     private EmailService emailService;
 
     @Mock
-    private BudgetRepository budgetRepository;
+    private BudgetRepositoryImp budgetRepository;
 
     @InjectMocks
     private BudgetServiceImp budgetServiceImp;

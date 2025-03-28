@@ -2,13 +2,13 @@ package belousov.eu.service;
 
 import belousov.eu.exception.GoalNotFoundException;
 import belousov.eu.mapper.GoalMapper;
-import belousov.eu.model.Goal;
-import belousov.eu.model.Role;
-import belousov.eu.model.Transaction;
-import belousov.eu.model.User;
 import belousov.eu.model.dto.BalanceDto;
 import belousov.eu.model.dto.GoalDto;
-import belousov.eu.repository.GoalRepository;
+import belousov.eu.model.entity.Goal;
+import belousov.eu.model.entity.Role;
+import belousov.eu.model.entity.Transaction;
+import belousov.eu.model.entity.User;
+import belousov.eu.repository.imp.GoalRepositoryImp;
 import belousov.eu.service.imp.GoalServiceImp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,7 +36,7 @@ class GoalServiceImpTest {
     private EmailService emailService;
 
     @Mock
-    private GoalRepository goalRepository;
+    private GoalRepositoryImp goalRepository;
 
     @InjectMocks
     private GoalServiceImp goalServiceImp;

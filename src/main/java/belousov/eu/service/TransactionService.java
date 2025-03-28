@@ -1,9 +1,9 @@
 package belousov.eu.service;
 
 import belousov.eu.annotation.Loggable;
-import belousov.eu.model.TransactionFilter;
-import belousov.eu.model.User;
 import belousov.eu.model.dto.TransactionDto;
+import belousov.eu.model.dto.TransactionFilter;
+import belousov.eu.model.entity.User;
 
 import java.util.List;
 

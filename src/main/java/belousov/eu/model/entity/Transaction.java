@@ -1,7 +1,6 @@
-package belousov.eu.model;
+package belousov.eu.model.entity;
 
 
-import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -15,15 +14,10 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @EqualsAndHashCode(of = {"id"})
-@Entity
-@Table(name = "transactions", schema = "app")
 public class Transaction {
     /**
      * Уникальный идентификатор транзакции.
      */
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "transaction_id_seq_generator")
-    @SequenceGenerator(name = "transaction_id_seq_generator", schema = "app", sequenceName = "transaction_id_seq", allocationSize = 1)
     private int id;
     /**
      * Дата совершения транзакции.
@@ -34,14 +28,10 @@ public class Transaction {
      * OperationType.DEPOSIT - поступление средств
      * OperationType.WITHDRAW - снятие средств
      */
-    @Column(name = "operation_type")
-    @Enumerated(EnumType.STRING)
     private OperationType operationType;
     /**
      * Категория транзакции.
      */
-    @ManyToOne(cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
-    @JoinColumn(name = "category_id")
     private Category category;
     /**
      * Сумма транзакции.
@@ -54,8 +44,6 @@ public class Transaction {
     /**
      * Пользователь, связанный с транзакцией
      */
-    @ManyToOne(cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id")
     private User user;
 
     /**

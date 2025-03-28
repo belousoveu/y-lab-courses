@@ -16,21 +16,14 @@
         <spring.version>6.2.5</spring.version>
         <spring.security.version>6.4.4</spring.security.version>
         <api-doc.version>2.8.0</api-doc.version>
+        <hikari.version>6.2.1</hikari.version>
+        <jakarta.annotation>2.1.1</jakarta.annotation>
 
-        <dovent.version>3.2.0</dovent.version>
-        <snakeyaml.version>2.3</snakeyaml.version>
-        <hibernate.version>6.6.10.Final</hibernate.version>
         <hibernate.validator.version>8.0.1.Final</hibernate.validator.version>
-        <persistence-api.version>3.1.0</persistence-api.version>
         <liquibase.version>4.31.1</liquibase.version>
         <postgres.version>42.7.4</postgres.version>
-        <bcrypt.version>0.10.2</bcrypt.version>
         <jakarta.servlet.version>6.1.0</jakarta.servlet.version>
-        <jakarta.el.version>6.0.1</jakarta.el.version>
         <jakarta.validation.version>3.0.2</jakarta.validation.version>
-        <aspectj.version>1.9.23</aspectj.version>
-        <tomcat.version>11.0.5</tomcat.version>
-        <jackson.version>2.18.2</jackson.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
         <lombok.version>1.18.36</lombok.version>
         <slf4j.version>2.0.16</slf4j.version>
@@ -121,48 +114,13 @@
             <version>${jakarta.servlet.version}</version>
             <scope>provided</scope>
         </dependency>
-        <!--        <dependency>-->
-        <!--            <groupId>jakarta.el</groupId>-->
-        <!--            <artifactId>jakarta.el-api</artifactId>-->
-        <!--            <version>${jakarta.el.version}</version>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.aspectj</groupId>-->
-        <!--            <artifactId>aspectjrt</artifactId>-->
-        <!--            <version>${aspectj.version}</version>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.aspectj</groupId>-->
-        <!--            <artifactId>aspectjweaver</artifactId>-->
-        <!--            <version>${aspectj.version}</version>-->
-        <!--        </dependency>-->
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>${hikari.version}</version>
+        </dependency>
 
-        <!--        <dependency>-->
-        <!--            <groupId>org.apache.tomcat.embed</groupId>-->
-        <!--            <artifactId>tomcat-embed-core</artifactId>-->
-        <!--            <version>${tomcat.version}</version>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.apache.tomcat.embed</groupId>-->
-        <!--            <artifactId>tomcat-embed-el</artifactId>-->
-        <!--            <version>${tomcat.version}</version>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.apache.tomcat.embed</groupId>-->
-        <!--            <artifactId>tomcat-embed-websocket</artifactId>-->
-        <!--            <version>${tomcat.version}</version>-->
-        <!--        </dependency>-->
 
-        <!--        <dependency>-->
-        <!--            <groupId>com.fasterxml.jackson.core</groupId>-->
-        <!--            <artifactId>jackson-databind</artifactId>-->
-        <!--            <version>${jackson.version}</version>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>com.fasterxml.jackson.datatype</groupId>-->
-        <!--            <artifactId>jackson-datatype-jsr310</artifactId>-->
-        <!--            <version>${jackson.version}</version>-->
-        <!--        </dependency>-->
         <dependency>
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
@@ -174,26 +132,6 @@
             <version>${hibernate.validator.version}</version>
         </dependency>
 
-        <!--        <dependency>-->
-        <!--            <groupId>io.github.cdimascio</groupId>-->
-        <!--            <artifactId>dotenv-java</artifactId>-->
-        <!--            <version>${dovent.version}</version>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.yaml</groupId>-->
-        <!--            <artifactId>snakeyaml</artifactId>-->
-        <!--            <version>${snakeyaml.version}</version>-->
-        <!--        </dependency>-->
-        <dependency>
-            <groupId>org.hibernate.orm</groupId>
-            <artifactId>hibernate-core</artifactId>
-            <version>${hibernate.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.persistence</groupId>
-            <artifactId>jakarta.persistence-api</artifactId>
-            <version>${persistence-api.version}</version>
-        </dependency>
         <dependency>
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-core</artifactId>
@@ -205,11 +143,6 @@
             <version>${postgres.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>at.favre.lib</groupId>
-            <artifactId>bcrypt</artifactId>
-            <version>${bcrypt.version}</version>
-        </dependency>
 
 
         <dependency>
@@ -274,6 +207,12 @@
             <artifactId>mapstruct</artifactId>
             <version>${mapstruct.version}</version>
         </dependency>
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <version>${jakarta.annotation}</version>
+        </dependency>
+
 
     </dependencies>
 
@@ -312,71 +251,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>aspectj-maven-plugin</artifactId>
-                <version>1.15.0</version>
-                <configuration>
-                    <complianceLevel>${java.version}</complianceLevel>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                    <encoding>UTF-8</encoding>
-                    <weaveDirectories>
-                        <weaveDirectory>${project.build.outputDirectory}</weaveDirectory>
-                    </weaveDirectories>
-                    <weaveMainSourceFolder>true</weaveMainSourceFolder>
-                    <weaveWithAspectsInMainSourceFolder>true</weaveWithAspectsInMainSourceFolder>
-                    <Xlint>ignore</Xlint>
-                    <showWeaveInfo>true</showWeaveInfo>
-                    <forceAjcCompile>true</forceAjcCompile>
-                    <sources/>
-                    <aspectLibraries>
-                        <aspectLibrary>
-                            <groupId>org.aspectj</groupId>
-                            <artifactId>aspectjrt</artifactId>
-                        </aspectLibrary>
-                    </aspectLibraries>
-                </configuration>
-
-                <dependencies>
-                    <dependency>
-                        <groupId>org.aspectj</groupId>
-                        <artifactId>aspectjrt</artifactId>
-                        <version>${aspectj.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.aspectj</groupId>
-                        <artifactId>aspectjweaver</artifactId>
-                        <version>${aspectj.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.aspectj</groupId>
-                        <artifactId>aspectjtools</artifactId>
-                        <version>${aspectj.version}</version>
-                    </dependency>
-                </dependencies>
-                <executions>
-                    <execution>
-                        <phase>process-classes</phase>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.3.0</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <mainClass>belousov.eu.PersonalMoneyTracker</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

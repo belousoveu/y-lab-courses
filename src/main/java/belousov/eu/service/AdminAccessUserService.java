@@ -1,8 +1,8 @@
 package belousov.eu.service;
 
-import belousov.eu.model.Role;
-import belousov.eu.model.User;
 import belousov.eu.model.dto.UserDto;
+import belousov.eu.model.entity.Role;
+import belousov.eu.model.entity.User;
 
 import java.util.List;
 

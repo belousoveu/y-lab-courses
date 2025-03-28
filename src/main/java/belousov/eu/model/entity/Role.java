@@ -1,4 +1,4 @@
-package belousov.eu.model;
+package belousov.eu.model.entity;
 
 /**
  * Перечисление ролей пользователя

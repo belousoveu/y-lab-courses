@@ -2,10 +2,11 @@ package belousov.eu.service;
 
 import belousov.eu.exception.TransactionNotFoundException;
 import belousov.eu.mapper.TransactionMapper;
-import belousov.eu.model.*;
 import belousov.eu.model.dto.TransactionDto;
+import belousov.eu.model.dto.TransactionFilter;
+import belousov.eu.model.entity.*;
 import belousov.eu.observer.BalanceChangeSubject;
-import belousov.eu.repository.TransactionRepository;
+import belousov.eu.repository.imp.TransactionRepositoryImp;
 import belousov.eu.service.imp.TransactionServiceImp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,7 +29,7 @@ import static org.mockito.Mockito.*;
 class TransactionServiceImpTest {
 
     @Mock
-    private TransactionRepository transactionRepository;
+    private TransactionRepositoryImp transactionRepository;
 
     @Mock
     private BalanceChangeSubject balanceChangeSubject;

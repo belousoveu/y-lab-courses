@@ -1,7 +1,7 @@
 package belousov.eu.config;
 
 import belousov.eu.exception.HibernateConfigException;
-import belousov.eu.model.*;
+import belousov.eu.model.entity.*;
 import lombok.Getter;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistry;

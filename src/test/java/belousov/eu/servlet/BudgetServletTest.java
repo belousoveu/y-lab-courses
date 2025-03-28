@@ -2,10 +2,10 @@ package belousov.eu.servlet;
 
 import belousov.eu.controller.BudgetController;
 import belousov.eu.exception.PathNotFoundException;
-import belousov.eu.model.Role;
-import belousov.eu.model.User;
 import belousov.eu.model.dto.BudgetDto;
 import belousov.eu.model.dto.BudgetReport;
+import belousov.eu.model.entity.Role;
+import belousov.eu.model.entity.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.servlet.ServletInputStream;

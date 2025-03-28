@@ -1,7 +1,7 @@
 package belousov.eu.view;
 
 import belousov.eu.exception.InputFormatException;
-import belousov.eu.model.User;
+import belousov.eu.model.entity.User;
 import belousov.eu.utils.InputPattern;
 import belousov.eu.utils.MessageColor;
 

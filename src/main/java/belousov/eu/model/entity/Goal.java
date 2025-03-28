@@ -1,6 +1,5 @@
-package belousov.eu.model;
+package belousov.eu.model.entity;
 
-import jakarta.persistence.*;
 import lombok.*;
 
 /**
@@ -13,21 +12,14 @@ import lombok.*;
 @Getter
 @Setter
 @EqualsAndHashCode(of = {"id"})
-@Entity
-@Table(name = "goals", schema = "app")
 public class Goal {
     /**
      * Уникальный идентификатор цели.
      */
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "goal_id_seq_generator")
-    @SequenceGenerator(name = "goal_id_seq_generator", schema = "app", sequenceName = "goal_id_seq", allocationSize = 1)
     private int id;
     /**
      * Пользователь, создавший цель.
      */
-    @ManyToOne(cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id", nullable = false)
     private User user;
     /**
      * Название цели.

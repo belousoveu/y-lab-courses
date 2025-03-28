@@ -2,13 +2,14 @@ package belousov.eu.repository;
 
 import belousov.eu.config.ConfigLoader;
 import belousov.eu.config.HibernateConfig;
-import belousov.eu.model.*;
+import belousov.eu.model.entity.*;
+import belousov.eu.repository.imp.TransactionRepositoryImp;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -29,8 +30,8 @@ class TransactionRepositoryTest {
     @Container
     private static final PostgreSQLContainer<?> postgres;
 
-    private static SessionFactory sessionFactory;
-    private TransactionRepository transactionRepository;
+    private static JdbcTemplate jdbcTemplate;
+    private TransactionRepositoryImp transactionRepository;
 
     private User testUser;
     private Category testCategory;
@@ -82,7 +83,7 @@ class TransactionRepositoryTest {
             session.getTransaction().commit();
 
         }
-        transactionRepository = new TransactionRepository(sessionFactory);
+//        transactionRepository = new TransactionRepository(sessionFactory);
     }
 
     @Test

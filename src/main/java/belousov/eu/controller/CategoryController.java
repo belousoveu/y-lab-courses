@@ -1,7 +1,7 @@
 package belousov.eu.controller;
 
-import belousov.eu.model.User;
 import belousov.eu.model.dto.CategoryDto;
+import belousov.eu.model.entity.User;
 import belousov.eu.service.CategoryService;
 import lombok.AllArgsConstructor;
 

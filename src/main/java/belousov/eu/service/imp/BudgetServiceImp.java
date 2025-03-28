@@ -1,19 +1,22 @@
 package belousov.eu.service.imp;
 
+import belousov.eu.event.SavedTransactionalEvent;
 import belousov.eu.mapper.BudgetMapper;
 import belousov.eu.mapper.CategoryMapper;
-import belousov.eu.model.*;
-import belousov.eu.model.dto.BudgetDto;
-import belousov.eu.model.dto.BudgetReport;
-import belousov.eu.model.dto.CategoryDto;
-import belousov.eu.model.dto.TransactionDto;
+import belousov.eu.model.dto.*;
+import belousov.eu.model.entity.Budget;
+import belousov.eu.model.entity.OperationType;
+import belousov.eu.model.entity.Transaction;
+import belousov.eu.model.entity.User;
 import belousov.eu.repository.BudgetRepository;
 import belousov.eu.service.BudgetService;
 import belousov.eu.service.CategoryService;
 import belousov.eu.service.EmailService;
 import belousov.eu.service.TransactionService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.mapstruct.factory.Mappers;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Service;
 
 import java.time.YearMonth;
 import java.util.List;
@@ -23,7 +26,8 @@ import java.util.Optional;
  * Реализация сервиса для управления бюджетами.
  * Обеспечивает добавление бюджетов, формирование отчётов и проверку превышения бюджета.
  */
-@AllArgsConstructor
+@Service
+@RequiredArgsConstructor
 public class BudgetServiceImp implements BudgetService {
 
     /**
@@ -113,6 +117,7 @@ public class BudgetServiceImp implements BudgetService {
      * @return сообщение о превышении бюджета или пустая строка, если бюджет не превышен
      */
     @Override
+    @EventListener(SavedTransactionalEvent.class) //TODO
     public String checkBudget(Transaction lastTransaction) {
         if (lastTransaction.getOperationType() == OperationType.DEPOSIT || lastTransaction.getCategory() == null) {
             return "";

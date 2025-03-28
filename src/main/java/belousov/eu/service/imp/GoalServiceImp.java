@@ -1,17 +1,20 @@
 package belousov.eu.service.imp;
 
+import belousov.eu.event.SavedTransactionalEvent;
 import belousov.eu.exception.GoalNotFoundException;
 import belousov.eu.mapper.GoalMapper;
-import belousov.eu.model.Goal;
-import belousov.eu.model.Transaction;
-import belousov.eu.model.User;
 import belousov.eu.model.dto.GoalDto;
-import belousov.eu.repository.GoalRepository;
+import belousov.eu.model.entity.Goal;
+import belousov.eu.model.entity.Transaction;
+import belousov.eu.model.entity.User;
+import belousov.eu.repository.imp.GoalRepositoryImp;
 import belousov.eu.service.EmailService;
 import belousov.eu.service.GoalService;
 import belousov.eu.service.ReportService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.mapstruct.factory.Mappers;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +23,8 @@ import java.util.List;
  * Реализация сервиса для управления финансовыми целями.
  * Обеспечивает добавление, удаление, редактирование и проверку достижения целей.
  */
-@AllArgsConstructor
+@Service
+@RequiredArgsConstructor
 public class GoalServiceImp implements GoalService {
     /**
      * Сервис для создания отчетов.
@@ -33,7 +37,7 @@ public class GoalServiceImp implements GoalService {
     /**
      * Репозиторий для работы с финансовыми целями.
      */
-    private final GoalRepository goalRepository;
+    private final GoalRepositoryImp goalRepository;
 
     private final GoalMapper goalMapper = Mappers.getMapper(GoalMapper.class);
 
@@ -101,6 +105,7 @@ public class GoalServiceImp implements GoalService {
      * @return список достигнутых целей в виде строк
      */
     @Override
+    @EventListener(SavedTransactionalEvent.class) //TODO
     public List<String> checkGoal(Transaction lastTransaction) {
         double balance = reportService.getCurrentBalance(lastTransaction.getUser()).amount();
         List<Goal> goals = goalRepository.findAllByUser(lastTransaction.getUser().getId());

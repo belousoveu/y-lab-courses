@@ -2,9 +2,9 @@ package belousov.eu.servlet;
 
 import belousov.eu.controller.CategoryController;
 import belousov.eu.exception.PathNotFoundException;
-import belousov.eu.model.Role;
-import belousov.eu.model.User;
 import belousov.eu.model.dto.CategoryDto;
+import belousov.eu.model.entity.Role;
+import belousov.eu.model.entity.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletInputStream;
 import jakarta.servlet.http.HttpServletRequest;

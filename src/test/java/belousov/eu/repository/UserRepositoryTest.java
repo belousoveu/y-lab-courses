@@ -1,15 +1,14 @@
 package belousov.eu.repository;
 
 import belousov.eu.config.ConfigLoader;
-import belousov.eu.config.HibernateConfig;
-import belousov.eu.model.Role;
-import belousov.eu.model.User;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import belousov.eu.model.entity.Role;
+import belousov.eu.model.entity.User;
+import belousov.eu.repository.imp.UserRepositoryImp;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -30,8 +29,8 @@ class UserRepositoryTest {
     @Container
     private static final PostgreSQLContainer<?> postgres;
 
-    private static SessionFactory sessionFactory;
-    private UserRepository userRepository;
+    private JdbcTemplate jdbcTemplate;
+    private UserRepositoryImp userRepository;
 
     static {
         postgres = new PostgreSQLContainer<>(DockerImageName.parse("postgres:17-alpine"))
@@ -52,7 +51,6 @@ class UserRepositoryTest {
         config.put("hibernate.connection.password", postgres.getPassword());
         config.put("hibernate.connection.driver_class", postgres.getDriverClassName());
         config.put("hibernate.default_schema", "app");
-        sessionFactory = new HibernateConfig(config).getSessionFactory();
     }
 
     @AfterAll
@@ -63,13 +61,7 @@ class UserRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        try (Session session = sessionFactory.openSession()) {
-            session.beginTransaction();
-            session.createMutationQuery("DELETE FROM User").executeUpdate();
-            session.createNativeQuery("ALTER SEQUENCE app.user_id_seq RESTART WITH 1", User.class).executeUpdate();
-            session.getTransaction().commit();
-        }
-        userRepository = new UserRepository(sessionFactory);
+//        userRepository = new UserRepositoryImp(sessionFactory);
     }
 
 

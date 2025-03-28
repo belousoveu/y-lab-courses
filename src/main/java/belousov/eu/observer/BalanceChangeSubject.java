@@ -1,6 +1,6 @@
 package belousov.eu.observer;
 
-import belousov.eu.model.Transaction;
+import belousov.eu.model.entity.Transaction;
 
 import java.util.ArrayList;
 import java.util.List;

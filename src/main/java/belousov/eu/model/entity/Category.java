@@ -1,6 +1,5 @@
-package belousov.eu.model;
+package belousov.eu.model.entity;
 
-import jakarta.persistence.*;
 import lombok.*;
 
 /**
@@ -12,15 +11,10 @@ import lombok.*;
 @Getter
 @Setter
 @EqualsAndHashCode(of = {"user", "name"})
-@Entity
-@Table(name = "categories", schema = "app")
 public class Category {
     /**
      * Уникальный идентификатор категории.
      */
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "category_id_seq_generator")
-    @SequenceGenerator(name = "category_id_seq_generator", schema = "app", sequenceName = "category_id_seq", allocationSize = 1)
     private int id;
     /**
      * Название категории.
@@ -29,8 +23,6 @@ public class Category {
     /**
      * Пользователь, которому принадлежит категория.
      */
-    @ManyToOne(cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
-    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     /**

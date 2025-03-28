@@ -1,9 +1,9 @@
 package belousov.eu.service;
 
-import belousov.eu.model.Transaction;
-import belousov.eu.model.User;
 import belousov.eu.model.dto.BudgetDto;
 import belousov.eu.model.dto.BudgetReport;
+import belousov.eu.model.entity.Transaction;
+import belousov.eu.model.entity.User;
 
 import java.time.YearMonth;
 

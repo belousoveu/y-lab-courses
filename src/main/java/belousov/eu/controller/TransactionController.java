@@ -1,8 +1,8 @@
 package belousov.eu.controller;
 
-import belousov.eu.model.TransactionFilter;
-import belousov.eu.model.User;
 import belousov.eu.model.dto.TransactionDto;
+import belousov.eu.model.dto.TransactionFilter;
+import belousov.eu.model.entity.User;
 import belousov.eu.service.TransactionService;
 import lombok.AllArgsConstructor;
 

@@ -1,13 +1,10 @@
 package belousov.eu.repository;
 
 import belousov.eu.config.ConfigLoader;
-import belousov.eu.config.HibernateConfig;
-import belousov.eu.model.Budget;
-import belousov.eu.model.Category;
-import belousov.eu.model.Role;
-import belousov.eu.model.User;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import belousov.eu.model.entity.Budget;
+import belousov.eu.model.entity.Category;
+import belousov.eu.model.entity.User;
+import belousov.eu.repository.imp.BudgetRepositoryImp;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,8 +30,8 @@ class BudgetRepositoryTest {
     @Container
     private static final PostgreSQLContainer<?> postgres;
 
-    private static SessionFactory sessionFactory;
-    private BudgetRepository budgetRepository;
+    //    private static SessionFactory sessionFactory;
+    private BudgetRepositoryImp budgetRepository;
 
     private User testUser;
     private Category testCategory;
@@ -58,7 +55,7 @@ class BudgetRepositoryTest {
         config.put("hibernate.connection.password", postgres.getPassword());
         config.put("hibernate.connection.driver_class", postgres.getDriverClassName());
         config.put("hibernate.default_schema", "app");
-        sessionFactory = new HibernateConfig(config).getSessionFactory();
+//        sessionFactory = new HibernateConfig(config).getSessionFactory();
     }
 
     @AfterAll
@@ -69,24 +66,24 @@ class BudgetRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        try (Session session = sessionFactory.openSession()) {
-            session.beginTransaction();
-            session.createMutationQuery("DELETE FROM Budget").executeUpdate();
-            session.createMutationQuery("DELETE FROM Category").executeUpdate();
-            session.createMutationQuery("DELETE FROM User").executeUpdate();
-            session.createNativeQuery("ALTER SEQUENCE app.budget_id_seq RESTART WITH 1", Budget.class).executeUpdate();
-            session.getTransaction().commit();
-        }
-        try (Session session = sessionFactory.openSession()) {
-            session.beginTransaction();
-            User newUser = new User(0, "user1", "user1@example.com", "Password1", Role.USER, true);
-            testUser = session.merge(newUser);
-            Category newCategory = new Category(0, "category1", testUser);
-            testCategory = session.merge(newCategory);
-            session.getTransaction().commit();
-
-        }
-        budgetRepository = new BudgetRepository(sessionFactory);
+//        try (Session session = sessionFactory.openSession()) {
+//            session.beginTransaction();
+//            session.createMutationQuery("DELETE FROM Budget").executeUpdate();
+//            session.createMutationQuery("DELETE FROM Category").executeUpdate();
+//            session.createMutationQuery("DELETE FROM User").executeUpdate();
+//            session.createNativeQuery("ALTER SEQUENCE app.budget_id_seq RESTART WITH 1", Budget.class).executeUpdate();
+//            session.getTransaction().commit();
+//        }
+//        try (Session session = sessionFactory.openSession()) {
+//            session.beginTransaction();
+//            User newUser = new User(0, "user1", "user1@example.com", "Password1", Role.USER, true);
+//            testUser = session.merge(newUser);
+//            Category newCategory = new Category(0, "category1", testUser);
+//            testCategory = session.merge(newCategory);
+//            session.getTransaction().commit();
+//
+//        }
+//        budgetRepository = new BudgetRepositoryImp(sessionFactory);
     }
 
     @Test

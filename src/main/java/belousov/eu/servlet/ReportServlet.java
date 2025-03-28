@@ -4,7 +4,7 @@ import belousov.eu.annotation.AuthorizationRequired;
 import belousov.eu.controller.ReportController;
 import belousov.eu.exception.PathNotFoundException;
 import belousov.eu.exception.RequiredArgumentException;
-import belousov.eu.model.User;
+import belousov.eu.model.entity.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;

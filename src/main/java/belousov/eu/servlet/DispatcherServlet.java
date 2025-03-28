@@ -1,6 +1,5 @@
 package belousov.eu.servlet;
 
-import belousov.eu.config.DependencyContainer;
 import belousov.eu.exception.ServletInitializationException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -14,20 +13,20 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class DispatcherServlet extends HttpServlet {
 
-    private final transient DependencyContainer container;
+    //    private final transient DependencyContainer container;
     private final Map<String, HttpServlet> handlers = new HashMap<>();
     private final transient GlobalExceptionHandler exceptionHandler = new GlobalExceptionHandler();
 
     @Override
     public void init() {
-        handlers.put("profile", container.get(ProfileServlet.class));
-        handlers.put("auth", container.get(AuthServlet.class));
-        handlers.put("admin", container.get(AdminServlet.class));
-        handlers.put("goals", container.get(GoalServlet.class));
-        handlers.put("categories", container.get(CategoryServlet.class));
-        handlers.put("budgets", container.get(BudgetServlet.class));
-        handlers.put("transactions", container.get(TransactionServlet.class));
-        handlers.put("reports", container.get(ReportServlet.class));
+//        handlers.put("profile", container.get(ProfileServlet.class));
+//        handlers.put("auth", container.get(AuthServlet.class));
+//        handlers.put("admin", container.get(AdminServlet.class));
+//        handlers.put("goals", container.get(GoalServlet.class));
+//        handlers.put("categories", container.get(CategoryServlet.class));
+//        handlers.put("budgets", container.get(BudgetServlet.class));
+//        handlers.put("transactions", container.get(TransactionServlet.class));
+//        handlers.put("reports", container.get(ReportServlet.class));
 
 
         for (HttpServlet handler : handlers.values()) {

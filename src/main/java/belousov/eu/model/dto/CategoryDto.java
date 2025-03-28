@@ -1,6 +1,6 @@
 package belousov.eu.model.dto;
 
-import belousov.eu.model.User;
+import belousov.eu.model.entity.User;
 import jakarta.validation.constraints.NotNull;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

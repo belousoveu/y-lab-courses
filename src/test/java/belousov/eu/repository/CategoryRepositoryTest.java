@@ -2,11 +2,11 @@ package belousov.eu.repository;
 
 import belousov.eu.config.ConfigLoader;
 import belousov.eu.config.HibernateConfig;
-import belousov.eu.model.Category;
-import belousov.eu.model.Role;
-import belousov.eu.model.User;
+import belousov.eu.model.entity.Category;
+import belousov.eu.model.entity.Role;
+import belousov.eu.model.entity.User;
+import belousov.eu.repository.imp.CategoryRepositoryImp;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,8 +28,7 @@ class CategoryRepositoryTest {
     @Container
     private static final PostgreSQLContainer<?> postgres;
 
-    private static SessionFactory sessionFactory;
-    private CategoryRepository categoryRepository;
+    private CategoryRepositoryImp categoryRepository;
 
     private User testUser;
 
@@ -77,7 +76,7 @@ class CategoryRepositoryTest {
             session.getTransaction().commit();
 
         }
-        categoryRepository = new CategoryRepository(sessionFactory);
+//        categoryRepository = new CategoryRepositoryImp(sessionFactory);
     }
 
 

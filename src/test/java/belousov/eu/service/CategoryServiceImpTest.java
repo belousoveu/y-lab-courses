@@ -2,11 +2,11 @@ package belousov.eu.service;
 
 import belousov.eu.exception.CategoryNotFoundException;
 import belousov.eu.mapper.CategoryMapper;
-import belousov.eu.model.Category;
-import belousov.eu.model.Role;
-import belousov.eu.model.User;
 import belousov.eu.model.dto.CategoryDto;
-import belousov.eu.repository.CategoryRepository;
+import belousov.eu.model.entity.Category;
+import belousov.eu.model.entity.Role;
+import belousov.eu.model.entity.User;
+import belousov.eu.repository.imp.CategoryRepositoryImp;
 import belousov.eu.service.imp.CategoryServiceImp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.*;
 class CategoryServiceImpTest {
 
     @Mock
-    private CategoryRepository categoryRepository;
+    private CategoryRepositoryImp categoryRepository;
 
     @InjectMocks
     private CategoryServiceImp categoryServiceImp;

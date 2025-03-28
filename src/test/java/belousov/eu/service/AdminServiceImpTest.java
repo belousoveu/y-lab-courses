@@ -1,11 +1,11 @@
 package belousov.eu.service;
 
 import belousov.eu.mapper.UserMapper;
-import belousov.eu.model.OperationType;
-import belousov.eu.model.Role;
-import belousov.eu.model.User;
 import belousov.eu.model.dto.TransactionDto;
 import belousov.eu.model.dto.UserDto;
+import belousov.eu.model.entity.OperationType;
+import belousov.eu.model.entity.Role;
+import belousov.eu.model.entity.User;
 import belousov.eu.service.imp.AdminServiceImp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

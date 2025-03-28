@@ -1,5 +1,8 @@
-package belousov.eu.model;
+package belousov.eu.model.dto;
 
+import belousov.eu.model.entity.Category;
+import belousov.eu.model.entity.OperationType;
+import belousov.eu.model.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

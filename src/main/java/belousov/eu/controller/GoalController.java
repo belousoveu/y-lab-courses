@@ -1,8 +1,8 @@
 package belousov.eu.controller;
 
-import belousov.eu.model.Transaction;
-import belousov.eu.model.User;
 import belousov.eu.model.dto.GoalDto;
+import belousov.eu.model.entity.Transaction;
+import belousov.eu.model.entity.User;
 import belousov.eu.observer.BalanceChangeObserver;
 import belousov.eu.service.GoalService;
 import belousov.eu.utils.MessageColor;
