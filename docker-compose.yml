@@ -1,18 +1,30 @@
 services:
-  db:
-    build:
-      context: .
-      dockerfile: Dockerfile-postgres
-    env_file:
-      - ./src/main/resources/.env
-    environment:
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: 1
-      POSTGRES_DB: pmt_db
+  app:
+    build: .
+    container_name: pmt
     ports:
-      - '5432:5432'
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      - PMT_DB_USER=postgres
+      - PMT_DB_PASSWORD=postgres
+      - HIBERNATE_CONNECTION_URL=jdbc:postgresql://db:5432/pmt_db
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./src/main/resources/application.yml:/app/config/application.yml
+
+  db:
+    image: postgres:17-alpine
+    container_name: postgres-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: pmt_db
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
 
 volumes:
-  postgres_data:
+  postgres-data:

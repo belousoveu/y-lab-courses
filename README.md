@@ -1,16 +1,55 @@
-Сборка проекта с помощью Maven
-```
-mvn clean install
+# Инструкция по запуску приложения
+
+## Запуск в docker-контейнере
+
+Склонируйте репозиторий
+
+```bash
+git clone https://github.com/belousoveu/y-lab-courses
 ```
 
-Запуск проекта
+Используйте maven для сборки приложения
 
-```
-java -jar target/PersonalMoneyTracker-1.0-SNAPSHOT.jar
+```bash
+mvn clean package
 ```
 
-Запуск проекта в демонстрационном режиме в предварительно внесенными данными
+Соберите и запустите контейнеры
+```
+docker-compose build
+docker-compose up
+```
 
+Приложение доступно по адресу: `http:\\localhost:8080\`
+
+## Запуск приложения в локальном режиме
+
+Склонируйте репозиторий
+
+```bash
+git clone https://github.com/belousoveu/y-lab-courses
 ```
-java -jar target/PersonalMoneyTracker-1.0-SNAPSHOT.jar -demo
+
+Используйте maven для сборки приложения
+
+```bash
+mvn clean package
 ```
+
+Перед первым запуском настройте базу данных запустив sql-скрипт
+`src/main/resources/db/changelog/changes/init.sql`
+
+Запустите приложение
+
+```bash
+java -jar target/PersonalMoneyTracker-1.3-SNAPSHOT-jar-with-dependencies.jar
+```
+
+Приложение доступно по адресу: `http:\\localhost:8080\`
+
+
+
+
+
+
+

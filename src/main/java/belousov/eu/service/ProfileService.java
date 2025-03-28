@@ -1,13 +1,17 @@
 package belousov.eu.service;
 
+import belousov.eu.annotation.Loggable;
 import belousov.eu.model.User;
+import belousov.eu.model.dto.UserProfileDto;
+import belousov.eu.model.dto.UserProfileUpdateDto;
 
 public interface ProfileService {
-    void changeName(User currentUser, String newName);
 
-    void changeEmail(User currentUser, String newEmail);
+    @Loggable
+    void deleteUser(int id, String password, User currentUser);
 
-    void changePassword(User currentUser, String oldPassword, String newPassword);
+    UserProfileDto getUserById(int id);
 
-    void deleteUser(User currentUser, String password);
+    @Loggable
+    void updateUser(int id, UserProfileUpdateDto updateDto, User currentUser);
 }

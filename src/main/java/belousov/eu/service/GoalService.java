@@ -1,19 +1,20 @@
 package belousov.eu.service;
 
-import belousov.eu.model.Goal;
 import belousov.eu.model.Transaction;
+import belousov.eu.model.User;
+import belousov.eu.model.dto.GoalDto;
 
 import java.util.List;
 
 public interface GoalService {
 
-    void addGoal(String name, String description, Double point);
+    void addGoal(User user, GoalDto dto);
 
-    void deleteGoal(int goalId);
+    void deleteGoal(int goalId, User user);
 
-    void editGoal(int goalId, String name, String description, Double point);
+    void editGoal(int goalId, User user, GoalDto dto);
 
-    List<Goal> getAll();
+    List<GoalDto> getAllByUserId(int userId);
 
     List<String> checkGoal(Transaction lastTransaction);
 }

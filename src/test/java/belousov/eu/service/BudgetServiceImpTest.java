@@ -1,18 +1,20 @@
 package belousov.eu.service;
 
-import belousov.eu.PersonalMoneyTracker;
+import belousov.eu.mapper.TransactionMapper;
 import belousov.eu.model.*;
-import belousov.eu.model.report_dto.BudgetReport;
+import belousov.eu.model.dto.BudgetReport;
+import belousov.eu.model.dto.TransactionDto;
 import belousov.eu.repository.BudgetRepository;
+import belousov.eu.service.imp.BudgetServiceImp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.time.YearMonth;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,6 +38,8 @@ class BudgetServiceImpTest {
     @InjectMocks
     private BudgetServiceImp budgetServiceImp;
 
+    private final TransactionMapper transactionMapper = Mappers.getMapper(TransactionMapper.class);
+
     private User user;
     private Category category1;
     private Category category2;
@@ -48,20 +52,8 @@ class BudgetServiceImpTest {
         category1 = new Category(1, "Продукты", user);
         category2 = new Category(2, "Транспорт", user);
         period = YearMonth.of(2023, 10);
-        PersonalMoneyTracker.setCurrentUser(user); // Устанавливаем текущего пользователя
     }
 
-    @Test
-    void test_addBudget_shouldSaveBudgets() {
-        Map<Category, Double> budgetMap = Map.of(
-                category1, 10000.0,
-                category2, 5000.0
-        );
-
-        budgetServiceImp.addBudget(period, budgetMap);
-
-        verify(budgetRepository, times(2)).save(any(Budget.class));
-    }
 
     @Test
     void test_getBudgetReport_whenBudgetsExist_shouldReturnReport() {
@@ -71,23 +63,27 @@ class BudgetServiceImpTest {
 
         Transaction transaction1 = new Transaction(1, period.atDay(1), OperationType.WITHDRAW, category1, 3000.0, "Покупка продуктов", user);
         Transaction transaction2 = new Transaction(2, period.atDay(2), OperationType.WITHDRAW, category2, 2000.0, "Транспорт", user);
-        when(transactionService.getTransactions(any(TransactionFilter.class))).thenReturn(List.of(transaction1, transaction2));
+        when(transactionService.getTransactions(any(TransactionFilter.class))).thenReturn(List.of(
+                transactionMapper.toDto(transaction1),
+                transactionMapper.toDto(transaction2)));
 
-        Optional<BudgetReport> report = budgetServiceImp.getBudgetReport(period);
-        assertThat(report).isPresent();
+        BudgetReport report = budgetServiceImp.getBudgetReport(user, period);
+        assertThat(report).isNotNull();
 
-        BudgetReport budgetReport = report.get();
-        assertThat(budgetReport.getPeriod()).isEqualTo(period);
-        assertThat(budgetReport.getUser()).isEqualTo(user);
-        assertThat(budgetReport.getReportRows()).hasSize(2);
+        assertThat(report.getPeriod()).isEqualTo(period);
+        assertThat(report.getUser()).isEqualTo(user);
+        assertThat(report.getReportRows()).hasSize(2);
     }
 
     @Test
     void test_getBudgetReport_whenNoBudgetsExist_shouldReturnEmpty() {
         when(budgetRepository.findAllByPeriod(user, period)).thenReturn(List.of());
 
-        Optional<BudgetReport> report = budgetServiceImp.getBudgetReport(period);
-        assertThat(report).isEmpty();
+        BudgetReport report = budgetServiceImp.getBudgetReport(user, period);
+        assertThat(report).isNotNull();
+        assertThat(report.getUser()).isEqualTo(user);
+        assertThat(report.getPeriod()).isEqualTo(period);
+        assertThat(report.getReportRows()).isEmpty();
     }
 
     @Test
@@ -96,7 +92,7 @@ class BudgetServiceImpTest {
         Budget budget = new Budget(1, period.atDay(1), category1, user, 10000.0);
         when(budgetRepository.findByCategoryAndPeriod(category1, user, period)).thenReturn(Optional.of(budget));
 
-        List<Transaction> transactions = List.of(transaction);
+        List<TransactionDto> transactions = List.of(transactionMapper.toDto(transaction));
         when(transactionService.getTransactions(any(TransactionFilter.class))).thenReturn(transactions);
 
         String result = budgetServiceImp.checkBudget(transaction);
@@ -111,7 +107,7 @@ class BudgetServiceImpTest {
         Budget budget = new Budget(1, period.atDay(1), category1, user, 10000.0);
         when(budgetRepository.findByCategoryAndPeriod(category1, user, period)).thenReturn(Optional.of(budget));
 
-        List<Transaction> transactions = List.of(transaction);
+        List<TransactionDto> transactions = List.of(transactionMapper.toDto(transaction));
         when(transactionService.getTransactions(any(TransactionFilter.class))).thenReturn(transactions);
 
         String result = budgetServiceImp.checkBudget(transaction);

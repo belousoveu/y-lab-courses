@@ -1,6 +1,6 @@
 FROM postgres:17-alpine
 
-COPY src/main/resources/db/changelog/changes/create_database.sql /docker-entrypoint-initdb.d/
+COPY src/main/resources/db/changelog/changes/init.sql /docker-entrypoint-initdb.d/
 
 RUN chmod a+r /docker-entrypoint-initdb.d/*
 

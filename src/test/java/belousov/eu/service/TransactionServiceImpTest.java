@@ -1,12 +1,15 @@
 package belousov.eu.service;
 
-import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.exception.TransactionNotFoundException;
+import belousov.eu.mapper.TransactionMapper;
 import belousov.eu.model.*;
+import belousov.eu.model.dto.TransactionDto;
 import belousov.eu.observer.BalanceChangeSubject;
 import belousov.eu.repository.TransactionRepository;
+import belousov.eu.service.imp.TransactionServiceImp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -30,8 +33,13 @@ class TransactionServiceImpTest {
     @Mock
     private BalanceChangeSubject balanceChangeSubject;
 
+    @Mock
+    private CategoryService categoryService;
+
     @InjectMocks
     private TransactionServiceImp transactionServiceImp;
+
+    private final TransactionMapper transactionMapper = Mappers.getMapper(TransactionMapper.class);
 
     private User user;
     private Category category;
@@ -43,16 +51,15 @@ class TransactionServiceImpTest {
         user = new User(1, "John Doe", "john@example.com", "password123", Role.USER, true);
         category = new Category(1, "Продукты", user);
         transaction = new Transaction(1, LocalDate.of(2023, 10, 1), OperationType.WITHDRAW, category, 1000.0, "Покупка продуктов", user);
-        PersonalMoneyTracker.setCurrentUser(user); // Устанавливаем текущего пользователя
     }
 
     @Test
     void test_addTransaction_shouldSaveTransactionAndNotifyObservers() {
         when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
-
-        Transaction result = transactionServiceImp.addTransaction(LocalDate.of(2023, 10, 1), OperationType.WITHDRAW, category, 1000.0, "Покупка продуктов");
-
-        assertThat(result).isEqualTo(transaction);
+        when(categoryService.getCategoryByName(category.getName(), user)).thenReturn(category);
+        TransactionDto dto = new TransactionDto(0, LocalDate.of(2023, 10, 1), OperationType.WITHDRAW.toString(), category.getName(), 1000.0, "Покупка продуктов", user.getId());
+        TransactionDto result = transactionServiceImp.addTransaction(user, dto);
+        assertThat(result).isEqualTo(transactionMapper.toDto(transaction));
         verify(transactionRepository, times(1)).save(any(Transaction.class));
         verify(balanceChangeSubject, times(1)).notifyObservers(transaction);
     }
@@ -61,11 +68,13 @@ class TransactionServiceImpTest {
     void test_updateTransaction_whenTransactionExistsAndBelongsToUser_shouldUpdateTransactionAndNotifyObservers() {
         when(transactionRepository.findById(1)).thenReturn(Optional.of(transaction));
         when(transactionRepository.save(any(Transaction.class))).thenReturn(transaction);
+        when(categoryService.getCategoryByName(category.getName(), user)).thenReturn(category);
+        TransactionDto updatedDto = new TransactionDto(1, LocalDate.of(2023, 10, 1), OperationType.WITHDRAW.toString(), category.getName(), 1500.0, "Покупка продуктов и напитков", user.getId());
 
-        Transaction updatedTransaction = transactionServiceImp.updateTransaction(1, category, 1500.0, "Покупка продуктов и напитков");
+        TransactionDto updatedTransaction = transactionServiceImp.updateTransaction(1, updatedDto, user);
 
-        assertThat(updatedTransaction.getAmount()).isEqualTo(1500.0);
-        assertThat(updatedTransaction.getDescription()).isEqualTo("Покупка продуктов и напитков");
+        assertThat(updatedTransaction.amount()).isEqualTo(1500.0);
+        assertThat(updatedTransaction.description()).isEqualTo("Покупка продуктов и напитков");
         verify(transactionRepository, times(1)).save(transaction);
         verify(balanceChangeSubject, times(1)).notifyObservers(transaction);
     }
@@ -73,8 +82,9 @@ class TransactionServiceImpTest {
     @Test
     void test_updateTransaction_whenTransactionDoesNotExist_shouldThrowException() {
         when(transactionRepository.findById(1)).thenReturn(Optional.empty());
+        TransactionDto updatedDto = new TransactionDto(1, LocalDate.of(2023, 10, 1), OperationType.WITHDRAW.toString(), category.getName(), 1500.0, "Покупка продуктов и напитков", user.getId());
 
-        assertThatThrownBy(() -> transactionServiceImp.updateTransaction(1, category, 1500.0, "Покупка продуктов и напитков"))
+        assertThatThrownBy(() -> transactionServiceImp.updateTransaction(1, updatedDto, user))
                 .isInstanceOf(TransactionNotFoundException.class)
                 .hasMessage("Не найдена транзакция с идентификатором 1");
     }
@@ -84,8 +94,9 @@ class TransactionServiceImpTest {
         User otherUser = new User(2, "Jane Doe", "jane@example.com", "password456", Role.USER, true);
         Transaction otherTransaction = new Transaction(1, LocalDate.of(2023, 10, 1), OperationType.WITHDRAW, category, 1000.0, "Покупка продуктов", otherUser);
         when(transactionRepository.findById(1)).thenReturn(Optional.of(otherTransaction));
+        TransactionDto updatedDto = new TransactionDto(1, LocalDate.of(2023, 10, 1), OperationType.WITHDRAW.toString(), category.getName(), 1500.0, "Покупка продуктов и напитков", user.getId());
 
-        assertThatThrownBy(() -> transactionServiceImp.updateTransaction(1, category, 1500.0, "Покупка продуктов и напитков"))
+        assertThatThrownBy(() -> transactionServiceImp.updateTransaction(1, updatedDto, user))
                 .isInstanceOf(TransactionNotFoundException.class)
                 .hasMessage("Не найдена транзакция с идентификатором 1");
     }
@@ -94,7 +105,7 @@ class TransactionServiceImpTest {
     void test_deleteTransaction_whenTransactionExistsAndBelongsToUser_shouldDeleteTransactionAndNotifyObservers() {
         when(transactionRepository.findById(1)).thenReturn(Optional.of(transaction));
 
-        transactionServiceImp.deleteTransaction(1);
+        transactionServiceImp.deleteTransaction(1, user);
 
         verify(transactionRepository, times(1)).delete(transaction);
         verify(balanceChangeSubject, times(1)).notifyObservers(transaction);
@@ -104,7 +115,7 @@ class TransactionServiceImpTest {
     void test_deleteTransaction_whenTransactionDoesNotExist_shouldThrowException() {
         when(transactionRepository.findById(1)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> transactionServiceImp.deleteTransaction(1))
+        assertThatThrownBy(() -> transactionServiceImp.deleteTransaction(1, user))
                 .isInstanceOf(TransactionNotFoundException.class)
                 .hasMessage("Не найдена транзакция с идентификатором 1");
     }
@@ -115,7 +126,7 @@ class TransactionServiceImpTest {
         Transaction otherTransaction = new Transaction(1, LocalDate.of(2023, 10, 1), OperationType.WITHDRAW, category, 1000.0, "Покупка продуктов", otherUser);
         when(transactionRepository.findById(1)).thenReturn(Optional.of(otherTransaction));
 
-        assertThatThrownBy(() -> transactionServiceImp.deleteTransaction(1))
+        assertThatThrownBy(() -> transactionServiceImp.deleteTransaction(1, user))
                 .isInstanceOf(TransactionNotFoundException.class)
                 .hasMessage("Не найдена транзакция с идентификатором 1");
     }
@@ -132,23 +143,24 @@ class TransactionServiceImpTest {
 
         when(transactionRepository.findAll()).thenReturn(List.of(transaction));
 
-        List<Transaction> transactions = transactionServiceImp.getTransactions(filter);
-        assertThat(transactions).containsExactly(transaction);
+        List<TransactionDto> transactions = transactionServiceImp.getTransactions(filter);
+        assertThat(transactions).containsExactly(transactionMapper.toDto(transaction));
     }
 
     @Test
     void test_getAllTransactions_shouldReturnAllTransactions() {
         when(transactionRepository.findAll()).thenReturn(List.of(transaction));
+        TransactionMapper mapper = Mappers.getMapper(TransactionMapper.class);
 
-        List<String> result = transactionServiceImp.getAllTransactions();
-        assertThat(result).containsExactly(transaction.toStringWithUser());
+        List<TransactionDto> result = transactionServiceImp.getAllTransactions();
+        assertThat(result).containsExactly(mapper.toDto(transaction));
     }
 
     @Test
     void test_getCurrentBalance_shouldReturnCurrentBalance() {
         when(transactionRepository.getCurrentBalance(user)).thenReturn(5000.0);
 
-        double balance = transactionServiceImp.getCurrentBalance();
+        double balance = transactionServiceImp.getCurrentBalance(user).amount();
         assertThat(balance).isEqualTo(5000.0);
     }
 
@@ -159,9 +171,8 @@ class TransactionServiceImpTest {
 
         when(transactionRepository.findAll()).thenReturn(List.of(deposit, withdraw));
 
-        String result = transactionServiceImp.getIncomeStatement(LocalDate.of(2023, 10, 1), LocalDate.of(2023, 10, 31));
-        assertThat(result).contains("Доход: 10 000,00");
-        assertThat(result).contains("Расход: 5 000,00");
+        String result = transactionServiceImp.getIncomeStatement(user, LocalDate.of(2023, 10, 1), LocalDate.of(2023, 10, 31)).toString();
+        assertThat(result).contains("Доход: 10 000,00").contains("Расход: 5 000,00");
     }
 
     @Test
@@ -171,9 +182,7 @@ class TransactionServiceImpTest {
 
         when(transactionRepository.findAll()).thenReturn(List.of(transaction1, transaction2));
 
-        List<String> result = transactionServiceImp.getCostsByCategory(LocalDate.of(2023, 10, 1), LocalDate.of(2023, 10, 31));
-        assertThat(result).contains("Продукты : 3000.0");
-        assertThat(result).contains("Без категории : 2000.0");
-        assertThat(result).contains("Итого по всем категориям: : 5000.0");
+        List<String> result = transactionServiceImp.getCostsByCategory(user, LocalDate.of(2023, 10, 1), LocalDate.of(2023, 10, 31));
+        assertThat(result).contains("Продукты : 3000.0").contains("Без категории : 2000.0").contains("Итого по всем категориям: : 5000.0");
     }
 }

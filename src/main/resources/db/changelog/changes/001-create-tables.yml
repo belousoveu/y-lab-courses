@@ -257,7 +257,7 @@ databaseChangeLog:
             baseColumnNames: user_id
             referencedTableName: users
             referencedColumnNames: id
-            onDelete: CASCADE
+            onDelete: NO ACTION
             onUpdate: CASCADE
             constraintName: fk_category_user
         - addForeignKeyConstraint:
@@ -265,7 +265,7 @@ databaseChangeLog:
             baseColumnNames: user_id
             referencedTableName: users
             referencedColumnNames: id
-            onDelete: CASCADE
+            onDelete: NO ACTION
             onUpdate: CASCADE
             constraintName: fk_goal_user
         - addForeignKeyConstraint:
@@ -273,7 +273,7 @@ databaseChangeLog:
             baseColumnNames: category_id
             referencedTableName: categories
             referencedColumnNames: id
-            onDelete: CASCADE
+            onDelete: NO ACTION
             onUpdate: CASCADE
             constraintName: fk_budget_category
         - addForeignKeyConstraint:
@@ -281,7 +281,7 @@ databaseChangeLog:
             baseColumnNames: user_id
             referencedTableName: users
             referencedColumnNames: id
-            onDelete: CASCADE
+            onDelete: NO ACTION
             onUpdate: CASCADE
             constraintName: fk_budget_user
         - addForeignKeyConstraint:
@@ -289,7 +289,7 @@ databaseChangeLog:
             baseColumnNames: user_id
             referencedTableName: users
             referencedColumnNames: id
-            onDelete: CASCADE
+            onDelete: NO ACTION
             onUpdate: CASCADE
             constraintName: fk_transaction_user
         - addForeignKeyConstraint:
@@ -297,7 +297,7 @@ databaseChangeLog:
             baseColumnNames: category_id
             referencedTableName: categories
             referencedColumnNames: id
-            onDelete: CASCADE
+            onDelete: NO ACTION
             onUpdate: CASCADE
             constraintName: fk_transaction_category
 

@@ -5,8 +5,8 @@ import io.github.cdimascio.dotenv.Dotenv;
 import lombok.Getter;
 import org.yaml.snakeyaml.Yaml;
 
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -14,9 +14,9 @@ import java.util.Objects;
 @Getter
 public class ConfigLoader {
 
-    private static final String DEFAULT_FILENAME = "src/main/resources/application.yml";
-    private static final String DEMO_FILENAME = "src/main/resources/application-demo.yml";
-    private static final String TEST_FILENAME = "src/main/resources/application-test.yml";
+    private static final String DEFAULT_FILENAME = "application.yml";
+    private static final String DEMO_FILENAME = "application-demo.yml";
+    private static final String TEST_FILENAME = "application-test.yml";
     private final Map<String, Object> config;
     private final boolean demoMode;
 
@@ -39,9 +39,13 @@ public class ConfigLoader {
 
         Yaml yaml = new Yaml();
 
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filePath)) {
+            if (inputStream == null) {
+                throw new ConfigFileReadingException(filePath, new IllegalArgumentException("Файл не найден в classpath"));
+            }
 
-        try (FileInputStream fis = new FileInputStream(filePath)) {
-            Map<String, Object> objectMap = yaml.load(fis);
+
+            Map<String, Object> objectMap = yaml.load(inputStream);
             config = flatten("", objectMap);
             replacePlaceholders(config, dotenv);
             config.put("profile", profile);

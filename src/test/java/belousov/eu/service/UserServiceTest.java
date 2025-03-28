@@ -1,13 +1,18 @@
 package belousov.eu.service;
 
-import belousov.eu.PersonalMoneyTracker;
 import belousov.eu.exception.*;
+import belousov.eu.mapper.UserMapper;
 import belousov.eu.model.Role;
 import belousov.eu.model.User;
+import belousov.eu.model.dto.LoginDto;
+import belousov.eu.model.dto.RegisterDto;
+import belousov.eu.model.dto.UserDto;
 import belousov.eu.repository.UserRepository;
+import belousov.eu.service.imp.UserService;
 import belousov.eu.utils.Password;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -38,33 +43,31 @@ class UserServiceTest {
         MockitoAnnotations.openMocks(this);
         user = new User(1, "John Doe", "john@example.com", Password.encode("password123"), Role.USER, true);
         admin = new User(2, "Admin", "admin@example.com", Password.encode("admin123"), Role.ADMIN, true);
-        PersonalMoneyTracker.setCurrentUser(user); // Устанавливаем текущего пользователя
     }
 
     @Test
     void test_register_shouldSaveUserAndSetCurrentUser() {
         when(userRepository.save(any(User.class))).thenReturn(user);
 
-        userService.register("John Doe", "john@example.com", "password123");
+        userService.register(new RegisterDto("John Doe", "john@example.com", "password123"));
 
         verify(userRepository, times(1)).save(any(User.class));
-        assertThat(PersonalMoneyTracker.getCurrentUser()).isEqualTo(user);
     }
 
     @Test
     void test_login_whenUserExistsAndActive_shouldSetCurrentUser() {
         when(userRepository.findByEmail("john@example.com")).thenReturn(Optional.of(user));
 
-        userService.login("john@example.com", "password123");
-
-        assertThat(PersonalMoneyTracker.getCurrentUser()).isEqualTo(user);
+        userService.login(new LoginDto("john@example.com", "password123"));
+        verify(userRepository, times(1)).findByEmail("john@example.com");
     }
 
     @Test
     void test_login_whenUserDoesNotExist_shouldThrowException() {
         when(userRepository.findByEmail("john@example.com")).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> userService.login("john@example.com", "password123"))
+        LoginDto loginDto = new LoginDto("john@example.com", "password123");
+        assertThatThrownBy(() -> userService.login(loginDto))
                 .isInstanceOf(UserNotFoundException.class)
                 .hasMessage("Пользователь с электронной почтой john@example.com не найден");
     }
@@ -74,7 +77,8 @@ class UserServiceTest {
         user.setActive(false);
         when(userRepository.findByEmail("john@example.com")).thenReturn(Optional.of(user));
 
-        assertThatThrownBy(() -> userService.login("john@example.com", "password123"))
+        LoginDto loginDto = new LoginDto("john@example.com", "password123");
+        assertThatThrownBy(() -> userService.login(loginDto))
                 .isInstanceOf(UserWasBlockedException.class)
                 .hasMessage("Пользователь John Doe заблокирован");
     }
@@ -83,81 +87,54 @@ class UserServiceTest {
     void test_login_whenPasswordIsIncorrect_shouldThrowException() {
         when(userRepository.findByEmail("john@example.com")).thenReturn(Optional.of(user));
 
-        assertThatThrownBy(() -> userService.login("john@example.com", "wrongpassword"))
+        LoginDto loginDto = new LoginDto("john@example.com", "unknown");
+        assertThatThrownBy(() -> userService.login(loginDto))
                 .isInstanceOf(InvalidPasswordException.class);
-    }
-
-    @Test
-    void test_changeName_shouldUpdateUserName() {
-        userService.changeName(user, "Jane Doe");
-
-        assertThat(user.getName()).isEqualTo("Jane Doe");
-        verify(userRepository, times(1)).save(user);
-    }
-
-    @Test
-    void test_changePassword_whenOldPasswordIsCorrect_shouldUpdatePassword() {
-        userService.changePassword(user, "password123", "newpassword");
-
-        assertThat(Password.verify("newpassword", user.getPassword())).isTrue();
-        verify(userRepository, times(1)).save(user);
-    }
-
-    @Test
-    void test_changePassword_whenOldPasswordIsIncorrect_shouldThrowException() {
-        assertThatThrownBy(() -> userService.changePassword(user, "wrongpassword", "newpassword"))
-                .isInstanceOf(InvalidPasswordException.class);
-    }
-
-    @Test
-    void test_changeEmail_shouldUpdateUserEmail() {
-        userService.changeEmail(user, "jane@example.com");
-
-        assertThat(user.getEmail()).isEqualTo("jane@example.com");
-//        verify(userRepository, times(1)).removeOldEmail("john@example.com");
-        verify(userRepository, times(1)).save(user);
     }
 
     @Test
     void test_deleteUser_whenAdminDeletesAnotherUser_shouldDeleteUser() {
-        PersonalMoneyTracker.setCurrentUser(admin);
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
         when(userRepository.getAllAdminIds()).thenReturn(List.of(admin.getId()));
 
-        userService.deleteUser(user, "");
+        userService.deleteUser(user.getId(), "", admin);
 
         verify(userRepository, times(1)).delete(user);
     }
 
     @Test
     void test_deleteUser_whenUserDeletesSelf_shouldDeleteUserAndSetCurrentUserToNull() {
-        userService.deleteUser(user, "password123");
+        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        userService.deleteUser(user.getId(), "password123", user);
 
         verify(userRepository, times(1)).delete(user);
-        assertThat(PersonalMoneyTracker.getCurrentUser()).isNull();
     }
 
     @Test
     void test_deleteUser_whenUserDeletesAnotherUser_shouldThrowException() {
+
         User otherUser = new User(3, "Jane Doe", "jane@example.com", Password.encode("password456"), Role.USER, true);
-        assertThatThrownBy(() -> userService.deleteUser(otherUser, ""))
+        when(userRepository.findById(otherUser.getId())).thenReturn(Optional.of(otherUser));
+        int otherUserId = otherUser.getId();
+        assertThatThrownBy(() -> userService.deleteUser(otherUserId, "", user))
                 .isInstanceOf(ForbiddenException.class);
     }
 
     @Test
     void test_deleteUser_whenDeletingLastAdmin_shouldThrowException() {
-        PersonalMoneyTracker.setCurrentUser(admin);
         when(userRepository.getAllAdminIds()).thenReturn(List.of(admin.getId()));
-
-        assertThatThrownBy(() -> userService.deleteUser(admin, ""))
+        when(userRepository.findById(admin.getId())).thenReturn(Optional.of(admin));
+        int adminId = admin.getId();
+        assertThatThrownBy(() -> userService.deleteUser(adminId, "", admin))
                 .isInstanceOf(LastAdminDeleteException.class);
     }
 
     @Test
     void test_blockUser_whenBlockingLastAdmin_shouldThrowException() {
-        PersonalMoneyTracker.setCurrentUser(admin);
         when(userRepository.getAllAdminIds()).thenReturn(List.of(admin.getId()));
         when(userRepository.findById(admin.getId())).thenReturn(Optional.of(admin));
-        assertThatThrownBy(() -> userService.blockUser(admin.getId()))
+        int adminId = admin.getId();
+        assertThatThrownBy(() -> userService.blockUser(adminId))
                 .isInstanceOf(LastAdminDeleteException.class);
     }
 
@@ -174,9 +151,10 @@ class UserServiceTest {
     @Test
     void test_getAllUsers_shouldReturnAllUsers() {
         when(userRepository.findAll()).thenReturn(List.of(user, admin));
+        UserMapper mapper = Mappers.getMapper(UserMapper.class);
 
-        List<User> users = userService.getAllUsers();
-        assertThat(users).containsExactlyInAnyOrder(user, admin);
+        List<UserDto> users = userService.getAllUsers();
+        assertThat(users).containsExactlyInAnyOrder(mapper.toDto(user), mapper.toDto(admin));
     }
 
     @Test
@@ -190,11 +168,11 @@ class UserServiceTest {
 
     @Test
     void test_setRole_whenSettingUserAndLastAdmin_shouldThrowException() {
-        PersonalMoneyTracker.setCurrentUser(admin);
         when(userRepository.getAllAdminIds()).thenReturn(List.of(admin.getId()));
         when(userRepository.findById(admin.getId())).thenReturn(Optional.of(admin));
 
-        assertThatThrownBy(() -> userService.setRole(admin.getId(), Role.USER))
+        int adminId = admin.getId();
+        assertThatThrownBy(() -> userService.setRole(adminId, Role.USER))
                 .isInstanceOf(LastAdminDeleteException.class);
     }
 }

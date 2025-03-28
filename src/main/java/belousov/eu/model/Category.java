@@ -11,7 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 @Setter
-@EqualsAndHashCode(of = {"id"})
+@EqualsAndHashCode(of = {"user", "name"})
 @Entity
 @Table(name = "categories", schema = "app")
 public class Category {

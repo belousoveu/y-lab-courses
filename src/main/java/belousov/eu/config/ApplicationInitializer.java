@@ -1,14 +1,15 @@
 package belousov.eu.config;
 
 import belousov.eu.PersonalMoneyTracker;
-import belousov.eu.view.Menu;
 import lombok.Getter;
+
 
 @Getter
 public class ApplicationInitializer {
     private final DependencyContainer container;
     private final ConfigLoader config;
     private static ApplicationInitializer instance;
+    private static TomcatConfig tomcatConfig;
 
 
     private ApplicationInitializer(DependencyContainer container, ConfigLoader config) {
@@ -19,24 +20,23 @@ public class ApplicationInitializer {
 
     public static ApplicationInitializer initialize() {
         if (instance == null) {
+            LogbackConfig.configure();
             ConfigLoader config = new ConfigLoader();
             LiquibaseConfig.initialize(config.getConfig());
             HibernateConfig hibernateConfig = new HibernateConfig(config.getConfig());
             DependencyContainer container = new DependencyContainer(hibernateConfig);
             instance = new ApplicationInitializer(container, config);
+            tomcatConfig = new TomcatConfig(container);
         }
         return instance;
 
     }
 
     public void start() {
-        Menu registrationMenu = MenuInitializer.initializeLoginMenu(container);
-        Menu mainMenu = MenuInitializer.initializeMainMenu(container);
 
 
         while (PersonalMoneyTracker.isRunning()) {
-            registrationMenu.display();
-            mainMenu.display();
+            tomcatConfig.start();
         }
     }
 
