@@ -1,6 +1,6 @@
 package belousov.eu.service.imp;
 
-import belousov.eu.event.SavedTransactionalEvent;
+import belousov.eu.event.BalanceChangedEvent;
 import belousov.eu.mapper.BudgetMapper;
 import belousov.eu.mapper.CategoryMapper;
 import belousov.eu.model.dto.*;
@@ -117,7 +117,7 @@ public class BudgetServiceImp implements BudgetService {
      * @param lastTransaction последняя транзакция
      */
     @Override
-    @EventListener(SavedTransactionalEvent.class)
+    @EventListener(BalanceChangedEvent.class)
     public void checkBudget(Transaction lastTransaction) {
         if (lastTransaction.getOperationType() == OperationType.DEPOSIT || lastTransaction.getCategory() == null) {
             return;

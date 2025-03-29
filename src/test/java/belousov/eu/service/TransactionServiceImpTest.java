@@ -1,6 +1,6 @@
 package belousov.eu.service;
 
-import belousov.eu.event.SavedTransactionalEvent;
+import belousov.eu.event.BalanceChangedEvent;
 import belousov.eu.exception.TransactionNotFoundException;
 import belousov.eu.mapper.TransactionMapper;
 import belousov.eu.model.dto.TransactionDto;
@@ -63,7 +63,7 @@ class TransactionServiceImpTest {
         TransactionDto result = transactionServiceImp.addTransaction(user, dto);
         assertThat(result).isEqualTo(transactionMapper.toDto(transaction));
         verify(transactionRepository, times(1)).save(any(Transaction.class));
-        verify(publisher, times(1)).publishEvent(new SavedTransactionalEvent(this, transaction));
+        verify(publisher, times(1)).publishEvent(new BalanceChangedEvent(this, transaction));
     }
 
     @Test
@@ -78,7 +78,7 @@ class TransactionServiceImpTest {
         assertThat(updatedTransaction.amount()).isEqualTo(1500.0);
         assertThat(updatedTransaction.description()).isEqualTo("Покупка продуктов и напитков");
         verify(transactionRepository, times(1)).save(transaction);
-        verify(publisher, times(1)).publishEvent(new SavedTransactionalEvent(this, transaction));
+        verify(publisher, times(1)).publishEvent(new BalanceChangedEvent(this, transaction));
     }
 
     @Test
@@ -110,7 +110,7 @@ class TransactionServiceImpTest {
         transactionServiceImp.deleteTransaction(1, user);
 
         verify(transactionRepository, times(1)).delete(transaction);
-        verify(publisher, times(1)).publishEvent(new SavedTransactionalEvent(this, transaction));
+        verify(publisher, times(1)).publishEvent(new BalanceChangedEvent(this, transaction));
     }
 
     @Test

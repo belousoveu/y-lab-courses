@@ -1,6 +1,6 @@
 package belousov.eu.service.imp;
 
-import belousov.eu.event.SavedTransactionalEvent;
+import belousov.eu.event.BalanceChangedEvent;
 import belousov.eu.exception.TransactionNotFoundException;
 import belousov.eu.mapper.TransactionMapper;
 import belousov.eu.model.dto.BalanceDto;
@@ -68,7 +68,7 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
 
         Transaction savedTransaction = transactionRepository
                 .save(transaction);
-        eventPublisher.publishEvent(new SavedTransactionalEvent(this, savedTransaction));
+        eventPublisher.publishEvent(new BalanceChangedEvent(this, savedTransaction));
         return transactionMapper.toDto(savedTransaction);
     }
 
@@ -103,7 +103,7 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
         transaction.setAmount(transactionDto.amount());
         transaction.setDescription(transactionDto.description());
         Transaction updatedTransaction = transactionRepository.save(transaction);
-        eventPublisher.publishEvent(new SavedTransactionalEvent(this, updatedTransaction));
+        eventPublisher.publishEvent(new BalanceChangedEvent(this, updatedTransaction));
         return transactionMapper.toDto(updatedTransaction);
     }
 
@@ -119,7 +119,7 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
         Transaction transaction = transactionRepository.findById(id).orElseThrow(() -> new TransactionNotFoundException(id));
         checkTransactionBelongsToCurrentUser(transaction, user);
         transactionRepository.delete(transaction);
-        eventPublisher.publishEvent(new SavedTransactionalEvent(this, transaction));
+        eventPublisher.publishEvent(new BalanceChangedEvent(this, transaction));
     }
 
     /**

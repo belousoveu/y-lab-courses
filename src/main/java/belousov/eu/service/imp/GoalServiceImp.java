@@ -1,6 +1,6 @@
 package belousov.eu.service.imp;
 
-import belousov.eu.event.SavedTransactionalEvent;
+import belousov.eu.event.BalanceChangedEvent;
 import belousov.eu.exception.GoalNotFoundException;
 import belousov.eu.mapper.GoalMapper;
 import belousov.eu.model.dto.EmailDto;
@@ -105,7 +105,7 @@ public class GoalServiceImp implements GoalService {
      * @param lastTransaction последняя транзакция
      */
     @Override
-    @EventListener(SavedTransactionalEvent.class)
+    @EventListener(BalanceChangedEvent.class)
     public void checkGoal(Transaction lastTransaction) {
         double balance = reportService.getCurrentBalance(lastTransaction.getUser()).amount();
         List<Goal> goals = goalRepository.findAllByUser(lastTransaction.getUser().getId());
