@@ -2,34 +2,19 @@ package belousov.eu.controller;
 
 import belousov.eu.model.dto.BudgetDto;
 import belousov.eu.model.dto.BudgetReport;
-import belousov.eu.model.entity.Transaction;
 import belousov.eu.model.entity.User;
-import belousov.eu.observer.BalanceChangeObserver;
 import belousov.eu.service.BudgetService;
-import belousov.eu.utils.MessageColor;
-import belousov.eu.view.ConsoleView;
 import lombok.AllArgsConstructor;
 
 import java.time.YearMonth;
 
 @AllArgsConstructor
-public class BudgetController implements BalanceChangeObserver {
+public class BudgetController {
 
     private final BudgetService budgetService;
-    private final ConsoleView consoleView;
 
     public void addBudget(User user, BudgetDto budgetDto) {
         budgetService.addBudget(user, budgetDto);
-    }
-
-
-    @Override
-//    @EventListener(SavedTransactionalEvent.class)
-    public void balanceChanged(Transaction lastTransaction) {
-        String resultMessage = budgetService.checkBudget(lastTransaction);
-        if (!resultMessage.isEmpty()) {
-            consoleView.println(resultMessage, MessageColor.PURPLE);
-        }
     }
 
     public BudgetReport getBudgetByPeriod(User user, String period) {

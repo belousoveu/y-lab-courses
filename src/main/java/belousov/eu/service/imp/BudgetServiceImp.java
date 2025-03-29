@@ -112,15 +112,15 @@ public class BudgetServiceImp implements BudgetService {
 
     /**
      * Проверяет, превышен ли бюджет для последней транзакции.
+     * В случае превышения бюджета, отправляет уведомление пользователю по электронной почте.
      *
      * @param lastTransaction последняя транзакция
-     * @return сообщение о превышении бюджета или пустая строка, если бюджет не превышен
      */
     @Override
-    @EventListener(SavedTransactionalEvent.class) //TODO
-    public String checkBudget(Transaction lastTransaction) {
+    @EventListener(SavedTransactionalEvent.class)
+    public void checkBudget(Transaction lastTransaction) {
         if (lastTransaction.getOperationType() == OperationType.DEPOSIT || lastTransaction.getCategory() == null) {
-            return "";
+            return;
         }
         YearMonth period = YearMonth.of(lastTransaction.getDate().getYear(), lastTransaction.getDate().getMonth());
         Optional<Budget> budget = budgetRepository
@@ -136,12 +136,14 @@ public class BudgetServiceImp implements BudgetService {
                     .build());
             double spent = transactions.stream().mapToDouble(TransactionDto::amount).sum();
             if (spent >= budget.get().getAmount()) {
-                emailService.sendEmail(lastTransaction.getUser().getEmail(), "Бюджет превышен", "Превышен бюджет по категории %s на сумму %.2f");
-                return "Превышен бюджет по категории %s на сумму %.2f"
-                        .formatted(lastTransaction.getCategory().getName(), spent - budget.get().getAmount());
+                emailService.sendEmail(
+                        new EmailDto(
+                                lastTransaction.getUser().getEmail(),
+                                "Бюджет превышен",
+                                "Превышен бюджет по категории %s на сумму %.2f"
+                        ));
             }
         }
-        return "";
     }
 
 }

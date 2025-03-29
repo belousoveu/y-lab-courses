@@ -46,7 +46,6 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
     /**
      * Наблюдатель за изменением баланса
      */
-//    private final BalanceChangeSubject balanceChangeSubject;
     private final ApplicationEventPublisher eventPublisher;
 
     /**
@@ -69,7 +68,6 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
 
         Transaction savedTransaction = transactionRepository
                 .save(transaction);
-//        balanceChangeSubject.notifyObservers(savedTransaction);
         eventPublisher.publishEvent(new SavedTransactionalEvent(this, savedTransaction));
         return transactionMapper.toDto(savedTransaction);
     }
@@ -105,7 +103,7 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
         transaction.setAmount(transactionDto.amount());
         transaction.setDescription(transactionDto.description());
         Transaction updatedTransaction = transactionRepository.save(transaction);
-        balanceChangeSubject.notifyObservers(updatedTransaction);
+        eventPublisher.publishEvent(new SavedTransactionalEvent(this, updatedTransaction));
         return transactionMapper.toDto(updatedTransaction);
     }
 
@@ -121,7 +119,7 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
         Transaction transaction = transactionRepository.findById(id).orElseThrow(() -> new TransactionNotFoundException(id));
         checkTransactionBelongsToCurrentUser(transaction, user);
         transactionRepository.delete(transaction);
-        balanceChangeSubject.notifyObservers(transaction);
+        eventPublisher.publishEvent(new SavedTransactionalEvent(this, transaction));
     }
 
     /**
@@ -170,8 +168,8 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
      * Возвращает отчёт о доходах и расходах за указанный период.
      *
      * @param currentUser текущий авторизованный пользователь
-     * @param from начальная дата периода
-     * @param to   конечная дата периода
+     * @param from        начальная дата периода
+     * @param to          конечная дата периода
      * @return строковое представление отчёта
      */
     @Override

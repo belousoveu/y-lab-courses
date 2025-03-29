@@ -13,5 +13,5 @@ public interface BudgetService {
 
     BudgetReport getBudgetReport(User user, YearMonth period);
 
-    String checkBudget(Transaction lastTransaction);
+    void checkBudget(Transaction lastTransaction);
 }

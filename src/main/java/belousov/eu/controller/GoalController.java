@@ -1,21 +1,16 @@
 package belousov.eu.controller;
 
 import belousov.eu.model.dto.GoalDto;
-import belousov.eu.model.entity.Transaction;
 import belousov.eu.model.entity.User;
-import belousov.eu.observer.BalanceChangeObserver;
 import belousov.eu.service.GoalService;
-import belousov.eu.utils.MessageColor;
-import belousov.eu.view.ConsoleView;
 import lombok.AllArgsConstructor;
 
 import java.util.List;
 
 @AllArgsConstructor
-public class GoalController implements BalanceChangeObserver {
+public class GoalController {
 
     private final GoalService goalService;
-    private final ConsoleView consoleView;
 
     public void addGoal(User user, GoalDto goalDto) {
         goalService.addGoal(user, goalDto);
@@ -34,12 +29,4 @@ public class GoalController implements BalanceChangeObserver {
 
     }
 
-    @Override
-    public void balanceChanged(Transaction lastTransaction) {
-        List<String> checkedGoal = goalService.checkGoal(lastTransaction);
-        if (!checkedGoal.isEmpty()) {
-            consoleView.println("Поздравляем! Есть достижения:", checkedGoal, MessageColor.GREEN, MessageColor.GREEN);
-        }
-
-    }
 }

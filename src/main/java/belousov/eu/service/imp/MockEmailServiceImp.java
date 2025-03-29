@@ -1,6 +1,8 @@
 package belousov.eu.service.imp;
 
+import belousov.eu.model.dto.EmailDto;
 import belousov.eu.service.EmailService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 /**
@@ -9,24 +11,25 @@ import org.springframework.stereotype.Service;
  * Это может быть заменено на реальный код для отправки электронной почты.
  */
 @Service
+@Slf4j
 public class MockEmailServiceImp implements EmailService {
 
     /**
      * Имитация отправки письма.
      *
-     * @param email   - адрес электронной почты
-     * @param subject - тема письма
-     * @param body    - тело письма
+     * @param emailDto объект с данными для отправки электронной почты
      */
     @Override
-    public void sendEmail(String email, String subject, String body) {
-        if (email == null || email.isEmpty()) {
+    public void sendEmail(EmailDto emailDto) {
+        if (emailDto.email() == null || emailDto.email().isEmpty()) {
             throw new IllegalArgumentException("Email cannot be empty");
         }
-        System.out.println("Sending email to: " + email);
-        System.out.println("Subject: " + subject);
-        System.out.println("Body: " + body);
-        System.out.println("Email sent successfully.");
+        log.info("""
+                Sending email to: {}
+                subject: {}"
+                body: {}
+                sent successfully
+                """, emailDto.email(), emailDto.subject(), emailDto.body());
 
     }
 }

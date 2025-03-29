@@ -16,5 +16,5 @@ public interface GoalService {
 
     List<GoalDto> getAllByUserId(int userId);
 
-    List<String> checkGoal(Transaction lastTransaction);
+    void checkGoal(Transaction lastTransaction);
 }

@@ -3,6 +3,7 @@ package belousov.eu.service.imp;
 import belousov.eu.event.SavedTransactionalEvent;
 import belousov.eu.exception.GoalNotFoundException;
 import belousov.eu.mapper.GoalMapper;
+import belousov.eu.model.dto.EmailDto;
 import belousov.eu.model.dto.GoalDto;
 import belousov.eu.model.entity.Goal;
 import belousov.eu.model.entity.Transaction;
@@ -102,11 +103,10 @@ public class GoalServiceImp implements GoalService {
      * Если достигнута хотя бы одна цель, отправляет электронное письмо с информацией о достигнутых целях.
      *
      * @param lastTransaction последняя транзакция
-     * @return список достигнутых целей в виде строк
      */
     @Override
-    @EventListener(SavedTransactionalEvent.class) //TODO
-    public List<String> checkGoal(Transaction lastTransaction) {
+    @EventListener(SavedTransactionalEvent.class)
+    public void checkGoal(Transaction lastTransaction) {
         double balance = reportService.getCurrentBalance(lastTransaction.getUser()).amount();
         List<Goal> goals = goalRepository.findAllByUser(lastTransaction.getUser().getId());
         List<String> result = new ArrayList<>();
@@ -116,12 +116,12 @@ public class GoalServiceImp implements GoalService {
             }
         }
         if (!result.isEmpty()) {
-            emailService.sendEmail(lastTransaction.getUser().getEmail(),
+            emailService.sendEmail(new EmailDto(
+                    lastTransaction.getUser().getEmail(),
                     "У Вас достигнута цель",
-                    String.join("\n", result));
+                    String.join("\n", result
+                    )));
         }
-        return result;
-
     }
 
     /**
