@@ -3,17 +3,18 @@ package belousov.eu.service.imp;
 import belousov.eu.exception.*;
 import belousov.eu.mapper.UserMapper;
 import belousov.eu.mapper.UserProfileMapper;
-import belousov.eu.model.Role;
-import belousov.eu.model.User;
 import belousov.eu.model.dto.*;
-import belousov.eu.repository.UserRepository;
+import belousov.eu.model.entity.Role;
+import belousov.eu.model.entity.User;
+import belousov.eu.repository.imp.UserRepositoryImp;
 import belousov.eu.service.AdminAccessUserService;
 import belousov.eu.service.AuthService;
 import belousov.eu.service.ProfileService;
 import belousov.eu.utils.Password;
-import lombok.AllArgsConstructor;
-import org.hibernate.exception.ConstraintViolationException;
+import lombok.RequiredArgsConstructor;
 import org.mapstruct.factory.Mappers;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -22,12 +23,13 @@ import java.util.List;
  * Реализация сервиса для управления пользователями.
  * Обеспечивает регистрацию, авторизацию, управление профилем и административные функции.
  */
-@AllArgsConstructor
+@RequiredArgsConstructor
+@Service
 public class UserService implements AuthService, ProfileService, AdminAccessUserService {
     /**
      * Репозиторий для работы с пользователями.
      */
-    private final UserRepository userRepository;
+    private final UserRepositoryImp userRepository;
     private final UserProfileMapper userProfileMapper = Mappers.getMapper(UserProfileMapper.class);
     private final UserMapper userMapper = Mappers.getMapper(UserMapper.class);
 
@@ -47,7 +49,7 @@ public class UserService implements AuthService, ProfileService, AdminAccessUser
                     Role.USER,
                     true
             ));
-        } catch (ConstraintViolationException e) {
+        } catch (DataIntegrityViolationException e) {
             throw new EmailAlreadyExistsException(registerDto.email().toLowerCase());
         }
 

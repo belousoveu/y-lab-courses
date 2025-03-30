@@ -1,7 +1,7 @@
 package belousov.eu.mapper;
 
-import belousov.eu.model.Transaction;
 import belousov.eu.model.dto.TransactionDto;
+import belousov.eu.model.entity.Transaction;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;

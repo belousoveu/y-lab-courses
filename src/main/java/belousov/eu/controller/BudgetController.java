@@ -1,37 +1,33 @@
 package belousov.eu.controller;
 
-import belousov.eu.model.Transaction;
-import belousov.eu.model.User;
 import belousov.eu.model.dto.BudgetDto;
 import belousov.eu.model.dto.BudgetReport;
-import belousov.eu.observer.BalanceChangeObserver;
+import belousov.eu.model.entity.User;
 import belousov.eu.service.BudgetService;
-import belousov.eu.utils.MessageColor;
-import belousov.eu.view.ConsoleView;
+import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.YearMonth;
 
+@RestController
 @AllArgsConstructor
-public class BudgetController implements BalanceChangeObserver {
+@RequestMapping("/api/budgets")
+public class BudgetController {
+
+    private static final String CURRENT_USER = "currentUser";
 
     private final BudgetService budgetService;
-    private final ConsoleView consoleView;
 
-    public void addBudget(User user, BudgetDto budgetDto) {
+    @PostMapping("/")
+    public void addBudget(@RequestBody BudgetDto budgetDto, HttpSession session) {
+        User user = (User) session.getAttribute(CURRENT_USER);
         budgetService.addBudget(user, budgetDto);
     }
 
-
-    @Override
-    public void balanceChanged(Transaction lastTransaction) {
-        String resultMessage = budgetService.checkBudget(lastTransaction);
-        if (!resultMessage.isEmpty()) {
-            consoleView.println(resultMessage, MessageColor.PURPLE);
-        }
-    }
-
-    public BudgetReport getBudgetByPeriod(User user, String period) {
+    @GetMapping("/{period}")
+    public BudgetReport getBudgetByPeriod(@PathVariable String period, HttpSession session) {
+        User user = (User) session.getAttribute(CURRENT_USER);
         return budgetService.getBudgetReport(user, YearMonth.parse(period));
     }
 }

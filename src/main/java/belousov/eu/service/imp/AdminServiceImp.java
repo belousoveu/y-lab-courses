@@ -1,14 +1,15 @@
 package belousov.eu.service.imp;
 
 import belousov.eu.exception.ForbiddenException;
-import belousov.eu.model.Role;
-import belousov.eu.model.User;
 import belousov.eu.model.dto.TransactionDto;
 import belousov.eu.model.dto.UserDto;
+import belousov.eu.model.entity.Role;
+import belousov.eu.model.entity.User;
 import belousov.eu.service.AdminAccessTransactionService;
 import belousov.eu.service.AdminAccessUserService;
 import belousov.eu.service.AdminService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -16,7 +17,8 @@ import java.util.List;
  * Реализация сервиса для административных действий.
  * Обеспечивает управление пользователями и транзакциями с проверкой прав доступа.
  */
-@AllArgsConstructor
+@Service
+@RequiredArgsConstructor
 public class AdminServiceImp implements AdminService {
     /**
      * Сервис для управления пользователями.

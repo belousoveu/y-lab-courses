@@ -1,35 +1,42 @@
 package belousov.eu.repository;
 
-import belousov.eu.config.ConfigLoader;
-import belousov.eu.config.HibernateConfig;
-import belousov.eu.model.Goal;
-import belousov.eu.model.Role;
-import belousov.eu.model.User;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import belousov.eu.model.entity.Goal;
+import belousov.eu.model.entity.Role;
+import belousov.eu.model.entity.User;
+import belousov.eu.repository.imp.GoalRepositoryImp;
+import belousov.eu.repository.imp.UserRepositoryImp;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import liquibase.Liquibase;
+import liquibase.database.Database;
+import liquibase.database.DatabaseFactory;
+import liquibase.database.jvm.JdbcConnection;
+import liquibase.resource.ClassLoaderResourceAccessor;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 @Testcontainers
 class GoalRepositoryTest {
-    private static final ConfigLoader configLoader = new ConfigLoader("test");
 
     @Container
     private static final PostgreSQLContainer<?> postgres;
 
-    private static SessionFactory sessionFactory;
+    private static JdbcTemplate jdbcTemplate;
+
     private GoalRepository goalRepository;
 
     private User testUser;
@@ -39,21 +46,42 @@ class GoalRepositoryTest {
                 .withDatabaseName("pmt-test")
                 .withUsername("testuser")
                 .withPassword("testpassword")
-                .withInitScript("init.sql")
-        ;
-
+                .withInitScript("init.sql");
     }
+
 
     @BeforeAll
     static void init() {
         postgres.start();
-        Map<String, Object> config = configLoader.getConfig();
-        config.put("hibernate.connection.url", postgres.getJdbcUrl());
-        config.put("hibernate.connection.username", postgres.getUsername());
-        config.put("hibernate.connection.password", postgres.getPassword());
-        config.put("hibernate.connection.driver_class", postgres.getDriverClassName());
-        config.put("hibernate.default_schema", "app");
-        sessionFactory = new HibernateConfig(config).getSessionFactory();
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(postgres.getJdbcUrl());
+        config.setUsername(postgres.getUsername());
+        config.setPassword(postgres.getPassword());
+
+        HikariDataSource dataSource = new HikariDataSource(config);
+        jdbcTemplate = new JdbcTemplate(dataSource);
+
+        runLiquibaseMigrations(dataSource);
+    }
+
+    private static void runLiquibaseMigrations(DataSource dataSource) {
+        try (Connection connection = dataSource.getConnection()) {
+            Database database = DatabaseFactory.getInstance()
+                    .findCorrectDatabaseImplementation(new JdbcConnection(connection));
+
+            database.setLiquibaseSchemaName("service");
+            database.setDefaultSchemaName("app");
+
+            Liquibase liquibase = new Liquibase(
+                    "db/changelog/changelog.yml",
+                    new ClassLoaderResourceAccessor(),
+                    database
+            );
+
+            liquibase.update();
+        } catch (Exception e) {
+            throw new RuntimeException("Liquibase migration failed", e);
+        }
     }
 
     @AfterAll
@@ -64,59 +92,47 @@ class GoalRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        try (Session session = sessionFactory.openSession()) {
-            session.beginTransaction();
-            session.createMutationQuery("DELETE FROM Goal").executeUpdate();
-            session.createMutationQuery("DELETE FROM User").executeUpdate();
-            session.createNativeQuery("ALTER SEQUENCE app.goal_id_seq RESTART WITH 1", Goal.class).executeUpdate();
-            session.getTransaction().commit();
-        }
-        try (Session session = sessionFactory.openSession()) {
-            session.beginTransaction();
-            User newUser = new User(0, "user1", "user1@example.com", "Password1", Role.USER, true);
-            testUser = session.merge(newUser);
-            session.getTransaction().commit();
-
-        }
-        goalRepository = new GoalRepository(sessionFactory);
+        jdbcTemplate.execute("TRUNCATE TABLE app.goals RESTART IDENTITY CASCADE;");
+        jdbcTemplate.execute("TRUNCATE TABLE app.users RESTART IDENTITY CASCADE;");
+        UserRepository userRepository = new UserRepositoryImp(jdbcTemplate);
+        goalRepository = new GoalRepositoryImp(jdbcTemplate);
+        testUser = userRepository.save(new User(0, "user1", "user1@example.com", "Password1", Role.USER, true));
     }
 
     @Test
     void test_findById() {
-        Goal newGoal = new Goal(0, testUser, "Test Goal", "Test Description", 100);
-        goalRepository.save(newGoal);
+        Goal newGoal = goalRepository.save(new Goal(0, testUser, "Test Goal", "Test Description", 100));
 
-        Optional<Goal> foundGoal = goalRepository.findById(1);
+        Optional<Goal> foundGoal = goalRepository.findById(newGoal.getId());
 
         assertThat(foundGoal).isPresent();
         assertThat(foundGoal.get().getId()).isNotZero();
-        assertThat(foundGoal.get().getName()).isEqualTo("Test Goal");
-        assertThat(foundGoal.get().getDescription()).isEqualTo("Test Description");
+        assertThat(foundGoal.get().getName()).isEqualTo(newGoal.getName());
+        assertThat(foundGoal.get().getDescription()).isEqualTo(newGoal.getDescription());
+        assertThat(foundGoal.get().getUser()).isEqualTo(testUser);
     }
 
     @Test
     void test_findAllByUser() {
-        Goal newGoal = new Goal(0, testUser, "Test Goal", "Test Description", 100);
-        goalRepository.save(newGoal);
+        Goal newGoal = goalRepository.save(new Goal(0, testUser, "Test Goal", "Test Description", 100));
 
         List<Goal> foundGoals = goalRepository.findAllByUser(testUser.getId());
         assertThat(foundGoals).hasSize(1);
-        assertThat(foundGoals.get(0).getName()).isEqualTo("Test Goal");
-        assertThat(foundGoals.get(0).getDescription()).isEqualTo("Test Description");
+        assertThat(foundGoals.get(0).getName()).isEqualTo(newGoal.getName());
+        assertThat(foundGoals.get(0).getDescription()).isEqualTo(newGoal.getDescription());
 
     }
 
     @Test
     void test_delete() {
-        Goal newGoal = new Goal(0, testUser, "Test Goal", "Test Description", 100);
-        goalRepository.save(newGoal);
+        Goal newGoal = goalRepository.save(new Goal(0, testUser, "Test Goal", "Test Description", 100));
 
-        Optional<Goal> foundGoal = goalRepository.findById(1);
+        Optional<Goal> foundGoal = goalRepository.findById(newGoal.getId());
 
         assertThat(foundGoal).isPresent();
 
         goalRepository.delete(foundGoal.get());
-        Optional<Goal> deletedGoal = goalRepository.findById(1);
+        Optional<Goal> deletedGoal = goalRepository.findById(foundGoal.get().getId());
         assertThat(deletedGoal).isNotPresent();
 
     }
@@ -124,15 +140,14 @@ class GoalRepositoryTest {
     @Test
     void test_save() {
 
-        Goal newGoal = new Goal(0, testUser, "Test Goal", "Test Description", 100);
-        goalRepository.save(newGoal);
+        Goal newGoal = goalRepository.save(new Goal(0, testUser, "Test Goal", "Test Description", 100));
 
-        Optional<Goal> foundGoal = goalRepository.findById(1);
+        Optional<Goal> foundGoal = goalRepository.findById(newGoal.getId());
 
         assertThat(foundGoal).isPresent();
         assertThat(foundGoal.get().getId()).isNotZero();
-        assertThat(foundGoal.get().getName()).isEqualTo("Test Goal");
-        assertThat(foundGoal.get().getDescription()).isEqualTo("Test Description");
+        assertThat(foundGoal.get().getName()).isEqualTo(newGoal.getName());
+        assertThat(foundGoal.get().getDescription()).isEqualTo(newGoal.getDescription());
         assertThat(foundGoal.get().getUser()).isEqualTo(testUser);
     }
 }

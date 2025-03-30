@@ -1,10 +1,12 @@
 package belousov.eu.service;
 
 import belousov.eu.mapper.TransactionMapper;
-import belousov.eu.model.*;
 import belousov.eu.model.dto.BudgetReport;
+import belousov.eu.model.dto.EmailDto;
 import belousov.eu.model.dto.TransactionDto;
-import belousov.eu.repository.BudgetRepository;
+import belousov.eu.model.dto.TransactionFilter;
+import belousov.eu.model.entity.*;
+import belousov.eu.repository.imp.BudgetRepositoryImp;
 import belousov.eu.service.imp.BudgetServiceImp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,7 +35,7 @@ class BudgetServiceImpTest {
     private EmailService emailService;
 
     @Mock
-    private BudgetRepository budgetRepository;
+    private BudgetRepositoryImp budgetRepository;
 
     @InjectMocks
     private BudgetServiceImp budgetServiceImp;
@@ -95,10 +97,9 @@ class BudgetServiceImpTest {
         List<TransactionDto> transactions = List.of(transactionMapper.toDto(transaction));
         when(transactionService.getTransactions(any(TransactionFilter.class))).thenReturn(transactions);
 
-        String result = budgetServiceImp.checkBudget(transaction);
-        assertThat(result).isEqualTo("Превышен бюджет по категории Продукты на сумму 1000,00");
+        budgetServiceImp.checkBudget(transaction);
 
-        verify(emailService, times(1)).sendEmail(user.getEmail(), "Бюджет превышен", "Превышен бюджет по категории %s на сумму %.2f");
+        verify(emailService, times(1)).sendEmail(new EmailDto(user.getEmail(), "Бюджет превышен", "Превышен бюджет по категории %s на сумму %.2f"));
     }
 
     @Test
@@ -110,31 +111,28 @@ class BudgetServiceImpTest {
         List<TransactionDto> transactions = List.of(transactionMapper.toDto(transaction));
         when(transactionService.getTransactions(any(TransactionFilter.class))).thenReturn(transactions);
 
-        String result = budgetServiceImp.checkBudget(transaction);
-        assertThat(result).isEmpty();
+        budgetServiceImp.checkBudget(transaction);
 
-        verify(emailService, never()).sendEmail(anyString(), anyString(), anyString());
+        verify(emailService, never()).sendEmail(any(EmailDto.class));
     }
 
     @Test
     void test_checkBudget_whenDepositTransaction_shouldReturnEmptyMessage() {
         Transaction transaction = new Transaction(1, period.atDay(1), OperationType.DEPOSIT, category1, 1000.0, "Пополнение счёта", user);
 
-        String result = budgetServiceImp.checkBudget(transaction);
-        assertThat(result).isEmpty();
+        budgetServiceImp.checkBudget(transaction);
 
         verify(budgetRepository, never()).findByCategoryAndPeriod(any(), any(), any());
-        verify(emailService, never()).sendEmail(anyString(), anyString(), anyString());
+        verify(emailService, never()).sendEmail(any(EmailDto.class));
     }
 
     @Test
     void test_checkBudget_whenCategoryIsNull_shouldReturnEmptyMessage() {
         Transaction transaction = new Transaction(1, period.atDay(1), OperationType.WITHDRAW, null, 1000.0, "Без категории", user);
 
-        String result = budgetServiceImp.checkBudget(transaction);
-        assertThat(result).isEmpty();
+        budgetServiceImp.checkBudget(transaction);
 
         verify(budgetRepository, never()).findByCategoryAndPeriod(any(), any(), any());
-        verify(emailService, never()).sendEmail(anyString(), anyString(), anyString());
+        verify(emailService, never()).sendEmail(any(EmailDto.class));
     }
 }

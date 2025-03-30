@@ -1,22 +1,24 @@
 package belousov.eu.service.imp;
 
+import belousov.eu.event.BalanceChangedEvent;
 import belousov.eu.exception.TransactionNotFoundException;
 import belousov.eu.mapper.TransactionMapper;
-import belousov.eu.model.OperationType;
-import belousov.eu.model.Transaction;
-import belousov.eu.model.TransactionFilter;
-import belousov.eu.model.User;
 import belousov.eu.model.dto.BalanceDto;
 import belousov.eu.model.dto.IncomeStatement;
 import belousov.eu.model.dto.TransactionDto;
-import belousov.eu.observer.BalanceChangeSubject;
-import belousov.eu.repository.TransactionRepository;
+import belousov.eu.model.dto.TransactionFilter;
+import belousov.eu.model.entity.OperationType;
+import belousov.eu.model.entity.Transaction;
+import belousov.eu.model.entity.User;
+import belousov.eu.repository.imp.TransactionRepositoryImp;
 import belousov.eu.service.AdminAccessTransactionService;
 import belousov.eu.service.CategoryService;
 import belousov.eu.service.ReportService;
 import belousov.eu.service.TransactionService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.mapstruct.factory.Mappers;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -29,12 +31,13 @@ import java.util.stream.Collectors;
  * Реализация сервиса для управления транзакциями.
  * Обеспечивает добавление, обновление, удаление и поиск транзакций, а также формирование отчётов.
  */
-@AllArgsConstructor
+@Service
+@RequiredArgsConstructor
 public class TransactionServiceImp implements TransactionService, AdminAccessTransactionService, ReportService {
     /**
      * Репозиторий для хранения транзакций.
      */
-    private final TransactionRepository transactionRepository;
+    private final TransactionRepositoryImp transactionRepository;
 
     /**
      * Сервис для работы с категориями.
@@ -43,7 +46,7 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
     /**
      * Наблюдатель за изменением баланса
      */
-    private final BalanceChangeSubject balanceChangeSubject;
+    private final ApplicationEventPublisher eventPublisher;
 
     /**
      * Маппер для преобразования объектов транзакций в DTO и обратно.
@@ -65,7 +68,7 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
 
         Transaction savedTransaction = transactionRepository
                 .save(transaction);
-        balanceChangeSubject.notifyObservers(savedTransaction);
+        eventPublisher.publishEvent(new BalanceChangedEvent(this, savedTransaction));
         return transactionMapper.toDto(savedTransaction);
     }
 
@@ -100,7 +103,7 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
         transaction.setAmount(transactionDto.amount());
         transaction.setDescription(transactionDto.description());
         Transaction updatedTransaction = transactionRepository.save(transaction);
-        balanceChangeSubject.notifyObservers(updatedTransaction);
+        eventPublisher.publishEvent(new BalanceChangedEvent(this, updatedTransaction));
         return transactionMapper.toDto(updatedTransaction);
     }
 
@@ -116,7 +119,7 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
         Transaction transaction = transactionRepository.findById(id).orElseThrow(() -> new TransactionNotFoundException(id));
         checkTransactionBelongsToCurrentUser(transaction, user);
         transactionRepository.delete(transaction);
-        balanceChangeSubject.notifyObservers(transaction);
+        eventPublisher.publishEvent(new BalanceChangedEvent(this, transaction));
     }
 
     /**
@@ -165,8 +168,8 @@ public class TransactionServiceImp implements TransactionService, AdminAccessTra
      * Возвращает отчёт о доходах и расходах за указанный период.
      *
      * @param currentUser текущий авторизованный пользователь
-     * @param from начальная дата периода
-     * @param to   конечная дата периода
+     * @param from        начальная дата периода
+     * @param to          конечная дата периода
      * @return строковое представление отчёта
      */
     @Override

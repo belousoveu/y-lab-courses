@@ -1,8 +1,8 @@
 package belousov.eu.service;
 
-import belousov.eu.model.Transaction;
-import belousov.eu.model.User;
 import belousov.eu.model.dto.GoalDto;
+import belousov.eu.model.entity.Transaction;
+import belousov.eu.model.entity.User;
 
 import java.util.List;
 
@@ -16,5 +16,5 @@ public interface GoalService {
 
     List<GoalDto> getAllByUserId(int userId);
 
-    List<String> checkGoal(Transaction lastTransaction);
+    void checkGoal(Transaction lastTransaction);
 }

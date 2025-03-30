@@ -1,11 +1,12 @@
 package belousov.eu.service;
 
+import belousov.eu.event.BalanceChangedEvent;
 import belousov.eu.exception.TransactionNotFoundException;
 import belousov.eu.mapper.TransactionMapper;
-import belousov.eu.model.*;
 import belousov.eu.model.dto.TransactionDto;
-import belousov.eu.observer.BalanceChangeSubject;
-import belousov.eu.repository.TransactionRepository;
+import belousov.eu.model.dto.TransactionFilter;
+import belousov.eu.model.entity.*;
+import belousov.eu.repository.imp.TransactionRepositoryImp;
 import belousov.eu.service.imp.TransactionServiceImp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,7 @@ import org.mapstruct.factory.Mappers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -28,13 +30,13 @@ import static org.mockito.Mockito.*;
 class TransactionServiceImpTest {
 
     @Mock
-    private TransactionRepository transactionRepository;
-
-    @Mock
-    private BalanceChangeSubject balanceChangeSubject;
+    private TransactionRepositoryImp transactionRepository;
 
     @Mock
     private CategoryService categoryService;
+
+    @Mock
+    ApplicationEventPublisher publisher;
 
     @InjectMocks
     private TransactionServiceImp transactionServiceImp;
@@ -61,7 +63,7 @@ class TransactionServiceImpTest {
         TransactionDto result = transactionServiceImp.addTransaction(user, dto);
         assertThat(result).isEqualTo(transactionMapper.toDto(transaction));
         verify(transactionRepository, times(1)).save(any(Transaction.class));
-        verify(balanceChangeSubject, times(1)).notifyObservers(transaction);
+        verify(publisher, times(1)).publishEvent(new BalanceChangedEvent(transactionServiceImp, transaction));
     }
 
     @Test
@@ -76,7 +78,7 @@ class TransactionServiceImpTest {
         assertThat(updatedTransaction.amount()).isEqualTo(1500.0);
         assertThat(updatedTransaction.description()).isEqualTo("Покупка продуктов и напитков");
         verify(transactionRepository, times(1)).save(transaction);
-        verify(balanceChangeSubject, times(1)).notifyObservers(transaction);
+        verify(publisher, times(1)).publishEvent(new BalanceChangedEvent(transactionServiceImp, transaction));
     }
 
     @Test
@@ -108,7 +110,7 @@ class TransactionServiceImpTest {
         transactionServiceImp.deleteTransaction(1, user);
 
         verify(transactionRepository, times(1)).delete(transaction);
-        verify(balanceChangeSubject, times(1)).notifyObservers(transaction);
+        verify(publisher, times(1)).publishEvent(new BalanceChangedEvent(transactionServiceImp, transaction));
     }
 
     @Test

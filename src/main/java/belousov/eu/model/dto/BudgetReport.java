@@ -1,7 +1,7 @@
 package belousov.eu.model.dto;
 
-import belousov.eu.model.Category;
-import belousov.eu.model.User;
+import belousov.eu.model.entity.Category;
+import belousov.eu.model.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;

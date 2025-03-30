@@ -1,17 +1,20 @@
 package belousov.eu.utils;
 
-import at.favre.lib.crypto.bcrypt.BCrypt;
 
 public class Password {
 
     private Password() {
     }
 
+    //TODO
     public static String encode(String password) {
-        return BCrypt.withDefaults().hashToString(12, password.toCharArray());
+        return password;
+//        return BCrypt.withDefaults().hashToString(12, password.toCharArray());
     }
 
     public static boolean verify(String password, String hash) {
-        return BCrypt.verifyer().verify(password.toCharArray(), hash).verified;
+        return password.equals(hash);
+//
+//        return BCrypt.verifyer().verify(password.toCharArray(), hash).verified;
     }
 }

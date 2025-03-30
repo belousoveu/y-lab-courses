@@ -2,13 +2,14 @@ package belousov.eu.service;
 
 import belousov.eu.exception.GoalNotFoundException;
 import belousov.eu.mapper.GoalMapper;
-import belousov.eu.model.Goal;
-import belousov.eu.model.Role;
-import belousov.eu.model.Transaction;
-import belousov.eu.model.User;
 import belousov.eu.model.dto.BalanceDto;
+import belousov.eu.model.dto.EmailDto;
 import belousov.eu.model.dto.GoalDto;
-import belousov.eu.repository.GoalRepository;
+import belousov.eu.model.entity.Goal;
+import belousov.eu.model.entity.Role;
+import belousov.eu.model.entity.Transaction;
+import belousov.eu.model.entity.User;
+import belousov.eu.repository.imp.GoalRepositoryImp;
 import belousov.eu.service.imp.GoalServiceImp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,7 +37,7 @@ class GoalServiceImpTest {
     private EmailService emailService;
 
     @Mock
-    private GoalRepository goalRepository;
+    private GoalRepositoryImp goalRepository;
 
     @InjectMocks
     private GoalServiceImp goalServiceImp;
@@ -134,10 +135,9 @@ class GoalServiceImpTest {
         when(goalRepository.findAllByUser(user.getId())).thenReturn(List.of(goal));
 
         Transaction transaction = new Transaction(1, null, null, null, 0.0, null, user);
-        List<String> result = goalServiceImp.checkGoal(transaction);
+        goalServiceImp.checkGoal(transaction);
 
-        assertThat(result).containsExactly("Цель: Новая машина - 1 000 000,00");
-        verify(emailService, times(1)).sendEmail(user.getEmail(), "У Вас достигнута цель", "Цель: Новая машина - 1 000 000,00");
+        verify(emailService, times(1)).sendEmail(new EmailDto(user.getEmail(), "У Вас достигнута цель", "Цель: Новая машина - 1 000 000,00"));
     }
 
     @Test
@@ -146,9 +146,8 @@ class GoalServiceImpTest {
         when(goalRepository.findAllByUser(user.getId())).thenReturn(List.of(goal));
 
         Transaction transaction = new Transaction(1, null, null, null, 0.0, null, user);
-        List<String> result = goalServiceImp.checkGoal(transaction);
+        goalServiceImp.checkGoal(transaction);
 
-        assertThat(result).isEmpty();
-        verify(emailService, never()).sendEmail(anyString(), anyString(), anyString());
+        verify(emailService, never()).sendEmail(any(EmailDto.class));
     }
 }

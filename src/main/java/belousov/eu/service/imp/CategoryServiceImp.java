@@ -2,13 +2,14 @@ package belousov.eu.service.imp;
 
 import belousov.eu.exception.CategoryNotFoundException;
 import belousov.eu.mapper.CategoryMapper;
-import belousov.eu.model.Category;
-import belousov.eu.model.User;
 import belousov.eu.model.dto.CategoryDto;
-import belousov.eu.repository.CategoryRepository;
+import belousov.eu.model.entity.Category;
+import belousov.eu.model.entity.User;
+import belousov.eu.repository.imp.CategoryRepositoryImp;
 import belousov.eu.service.CategoryService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.mapstruct.factory.Mappers;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -16,12 +17,13 @@ import java.util.List;
  * Реализация сервиса для управления категориями.
  * Обеспечивает добавление, удаление, редактирование и получение категорий.
  */
-@AllArgsConstructor
+@Service
+@RequiredArgsConstructor
 public class CategoryServiceImp implements CategoryService {
     /**
      * Репозиторий для работы с категориями.
      */
-    private final CategoryRepository categoryRepository;
+    private final CategoryRepositoryImp categoryRepository;
 
     private final CategoryMapper categoryMapper = Mappers.getMapper(CategoryMapper.class);
 

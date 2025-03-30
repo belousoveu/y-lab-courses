@@ -1,5 +1,7 @@
 package belousov.eu.service;
 
+import belousov.eu.model.dto.EmailDto;
+
 public interface EmailService {
-    void sendEmail(String email, String subject, String body);
+    void sendEmail(EmailDto emailDto);
 }

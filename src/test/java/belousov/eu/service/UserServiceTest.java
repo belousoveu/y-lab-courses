@@ -2,12 +2,12 @@ package belousov.eu.service;
 
 import belousov.eu.exception.*;
 import belousov.eu.mapper.UserMapper;
-import belousov.eu.model.Role;
-import belousov.eu.model.User;
 import belousov.eu.model.dto.LoginDto;
 import belousov.eu.model.dto.RegisterDto;
 import belousov.eu.model.dto.UserDto;
-import belousov.eu.repository.UserRepository;
+import belousov.eu.model.entity.Role;
+import belousov.eu.model.entity.User;
+import belousov.eu.repository.imp.UserRepositoryImp;
 import belousov.eu.service.imp.UserService;
 import belousov.eu.utils.Password;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +30,7 @@ import static org.mockito.Mockito.*;
 class UserServiceTest {
 
     @Mock
-    private UserRepository userRepository;
+    private UserRepositoryImp userRepository;
 
     @InjectMocks
     private UserService userService;

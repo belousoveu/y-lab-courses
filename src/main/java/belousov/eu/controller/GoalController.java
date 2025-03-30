@@ -1,45 +1,47 @@
 package belousov.eu.controller;
 
-import belousov.eu.model.Transaction;
-import belousov.eu.model.User;
 import belousov.eu.model.dto.GoalDto;
-import belousov.eu.observer.BalanceChangeObserver;
+import belousov.eu.model.entity.User;
 import belousov.eu.service.GoalService;
-import belousov.eu.utils.MessageColor;
-import belousov.eu.view.ConsoleView;
+import jakarta.servlet.http.HttpSession;
 import lombok.AllArgsConstructor;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RestController
 @AllArgsConstructor
-public class GoalController implements BalanceChangeObserver {
+@RequestMapping("/api/goals")
+public class GoalController {
+
+    private static final String CURRENT_USER = "currentUser";
 
     private final GoalService goalService;
-    private final ConsoleView consoleView;
 
-    public void addGoal(User user, GoalDto goalDto) {
+    @PutMapping
+    public void addGoal(@RequestBody GoalDto goalDto, HttpSession session) {
+        User user = (User) session.getAttribute(CURRENT_USER);
         goalService.addGoal(user, goalDto);
     }
 
-    public void deleteGoal(int goalId, User user) {
-        goalService.deleteGoal(goalId, user);
+    @DeleteMapping("/{id}")
+    public void deleteGoal(@PathVariable int id, HttpSession session) {
+        User user = (User) session.getAttribute(CURRENT_USER);
+        goalService.deleteGoal(id, user);
     }
 
-    public void editGoal(int goalId, User user, GoalDto goalDto) {
-        goalService.editGoal(goalId, user, goalDto);
+    @PutMapping("/{id}")
+    public void editGoal(@PathVariable int id, @RequestBody GoalDto goalDto, HttpSession session) {
+        User user = (User) session.getAttribute(CURRENT_USER);
+        goalService.editGoal(id, user, goalDto);
     }
 
-    public List<GoalDto> getAllGoals(int userId) {
-        return goalService.getAllByUserId(userId);
+
+    @GetMapping
+    public List<GoalDto> getAllGoals(HttpSession session) {
+        User user = (User) session.getAttribute(CURRENT_USER);
+        return goalService.getAllByUserId(user.getId());
 
     }
 
-    @Override
-    public void balanceChanged(Transaction lastTransaction) {
-        List<String> checkedGoal = goalService.checkGoal(lastTransaction);
-        if (!checkedGoal.isEmpty()) {
-            consoleView.println("Поздравляем! Есть достижения:", checkedGoal, MessageColor.GREEN, MessageColor.GREEN);
-        }
-
-    }
 }

@@ -1,36 +1,54 @@
 package belousov.eu.controller;
 
-import belousov.eu.model.TransactionFilter;
-import belousov.eu.model.User;
 import belousov.eu.model.dto.TransactionDto;
+import belousov.eu.model.dto.TransactionFilter;
+import belousov.eu.model.entity.User;
 import belousov.eu.service.TransactionService;
-import lombok.AllArgsConstructor;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@AllArgsConstructor
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/transactions")
 public class TransactionController {
+
+    private static final String CURRENT_USER = "currentUser";
 
     private final TransactionService transactionService;
 
-    public TransactionDto createTransaction(User user, TransactionDto transactionDto) {
+    @PostMapping
+    public TransactionDto createTransaction(@Valid @RequestBody TransactionDto transactionDto, HttpSession session) {
+        User user = (User) session.getAttribute(CURRENT_USER);
         return transactionService.addTransaction(user, transactionDto);
     }
 
 
-    public TransactionDto updateTransaction(int id, TransactionDto transactionDto, User user) {
+    @PutMapping("/{id}")
+    public TransactionDto updateTransaction(@PathVariable int id,
+                                            @Valid @RequestBody TransactionDto transactionDto,
+                                            HttpSession session) {
+        User user = (User) session.getAttribute(CURRENT_USER);
         return transactionService.updateTransaction(id, transactionDto, user);
     }
 
-    public void deleteTransaction(int id, User user) {
+    @DeleteMapping("/{id}")
+    public void deleteTransaction(@PathVariable int id, HttpSession session) {
+        User user = (User) session.getAttribute(CURRENT_USER);
         transactionService.deleteTransaction(id, user);
     }
 
-    public TransactionDto getTransactionById(int id, User user) {
+    @GetMapping("/{id}")
+    public TransactionDto getTransactionById(@PathVariable int id, HttpSession session) {
+        User user = (User) session.getAttribute(CURRENT_USER);
         return transactionService.getTransactionById(id, user);
     }
 
-    public List<TransactionDto> getTransactions(TransactionFilter filter) {
+    @GetMapping
+    public List<TransactionDto> getTransactions(@RequestBody TransactionFilter filter) {
         return transactionService.getTransactions(filter);
     }
 }
