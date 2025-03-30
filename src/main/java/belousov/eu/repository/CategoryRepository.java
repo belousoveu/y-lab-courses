@@ -9,7 +9,7 @@ import java.util.Optional;
 public interface CategoryRepository {
     Optional<Category> findById(int id);
 
-    void save(Category category);
+    Category save(Category category);
 
     void delete(Category category);
 

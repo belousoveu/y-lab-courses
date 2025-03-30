@@ -13,11 +13,12 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @Getter
 @Setter
-@EqualsAndHashCode(of = {"id"})
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Transaction {
     /**
      * Уникальный идентификатор транзакции.
      */
+    @EqualsAndHashCode.Include
     private int id;
     /**
      * Дата совершения транзакции.
@@ -57,13 +58,4 @@ public class Transaction {
                 .formatted(id, date, operationType, category == null ? "" : category.getName(), amount, description);
     }
 
-    /**
-     * Возвращает строковое представление транзакции с информацией о пользователе.
-     *
-     * @return строка, содержащая информацию о транзакции и пользователе
-     */
-    public String toStringWithUser() {
-        return "id=%d, date=%s, operationType=%s, category=%s, amount=%,.2f, description=%s, user=%s"
-                .formatted(id, date, operationType, category == null ? "" : category.getName(), amount, description, user.getName());
-    }
 }

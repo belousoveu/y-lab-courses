@@ -17,8 +17,9 @@ import java.util.List;
 
 @Configuration
 @EnableWebMvc
-@ComponentScan("belousov.eu")
+@ComponentScan(basePackages = "belousov.eu.controller") // Только контроллеры
 public class WebConfig implements WebMvcConfigurer {
+
 
     @Bean
     public OpenAPI customOpenAPI() {
@@ -38,9 +39,8 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // Для Swagger UI
         registry.addResourceHandler("/swagger-ui/**")
-                .addResourceLocations("classpath:/META-INF/resources/webjars/springdoc-openapi-ui/")
+                .addResourceLocations("classpath:/META-INF/resources/webjars/springdoc-openapi-ui/1.0.0/")
                 .resourceChain(false);
     }
 

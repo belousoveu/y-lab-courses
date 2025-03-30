@@ -4,21 +4,33 @@ import belousov.eu.model.dto.UserProfileDto;
 import belousov.eu.model.dto.UserProfileUpdateDto;
 import belousov.eu.model.entity.User;
 import belousov.eu.service.ProfileService;
-import lombok.AllArgsConstructor;
+import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
 
-@AllArgsConstructor
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/profile")
 public class ProfileController {
+
+    private static final String CURRENT_USER = "currentUser";
+
     private final ProfileService profileService;
 
-    public void updateProfile(int id, UserProfileUpdateDto updateDto, User currentUser) {
+    @PatchMapping("/{id}")
+    public void updateProfile(@PathVariable int id, @RequestBody UserProfileUpdateDto updateDto, HttpSession session) {
+        User currentUser = (User) session.getAttribute(CURRENT_USER);
         profileService.updateUser(id, updateDto, currentUser);
     }
 
-    public void deleteProfile(int id, String password, User currentUser) {
+    @DeleteMapping("/{id}")
+    public void deleteProfile(@PathVariable int id, @RequestBody String password, HttpSession session) {
+        User currentUser = (User) session.getAttribute(CURRENT_USER);
         profileService.deleteUser(id, password, currentUser);
     }
 
-    public UserProfileDto viewProfile(int id) {
+    @GetMapping("/{id}")
+    public UserProfileDto viewProfile(@PathVariable int id) {
         return profileService.getUserById(id);
     }
 }

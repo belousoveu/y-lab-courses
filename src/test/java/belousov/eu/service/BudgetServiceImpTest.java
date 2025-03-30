@@ -113,7 +113,7 @@ class BudgetServiceImpTest {
 
         budgetServiceImp.checkBudget(transaction);
 
-        verify(emailService, never()).sendEmail(new EmailDto(anyString(), anyString(), anyString()));
+        verify(emailService, never()).sendEmail(any(EmailDto.class));
     }
 
     @Test
@@ -123,7 +123,7 @@ class BudgetServiceImpTest {
         budgetServiceImp.checkBudget(transaction);
 
         verify(budgetRepository, never()).findByCategoryAndPeriod(any(), any(), any());
-        verify(emailService, never()).sendEmail(new EmailDto(anyString(), anyString(), anyString()));
+        verify(emailService, never()).sendEmail(any(EmailDto.class));
     }
 
     @Test
@@ -133,6 +133,6 @@ class BudgetServiceImpTest {
         budgetServiceImp.checkBudget(transaction);
 
         verify(budgetRepository, never()).findByCategoryAndPeriod(any(), any(), any());
-        verify(emailService, never()).sendEmail(new EmailDto(anyString(), anyString(), anyString()));
+        verify(emailService, never()).sendEmail(any(EmailDto.class));
     }
 }

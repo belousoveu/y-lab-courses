@@ -4,11 +4,10 @@ import belousov.eu.exception.DatabaseOperationException;
 import belousov.eu.model.entity.Role;
 import belousov.eu.model.entity.User;
 import belousov.eu.repository.UserRepository;
-import belousov.eu.utils.Password;
-import jakarta.annotation.PostConstruct;
 import jakarta.validation.constraints.NotNull;
-import lombok.RequiredArgsConstructor;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -19,22 +18,36 @@ import java.util.Optional;
  * Обеспечивает хранение, добавление, удаление и поиск пользователей.
  */
 @Repository
-@RequiredArgsConstructor
 public class UserRepositoryImp implements UserRepository {
 
     private final JdbcTemplate jdbcTemplate;
+    private final RowMapper<User> rowMapper;
+
+    public UserRepositoryImp(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+        this.rowMapper = (rs, rowNum) -> {
+            User user = new User();
+            user.setId(rs.getInt("id"));
+            user.setName(rs.getString("name"));
+            user.setEmail(rs.getString("email"));
+            user.setPassword(rs.getString("password"));
+            user.setRole(Role.valueOf(rs.getString("role")));
+            user.setActive(rs.getBoolean("is_active"));
+            return user;
+        };
+    }
 
 
     /**
      * Инициализация репозитория. Добавляет администратора по умолчанию.
      */
-    @PostConstruct
-    private void init() {
-        if (getAllAdminIds().isEmpty()) {
-            String encodedPassword = Password.encode("Admin123");
-            save(new User(0, "admin", "admin@admin.com", encodedPassword, Role.ADMIN, true));
-        }
-    }
+//    @PostConstruct
+//    private void init() {
+//        if (getAllAdminIds().isEmpty()) {
+//            String encodedPassword = Password.encode("Admin123");
+//            save(new User(0, "admin", "admin@admin.com", encodedPassword, Role.ADMIN, true));
+//        }
+//    }
 
     /**
      * Сохраняет или обновляет пользователя в базе данных.
@@ -45,22 +58,25 @@ public class UserRepositoryImp implements UserRepository {
     @Override
     public User save(@NotNull User user) {
 
-        String sql = """
-                INSERT INTO app.users (id, name, email, password, role, is_active)
-                VALUES (?, ?, ?, ?, ?, ?)
-                ON CONFLICT (id) DO
-                UPDATE SET name=?, email=?, password=?, role=?, is_active=?
-                RETURNING id
-                """;
-
-        Integer userId = jdbcTemplate.queryForObject(sql, Integer.class,
-                user.getId(), user.getName(), user.getEmail(), user.getPassword(), user.getRole().toString(), user.isActive());
-
-        if (userId == null) {
-            throw new DatabaseOperationException("Не получилось сохранить пользователя %s".formatted(user.getName()));
+        if (user.getId() == 0) {
+            Integer newId = jdbcTemplate.queryForObject("""
+                            INSERT INTO app.users (name, email, password, role, is_active)
+                            VALUES (?, ?, ?, ?, ?)
+                            RETURNING id
+                            """,
+                    Integer.class,
+                    user.getName(), user.getEmail(), user.getPassword(), user.getRole().toString(), user.isActive());
+            if (newId == null) {
+                throw new DatabaseOperationException("Failed to save user");
+            }
+            user.setId(newId);
+        } else {
+            jdbcTemplate.update("""
+                    UPDATE app.users
+                    SET name=?, email=?, password=?, role=?, is_active=?
+                    WHERE id=?
+                    """, user.getName(), user.getEmail(), user.getPassword(), user.getRole().toString(), user.isActive(), user.getId());
         }
-
-        user.setId(userId);
 
         return user;
     }
@@ -83,8 +99,12 @@ public class UserRepositoryImp implements UserRepository {
      */
     @Override
     public Optional<User> findById(int id) {
-        User user = jdbcTemplate.queryForObject("SELECT * FROM app.users WHERE id=?", User.class, id);
-        return Optional.ofNullable(user);
+        try {
+            User user = jdbcTemplate.queryForObject("SELECT * FROM app.users WHERE id=?", rowMapper, id);
+            return Optional.ofNullable(user);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
     }
 
     /**
@@ -95,8 +115,12 @@ public class UserRepositoryImp implements UserRepository {
      */
     @Override
     public Optional<User> findByEmail(String email) {
-        User user = jdbcTemplate.queryForObject("SELECT * FROM app.users WHERE email=?", User.class, email);
-        return Optional.ofNullable(user);
+        try {
+            User user = jdbcTemplate.queryForObject("SELECT * FROM app.users WHERE email=?", rowMapper, email);
+            return Optional.ofNullable(user);
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
     }
 
 
@@ -107,7 +131,7 @@ public class UserRepositoryImp implements UserRepository {
      */
     @Override
     public List<User> findAll() {
-        return jdbcTemplate.queryForList("SELECT * FROM app.users", User.class);
+        return jdbcTemplate.query("SELECT * FROM app.users", rowMapper);
     }
 
     /**

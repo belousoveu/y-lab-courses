@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface BudgetRepository {
-    void save(Budget budget);
+    Budget save(Budget budget);
 
     List<Budget> findAllByPeriod(User currentUser, YearMonth period);
 

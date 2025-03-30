@@ -11,7 +11,7 @@ services:
       - PMT_DB_PASSWORD=postgres
       - HIBERNATE_CONNECTION_URL=jdbc:postgresql://db:5432/pmt_db
     volumes:
-      - ./src/main/resources/application.yml:/app/config/application.yml
+      - ./src/main/resources/application.properties:/app/config/application.properties
 
   db:
     image: postgres:17-alpine

@@ -148,6 +148,6 @@ class GoalServiceImpTest {
         Transaction transaction = new Transaction(1, null, null, null, 0.0, null, user);
         goalServiceImp.checkGoal(transaction);
 
-        verify(emailService, never()).sendEmail(new EmailDto(anyString(), anyString(), anyString()));
+        verify(emailService, never()).sendEmail(any(EmailDto.class));
     }
 }

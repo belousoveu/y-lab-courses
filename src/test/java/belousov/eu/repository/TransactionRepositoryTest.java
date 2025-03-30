@@ -1,10 +1,16 @@
 package belousov.eu.repository;
 
-import belousov.eu.config.ConfigLoader;
-import belousov.eu.config.HibernateConfig;
 import belousov.eu.model.entity.*;
+import belousov.eu.repository.imp.CategoryRepositoryImp;
 import belousov.eu.repository.imp.TransactionRepositoryImp;
-import org.hibernate.Session;
+import belousov.eu.repository.imp.UserRepositoryImp;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import liquibase.Liquibase;
+import liquibase.database.Database;
+import liquibase.database.DatabaseFactory;
+import liquibase.database.jvm.JdbcConnection;
+import liquibase.resource.ClassLoaderResourceAccessor;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,9 +21,10 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -25,13 +32,12 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 @Testcontainers
 class TransactionRepositoryTest {
 
-    private static final ConfigLoader configLoader = new ConfigLoader("test");
 
     @Container
     private static final PostgreSQLContainer<?> postgres;
 
     private static JdbcTemplate jdbcTemplate;
-    private TransactionRepositoryImp transactionRepository;
+    private TransactionRepository transactionRepository;
 
     private User testUser;
     private Category testCategory;
@@ -43,19 +49,40 @@ class TransactionRepositoryTest {
                 .withPassword("testpassword")
                 .withInitScript("init.sql")
         ;
-
     }
 
     @BeforeAll
     static void init() {
         postgres.start();
-        Map<String, Object> config = configLoader.getConfig();
-        config.put("hibernate.connection.url", postgres.getJdbcUrl());
-        config.put("hibernate.connection.username", postgres.getUsername());
-        config.put("hibernate.connection.password", postgres.getPassword());
-        config.put("hibernate.connection.driver_class", postgres.getDriverClassName());
-        config.put("hibernate.default_schema", "app");
-        sessionFactory = new HibernateConfig(config).getSessionFactory();
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(postgres.getJdbcUrl());
+        config.setUsername(postgres.getUsername());
+        config.setPassword(postgres.getPassword());
+
+        HikariDataSource dataSource = new HikariDataSource(config);
+        jdbcTemplate = new JdbcTemplate(dataSource);
+
+        runLiquibaseMigrations(dataSource);
+    }
+
+    private static void runLiquibaseMigrations(DataSource dataSource) {
+        try (Connection connection = dataSource.getConnection()) {
+            Database database = DatabaseFactory.getInstance()
+                    .findCorrectDatabaseImplementation(new JdbcConnection(connection));
+
+            database.setLiquibaseSchemaName("service");
+            database.setDefaultSchemaName("app");
+
+            Liquibase liquibase = new Liquibase(
+                    "db/changelog/changelog.yml",
+                    new ClassLoaderResourceAccessor(),
+                    database
+            );
+
+            liquibase.update();
+        } catch (Exception e) {
+            throw new RuntimeException("Liquibase migration failed", e);
+        }
     }
 
     @AfterAll
@@ -66,24 +93,14 @@ class TransactionRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        try (Session session = sessionFactory.openSession()) {
-            session.beginTransaction();
-            session.createMutationQuery("DELETE FROM Transaction").executeUpdate();
-            session.createMutationQuery("DELETE FROM Category").executeUpdate();
-            session.createMutationQuery("DELETE FROM User").executeUpdate();
-            session.createNativeQuery("ALTER SEQUENCE app.transaction_id_seq RESTART WITH 1", Transaction.class).executeUpdate();
-            session.getTransaction().commit();
-        }
-        try (Session session = sessionFactory.openSession()) {
-            session.beginTransaction();
-            User newUser = new User(0, "user1", "user1@example.com", "Password1", Role.USER, true);
-            testUser = session.merge(newUser);
-            Category newCategory = new Category(0, "category1", testUser);
-            testCategory = session.merge(newCategory);
-            session.getTransaction().commit();
-
-        }
-//        transactionRepository = new TransactionRepository(sessionFactory);
+        jdbcTemplate.execute("TRUNCATE TABLE app.transactions CASCADE");
+        jdbcTemplate.execute("TRUNCATE TABLE app.categories CASCADE");
+        jdbcTemplate.execute("TRUNCATE TABLE app.users CASCADE");
+        transactionRepository = new TransactionRepositoryImp(jdbcTemplate);
+        UserRepository userRepository = new UserRepositoryImp(jdbcTemplate);
+        CategoryRepository categoryRepository = new CategoryRepositoryImp(jdbcTemplate);
+        testUser = userRepository.save(new User(0, "user1", "user1@example.com", "Password1", Role.USER, true));
+        testCategory = categoryRepository.save(new Category(0, "category1", testUser));
     }
 
     @Test

@@ -12,5 +12,5 @@ public interface GoalRepository {
 
     void delete(Goal goal);
 
-    void save(Goal goal);
+    Goal save(Goal goal);
 }

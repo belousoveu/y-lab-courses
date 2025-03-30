@@ -10,16 +10,21 @@ import org.springframework.web.servlet.DispatcherServlet;
 public class PmtWebApplicationInitializer implements WebApplicationInitializer {
     @Override
     public void onStartup(ServletContext servletContext) {
+        LogbackConfig.configure();
 
-        AnnotationConfigWebApplicationContext ctx = new AnnotationConfigWebApplicationContext();
-        ctx.register(AppConfig.class);
-        ctx.scan("belousov.eu");
-        ctx.refresh();
+        // Корневой контекст (сервисы, репозитории, DataSource)
+        AnnotationConfigWebApplicationContext rootContext = new AnnotationConfigWebApplicationContext();
+        rootContext.register(AppConfig.class, DataSourceConfig.class, LiquibaseConfig.class);
+        rootContext.refresh();
 
-        servletContext.addListener(new ContextLoaderListener(ctx));
-        ServletRegistration.Dynamic dispatcher = servletContext.addServlet("dispatcher", new DispatcherServlet(ctx));
+        // Веб-контекст (контроллеры, MVC)
+        AnnotationConfigWebApplicationContext webContext = new AnnotationConfigWebApplicationContext();
+        webContext.register(WebConfig.class);
+        webContext.setParent(rootContext); // Связь с корневым контекстом
+
+        servletContext.addListener(new ContextLoaderListener(rootContext));
+        ServletRegistration.Dynamic dispatcher = servletContext.addServlet("dispatcher", new DispatcherServlet(webContext));
         dispatcher.setLoadOnStartup(1);
         dispatcher.addMapping("/");
-
     }
 }
